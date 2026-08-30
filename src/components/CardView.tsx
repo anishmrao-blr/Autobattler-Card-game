@@ -1,4 +1,3 @@
-// Fix CardView.tsx
 import React from 'react';
 import { MinionCard, BoardMinion, Tribe, Keyword } from '../types';
 
@@ -16,6 +15,7 @@ interface CardViewProps {
   damageReceived?: number;
   barrierBroken?: boolean;
   disabled?: boolean;
+  isFrozen?: boolean;
 }
 
 const TRIBE_COLORS: Record<Tribe, { bg: string; text: string; border: string }> = {
@@ -53,6 +53,7 @@ export const CardView: React.FC<CardViewProps> = ({
   damageReceived,
   barrierBroken = false,
   disabled = false,
+  isFrozen = false,
 }) => {
   const name = boardMinion?.name || card?.name || 'Unknown';
   const tier = boardMinion?.tier || card?.tier || 1;
@@ -81,80 +82,99 @@ export const CardView: React.FC<CardViewProps> = ({
       onClick={!disabled ? onClick : undefined}
       onContextMenu={onRightClick}
       className={`
-        relative select-none flex flex-col justify-between rounded-xl p-2 transition-all duration-200 cursor-pointer
+        relative select-none flex flex-col justify-between rounded-xl p-2.5 transition-all duration-200 cursor-pointer
         ${sizeClasses}
-        ${isGolden ? 'golden-border shimmer-foil' : 'brass-border bg-gradient-to-b from-[#18112e] via-[#100b21] to-[#0a0717]'}
+        ${isGolden ? 'golden-border shimmer-foil' : 'brass-border bg-gradient-to-b from-[#191131] via-[#100b21] to-[#0a0717]'}
+        ${isFrozen ? 'frost-card' : ''}
         ${isSelected ? 'ring-4 ring-cyan-400 scale-105 shadow-aether' : 'hover:scale-105 hover:shadow-brass'}
         ${isAttacking ? 'scale-110 -translate-y-4 ring-4 ring-yellow-400 z-30 transition-transform duration-150' : ''}
         ${isHit ? 'animate-wiggle ring-4 ring-red-500 scale-95 duration-100' : ''}
         ${hasBastion ? 'ring-2 ring-blue-500/80 rounded-2xl' : ''}
-        ${isMiasmic ? 'shadow-[inset_0_0_10px_rgba(0,230,118,0.3)]' : ''}
+        ${isMiasmic ? 'shadow-[inset_0_0_12px_rgba(0,230,118,0.35)]' : ''}
         ${disabled ? 'opacity-50 cursor-not-allowed grayscale' : ''}
       `}
     >
+      {/* Hexagonal Forcefield Barrier Overlay */}
       {hasBarrier && (
-        <div className="absolute inset-0 rounded-xl border-2 border-cyan-400 bg-cyan-400/15 animate-pulse pointer-events-none shadow-[inset_0_0_15px_rgba(0,240,255,0.5)] z-20 flex items-center justify-center">
-          <span className="text-[10px] font-bold tracking-widest text-cyan-200 uppercase bg-cyan-950/80 px-1.5 py-0.5 rounded border border-cyan-400">
-            Barrier
+        <div className="absolute inset-0 rounded-xl border-2 border-cyan-400/90 bg-cyan-400/15 hex-barrier pointer-events-none z-20 flex items-center justify-center overflow-hidden">
+          <svg className="absolute inset-0 w-full h-full opacity-40 animate-spin" style={{ animationDuration: '12s' }} viewBox="0 0 100 100">
+            <polygon points="50 3, 90 25, 90 75, 50 97, 10 75, 10 25" fill="none" stroke="#00f0ff" strokeWidth="2" strokeDasharray="6,4" />
+          </svg>
+          <span className="text-[10px] font-black tracking-widest text-cyan-200 uppercase bg-cyan-950/90 px-2 py-0.5 rounded-full border border-cyan-300 shadow-aether">
+            ✨ BARRIER
           </span>
         </div>
       )}
 
+      {/* Frost Corners when Frozen in Shop */}
+      {isFrozen && (
+        <div className="absolute inset-0 pointer-events-none z-20 rounded-xl overflow-hidden bg-sky-950/20">
+          <div className="absolute top-1 right-1 text-xs">❄️</div>
+          <div className="absolute bottom-1 left-1 text-xs">❄️</div>
+        </div>
+      )}
+
+      {/* Damage Received Floater */}
       {damageReceived !== undefined && damageReceived > 0 && (
-        <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-2xl font-black text-red-500 drop-shadow-[0_2px_8px_rgba(0,0,0,1)] float-damage z-40">
-          -{damageReceived}
+        <div className={`absolute -top-7 left-1/2 -translate-x-1/2 font-black float-damage z-40 ${damageReceived >= 8 ? 'text-3xl text-yellow-300 drop-shadow-[0_0_12px_rgba(255,215,0,1)]' : 'text-2xl text-red-500 drop-shadow-[0_2px_8px_rgba(0,0,0,1)]'}`}>
+          -{damageReceived}{damageReceived >= 8 ? ' 💥' : ''}
         </div>
       )}
 
       {barrierBroken && (
-        <div className="absolute inset-0 flex items-center justify-center text-cyan-300 font-bold text-lg animate-ping z-40">
+        <div className="absolute inset-0 flex items-center justify-center text-cyan-200 font-black text-xl animate-ping z-40">
           SHATTER!
         </div>
       )}
 
+      {/* Top Header: Tier Stars & Card Name */}
       <div className="flex items-start justify-between gap-1 z-10">
-        <div className="flex items-center gap-0.5 bg-black/60 px-1 py-0.5 rounded border border-yellow-500/40 text-[10px] text-yellow-400 font-bold">
+        <div className="flex items-center gap-0.5 bg-black/70 px-1.5 py-0.5 rounded-md border border-yellow-500/50 text-[10px] text-yellow-400 font-bold shadow">
           {'★'.repeat(tier)}
         </div>
-        <span className={`text-[11px] font-bold truncate leading-tight font-cinzel ${isGolden ? 'text-yellow-300' : 'text-slate-200'}`}>
+        <span className={`text-[11px] font-bold truncate leading-tight font-cinzel ${isGolden ? 'text-yellow-300 drop-shadow-[0_0_8px_rgba(255,215,0,0.8)]' : 'text-slate-100'}`}>
           {name.replace('★ ', '')}
         </span>
       </div>
 
+      {/* Center Graphic & Tribe Badge */}
       <div className="relative my-auto flex flex-col items-center justify-center py-1">
-        <div className="text-4xl drop-shadow-[0_0_10px_rgba(200,155,60,0.5)] transform transition-transform hover:scale-125">
+        <div className="text-4xl drop-shadow-[0_0_12px_rgba(200,155,60,0.6)] transform transition-transform hover:scale-125">
           {icon}
         </div>
 
-        <div className={`mt-1 text-[9px] font-bold px-1.5 py-0.2 rounded-full border ${tribeStyle.bg} ${tribeStyle.text} ${tribeStyle.border}`}>
+        <div className={`mt-1 text-[9px] font-bold px-2 py-0.5 rounded-full border shadow ${tribeStyle.bg} ${tribeStyle.text} ${tribeStyle.border}`}>
           {tribe}
         </div>
       </div>
 
+      {/* Card Rules / Flavor Text */}
       {size !== 'sm' && (
-        <div className="text-[10px] text-slate-300 bg-black/60 p-1 rounded border border-purple-900/50 line-clamp-2 leading-tight my-1 text-center font-sans">
+        <div className="text-[10px] text-slate-200 bg-black/70 p-1.5 rounded-lg border border-purple-900/60 line-clamp-2 leading-tight my-1 text-center font-sans">
           {description || keywords.join(', ')}
         </div>
       )}
 
+      {/* Keyword Badges */}
       <div className="flex flex-wrap gap-0.5 justify-center mb-1">
         {keywords.slice(0, 3).map((kw, i) => (
           <span
             key={i}
-            className={`text-[8px] font-bold px-1 rounded border ${KEYWORD_LABELS[kw]?.color || 'text-slate-300'}`}
+            className={`text-[8px] font-bold px-1.5 py-0.2 rounded border shadow ${KEYWORD_LABELS[kw]?.color || 'text-slate-300'}`}
           >
             {KEYWORD_LABELS[kw]?.icon} {KEYWORD_LABELS[kw]?.label}
           </span>
         ))}
       </div>
 
-      <div className="flex items-center justify-between mt-auto pt-1 border-t border-yellow-600/30 z-10">
+      {/* Bottom Footer: Attack, Price, Health */}
+      <div className="flex items-center justify-between mt-auto pt-1.5 border-t border-yellow-600/30 z-10">
         <div className="flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-red-600 to-rose-950 border-2 border-amber-400 font-bold text-white shadow-lg text-xs">
           ⚔️ {attack}
         </div>
 
         {showPrice && (
-          <div className="flex items-center gap-0.5 bg-yellow-950/90 border border-yellow-400 text-yellow-300 font-bold text-[10px] px-1.5 py-0.5 rounded-full shadow">
+          <div className="flex items-center gap-1 bg-yellow-950/90 border border-yellow-400 text-yellow-300 font-bold text-[10px] px-2 py-0.5 rounded-full shadow-brass">
             <span>🪙</span> {price}
           </div>
         )}
