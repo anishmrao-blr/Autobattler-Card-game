@@ -1,0 +1,507 @@
+import { MinionCard, BoardMinion } from '../types';
+
+export function createBoardMinion(card: MinionCard, isGolden = false): BoardMinion {
+  const multiplier = isGolden ? 2 : 1;
+  return {
+    instanceId: 'minion_' + Math.random().toString(36).substring(2, 9),
+    cardId: card.id,
+    name: isGolden ? `★ ${card.name}` : card.name,
+    tier: card.tier,
+    tribe: card.tribe,
+    attack: card.attack * multiplier,
+    health: card.health * multiplier,
+    maxHealth: card.health * multiplier,
+    isGolden,
+    keywords: [...card.keywords],
+    hasAttacked: false,
+    barrierActive: card.keywords.includes('AETHER_BARRIER'),
+    rewindAvailable: card.keywords.includes('RE_WIND'),
+    icon: card.icon,
+    tempAttackBuff: 0,
+    tempHealthBuff: 0,
+  };
+}
+
+export const MINION_DATABASE: MinionCard[] = [
+  // ===================== TIER 1 =====================
+  {
+    id: 'auto_scrapper',
+    name: 'Cogwork Scrapper',
+    tier: 1,
+    tribe: 'AUTOMATA',
+    attack: 2,
+    health: 1,
+    keywords: ['AETHER_BARRIER'],
+    description: 'Aether Barrier.',
+    goldenDescription: 'Aether Barrier.',
+    icon: '⚙️',
+    flavor: 'Forged from scrap brass and imbued with a tiny aether shield.'
+  },
+  {
+    id: 'void_larva',
+    name: 'Abyssal Larva',
+    tier: 1,
+    tribe: 'VOIDBORN',
+    attack: 1,
+    health: 2,
+    keywords: ['LAST_GASP'],
+    description: 'Last Gasp: Summon a 1/1 Void Tendril.',
+    goldenDescription: 'Last Gasp: Summon two 2/2 Void Tendrils.',
+    icon: '🐙',
+    flavor: 'Small enough to fit in a pocket watch, hungry enough to devour hours.'
+  },
+  {
+    id: 'alch_brewer',
+    name: 'Elixir Apprentice',
+    tier: 1,
+    tribe: 'ALCHEMIST',
+    attack: 2,
+    health: 2,
+    keywords: [],
+    description: 'On Deploy: Give a friendly minion +1/+1.',
+    goldenDescription: 'On Deploy: Give a friendly minion +2/+2.',
+    icon: '🧪',
+    flavor: 'The smoke smells of ozone, peppermint, and transmutational doom.'
+  },
+  {
+    id: 'celest_spark',
+    name: 'Star Shard',
+    tier: 1,
+    tribe: 'CELESTIAL',
+    attack: 1,
+    health: 3,
+    keywords: [],
+    description: 'Whenever you buy a Celestial, gain +1 Attack.',
+    goldenDescription: 'Whenever you buy a Celestial, gain +2 Attack.',
+    icon: '✨',
+    flavor: 'A piece of a fallen constellation that never stopped burning.'
+  },
+  {
+    id: 'beast_ripper',
+    name: 'Cave Ripper',
+    tier: 1,
+    tribe: 'BEAST',
+    attack: 3,
+    health: 1,
+    keywords: ['LAST_GASP'],
+    description: 'Last Gasp: Deal 1 damage to a random enemy.',
+    goldenDescription: 'Last Gasp: Deal 2 damage to a random enemy twice.',
+    icon: '🦇',
+    flavor: 'Echo-locates blood in pitch-black steam ducts.'
+  },
+  {
+    id: 'pirate_swab',
+    name: 'Sky Deckhand',
+    tier: 1,
+    tribe: 'PIRATE',
+    attack: 2,
+    health: 2,
+    keywords: [],
+    description: 'Selling this minion grants 2 Cog-Coins instead of 1.',
+    goldenDescription: 'Selling this minion grants 4 Cog-Coins instead of 1.',
+    icon: '⚓',
+    flavor: 'Always has a pouch of smuggled aether coins sewn into his cuff.'
+  },
+
+  // ===================== TIER 2 =====================
+  {
+    id: 'auto_sentry',
+    name: 'Steam-Shield Sentry',
+    tier: 2,
+    tribe: 'AUTOMATA',
+    attack: 2,
+    health: 4,
+    keywords: ['BASTION'],
+    description: 'Bastion. Whenever this takes damage, gain +1 Attack.',
+    goldenDescription: 'Bastion. Whenever this takes damage, gain +2 Attack.',
+    icon: '🛡️',
+    flavor: 'Heats up as it takes punishment, venting pressurized steam.'
+  },
+  {
+    id: 'void_stalker',
+    name: 'Voidling Stalker',
+    tier: 2,
+    tribe: 'VOIDBORN',
+    attack: 3,
+    health: 3,
+    keywords: ['RE_WIND'],
+    description: 'Re-wind. (Revives once with 1 Health).',
+    goldenDescription: 'Re-wind. (Revives once with full Health).',
+    icon: '👁️',
+    flavor: 'You cannot slay what already exists outside linear time.'
+  },
+  {
+    id: 'alch_homunculus',
+    name: 'Volatile Homunculus',
+    tier: 2,
+    tribe: 'ALCHEMIST',
+    attack: 2,
+    health: 5,
+    keywords: ['BASTION'],
+    description: 'Bastion. On Deploy: Deal 2 damage to your Hero.',
+    goldenDescription: 'Bastion. On Deploy: Deal 2 damage to your Hero.',
+    icon: '⚗️',
+    flavor: 'Brewed with high-pressure quicksilver. Highly unstable.'
+  },
+  {
+    id: 'celest_scribe',
+    name: 'Astral Scribe',
+    tier: 2,
+    tribe: 'CELESTIAL',
+    attack: 2,
+    health: 3,
+    keywords: [],
+    description: 'At the end of your turn, give another friendly Celestial +1/+2.',
+    goldenDescription: 'At the end of your turn, give another friendly Celestial +2/+4.',
+    icon: '📜',
+    flavor: 'Calculates the orbital intersections of victory.'
+  },
+  {
+    id: 'beast_scuttler',
+    name: 'Dread Scuttler',
+    tier: 2,
+    tribe: 'BEAST',
+    attack: 3,
+    health: 2,
+    keywords: ['SWEEP'],
+    description: 'Sweep. Also damages minions adjacent to its target.',
+    goldenDescription: 'Sweep. Also damages minions adjacent to its target.',
+    icon: '🦂',
+    flavor: 'Its twin pincer sweeps leave nothing standing in the trench.'
+  },
+  {
+    id: 'pirate_smuggler',
+    name: 'Chrono Smuggler',
+    tier: 2,
+    tribe: 'PIRATE',
+    attack: 3,
+    health: 3,
+    keywords: [],
+    description: 'Whenever a friendly Pirate attacks, give it +1 Attack.',
+    goldenDescription: 'Whenever a friendly Pirate attacks, give it +2 Attack.',
+    icon: '🧭',
+    flavor: 'Stealing seconds between the swings of a blade.'
+  },
+
+  // ===================== TIER 3 =====================
+  {
+    id: 'auto_assembler',
+    name: 'Cogwheel Assembler',
+    tier: 3,
+    tribe: 'AUTOMATA',
+    attack: 3,
+    health: 4,
+    keywords: [],
+    description: 'Whenever another Automata is played, give it +2/+2.',
+    goldenDescription: 'Whenever another Automata is played, give it +4/+4.',
+    icon: '🦾',
+    flavor: 'Bolts extra iron plating onto fresh reinforcements.'
+  },
+  {
+    id: 'void_devourer',
+    name: 'Star Devourer',
+    tier: 3,
+    tribe: 'VOIDBORN',
+    attack: 4,
+    health: 4,
+    keywords: [],
+    description: 'Whenever a friendly Voidborn dies, gain +2/+1 permanently.',
+    goldenDescription: 'Whenever a friendly Voidborn dies, gain +4/+2 permanently.',
+    icon: '🌑',
+    flavor: 'Feeds on the passing echoes of its fallen brood.'
+  },
+  {
+    id: 'alch_toxic',
+    name: 'Miasmic Alchemist',
+    tier: 3,
+    tribe: 'ALCHEMIST',
+    attack: 2,
+    health: 3,
+    keywords: ['MIASMIC'],
+    description: 'Miasmic. Any damage dealt by this destroys the target.',
+    goldenDescription: 'Miasmic. Aether Barrier.',
+    icon: '☣️',
+    flavor: 'One scratch dissolves even reinforced chronosteel.'
+  },
+  {
+    id: 'celest_envoy',
+    name: 'Starlight Envoy',
+    tier: 3,
+    tribe: 'CELESTIAL',
+    attack: 4,
+    health: 4,
+    keywords: ['AETHER_BARRIER'],
+    description: 'Aether Barrier. On Deploy: Give a friendly minion Aether Barrier.',
+    goldenDescription: 'Aether Barrier. On Deploy: Give 2 friendly minions Aether Barrier.',
+    icon: '🌟',
+    flavor: 'A messenger cloaked in the pure luminescence of the first suns.'
+  },
+  {
+    id: 'beast_frenzy',
+    name: 'Frenzied Hydra',
+    tier: 3,
+    tribe: 'BEAST',
+    attack: 3,
+    health: 5,
+    keywords: ['SWEEP'],
+    description: 'Sweep. Whenever this takes damage, gain +2 Attack.',
+    goldenDescription: 'Sweep. Whenever this takes damage, gain +4 Attack.',
+    icon: '🐉',
+    flavor: 'Cut off one steam valve, three more erupt with scalding fury.'
+  },
+  {
+    id: 'pirate_cannoneer',
+    name: 'Galleon Cannoneer',
+    tier: 3,
+    tribe: 'PIRATE',
+    attack: 4,
+    health: 3,
+    keywords: ['OVERCLOCK'],
+    description: 'Overclock. Attacks twice per combat round.',
+    goldenDescription: 'Overclock. Attacks twice per combat round.',
+    icon: '💣',
+    flavor: 'Twin broadside cannons tuned for rapid steam-driven firing.'
+  },
+
+  // ===================== TIER 4 =====================
+  {
+    id: 'auto_juggernaut',
+    name: 'Chrono-Juggernaut',
+    tier: 4,
+    tribe: 'AUTOMATA',
+    attack: 5,
+    health: 6,
+    keywords: ['AETHER_BARRIER', 'BASTION'],
+    description: 'Bastion. Aether Barrier. Whenever an allied Barrier breaks, gain +2 Attack.',
+    goldenDescription: 'Bastion. Aether Barrier. Whenever an allied Barrier breaks, gain +4 Attack.',
+    icon: '🤖',
+    flavor: 'The peak of clockwork defense, impenetrable and punishing.'
+  },
+  {
+    id: 'void_fleshweaver',
+    name: 'Eldritch Fleshweaver',
+    tier: 4,
+    tribe: 'VOIDBORN',
+    attack: 5,
+    health: 5,
+    keywords: ['LAST_GASP'],
+    description: 'Last Gasp: Summon two 3/3 Eldritch Spawn with Bastion.',
+    goldenDescription: 'Last Gasp: Summon two 6/6 Eldritch Spawn with Bastion.',
+    icon: '🕸️',
+    flavor: 'Weaves dark matter into protective horrors upon death.'
+  },
+  {
+    id: 'alch_transmuter',
+    name: 'Arcane Transmuter',
+    tier: 4,
+    tribe: 'ALCHEMIST',
+    attack: 4,
+    health: 5,
+    keywords: [],
+    description: 'At the end of your turn, give your leftmost minion +3/+3 and Miasmic.',
+    goldenDescription: 'At the end of your turn, give your 2 leftmost minions +6/+6 and Miasmic.',
+    icon: '🔮',
+    flavor: 'Turns lead to gold, and flesh to lethal venom.'
+  },
+  {
+    id: 'celest_archon',
+    name: 'Nova Archon',
+    tier: 4,
+    tribe: 'CELESTIAL',
+    attack: 6,
+    health: 4,
+    keywords: ['OVERCLOCK'],
+    description: 'Overclock. Whenever this attacks, give your other Celestials +2/+2.',
+    goldenDescription: 'Overclock. Whenever this attacks, give your other Celestials +4/+4.',
+    icon: '🌠',
+    flavor: 'Channels pulsar winds with every sweep of its cosmic staff.'
+  },
+  {
+    id: 'beast_leviathan',
+    name: 'Abyssal Basilosaur',
+    tier: 4,
+    tribe: 'BEAST',
+    attack: 6,
+    health: 7,
+    keywords: ['BASTION'],
+    description: 'Bastion. Whenever this survives damage, give your other Beasts +2/+1.',
+    goldenDescription: 'Bastion. Whenever this survives damage, give your other Beasts +4/+2.',
+    icon: '🐋',
+    flavor: 'The deep void shakes when its massive bulk takes a blow.'
+  },
+  {
+    id: 'pirate_captain',
+    name: 'Sky-Dread Corsair',
+    tier: 4,
+    tribe: 'PIRATE',
+    attack: 5,
+    health: 4,
+    keywords: [],
+    description: 'On Deploy: Gain 3 Cog-Coins. Next tavern roll is free.',
+    goldenDescription: 'On Deploy: Gain 6 Cog-Coins. Next 2 tavern rolls are free.',
+    icon: '🏴‍☠️',
+    flavor: 'Has plundered the astral vaults of ten dead empires.'
+  },
+
+  // ===================== TIER 5 =====================
+  {
+    id: 'auto_titan',
+    name: 'Aether-Core Colossus',
+    tier: 5,
+    tribe: 'AUTOMATA',
+    attack: 7,
+    health: 8,
+    keywords: ['AETHER_BARRIER'],
+    description: 'Aether Barrier. Whenever an Automata attacks, give it Aether Barrier.',
+    goldenDescription: 'Aether Barrier. Whenever an Automata attacks, give it Aether Barrier and +3/+3.',
+    icon: '⚡',
+    flavor: 'A walking powerplant radiating endless defensive wards.'
+  },
+  {
+    id: 'void_horror',
+    name: 'Cthulhoid Matriarch',
+    tier: 5,
+    tribe: 'VOIDBORN',
+    attack: 6,
+    health: 8,
+    keywords: ['LAST_GASP'],
+    description: 'Last Gasp: Summon a copy of the first friendly Voidborn that died this combat.',
+    goldenDescription: 'Last Gasp: Summon 2 golden copies of the first friendly Voidborn that died.',
+    icon: '🦑',
+    flavor: 'Brings back the horrors of the void in an unbroken loop.'
+  },
+  {
+    id: 'alch_prime',
+    name: 'Philosopher Prime',
+    tier: 5,
+    tribe: 'ALCHEMIST',
+    attack: 5,
+    health: 9,
+    keywords: [],
+    description: 'At the end of your turn, trigger all friendly On Deploy effects.',
+    goldenDescription: 'At the end of your turn, trigger all friendly On Deploy effects twice.',
+    icon: '💎',
+    flavor: 'Discovered the magnum opus of transmutational science.'
+  },
+  {
+    id: 'celest_weaver',
+    name: 'Eclipse Weaver',
+    tier: 5,
+    tribe: 'CELESTIAL',
+    attack: 8,
+    health: 6,
+    keywords: ['AETHER_BARRIER', 'SWEEP'],
+    description: 'Aether Barrier. Sweep. Attacks strike 3 targets with celestial fire.',
+    goldenDescription: 'Aether Barrier. Sweep. Overclock.',
+    icon: '🪐',
+    flavor: 'Pulls black holes across the line of battle.'
+  },
+  {
+    id: 'beast_apex',
+    name: 'Apex Chimeradon',
+    tier: 5,
+    tribe: 'BEAST',
+    attack: 8,
+    health: 8,
+    keywords: ['SWEEP', 'RE_WIND'],
+    description: 'Sweep. Re-wind. Whenever an allied Beast dies, gain +3/+3.',
+    goldenDescription: 'Sweep. Re-wind. Whenever an allied Beast dies, gain +6/+6.',
+    icon: '🦖',
+    flavor: 'The ultimate apex predator cloned from fossilized abyssal marrow.'
+  },
+  {
+    id: 'pirate_admiral',
+    name: 'Temporal Dread-Admiral',
+    tier: 5,
+    tribe: 'PIRATE',
+    attack: 8,
+    health: 7,
+    keywords: ['OVERCLOCK'],
+    description: 'Overclock. Attacks first in combat regardless of minion count.',
+    goldenDescription: 'Overclock. Attacks first and deals double damage to Bastion units.',
+    icon: '👑',
+    flavor: 'Commands a fleet that sails through wormholes.'
+  },
+
+  // ===================== TIER 6 =====================
+  {
+    id: 'auto_omega',
+    name: 'Omega Chronomancer',
+    tier: 6,
+    tribe: 'AUTOMATA',
+    attack: 10,
+    health: 12,
+    keywords: ['AETHER_BARRIER', 'OVERCLOCK'],
+    description: 'Aether Barrier. Overclock. At start of combat, grant all Automata +5/+5 and Aether Barrier.',
+    goldenDescription: 'Aether Barrier. Overclock. At start of combat, grant all Automata +10/+10 and Aether Barrier.',
+    icon: '🕰️',
+    flavor: 'Controls the gears that tick the universe forward.'
+  },
+  {
+    id: 'void_singularity',
+    name: 'Cosmic Singularity',
+    tier: 6,
+    tribe: 'VOIDBORN',
+    attack: 12,
+    health: 10,
+    keywords: ['RE_WIND', 'LAST_GASP'],
+    description: 'Re-wind. Last Gasp: Deal damage equal to this minion\'s Attack split among all enemies.',
+    goldenDescription: 'Re-wind. Last Gasp: Deal double damage equal to this minion\'s Attack split among all enemies.',
+    icon: '🌌',
+    flavor: 'The collapse of reality itself, consuming everything in the sector.'
+  },
+  {
+    id: 'alch_homunculus_lord',
+    name: 'Grand Chimera Amalgam',
+    tier: 6,
+    tribe: 'NEUTRAL', // Counts as all tribes!
+    attack: 10,
+    health: 10,
+    keywords: ['BASTION', 'AETHER_BARRIER', 'MIASMIC', 'SWEEP', 'RE_WIND'],
+    description: 'This is an Automata, Voidborn, Alchemist, Celestial, Beast, and Pirate.',
+    goldenDescription: 'All-tribe Amalgam with all keywords and doubled stats.',
+    icon: '🔯',
+    flavor: 'The ultimate synthesis of clockwork, stars, void, and flesh.'
+  },
+  {
+    id: 'celest_galaxy_titan',
+    name: 'Galaxy Forger',
+    tier: 6,
+    tribe: 'CELESTIAL',
+    attack: 12,
+    health: 14,
+    keywords: ['AETHER_BARRIER'],
+    description: 'At the end of your turn, give ALL friendly minions +4/+4 for each different tribe you control.',
+    goldenDescription: 'At the end of your turn, give ALL friendly minions +8/+8 for each different tribe you control.',
+    icon: '☀️',
+    flavor: 'Ignites supernovas to forge new stars.'
+  }
+];
+
+// Token minions spawned by Last Gasp
+export const TOKEN_MINIONS: Record<string, MinionCard> = {
+  void_tendril: {
+    id: 'token_void_tendril',
+    name: 'Void Tendril',
+    tier: 1,
+    tribe: 'VOIDBORN',
+    attack: 1,
+    health: 1,
+    keywords: [],
+    description: 'Spawned from Abyssal Larva.',
+    icon: '🐙',
+    flavor: 'Wriggling void matter.'
+  },
+  eldritch_spawn: {
+    id: 'token_eldritch_spawn',
+    name: 'Eldritch Spawn',
+    tier: 2,
+    tribe: 'VOIDBORN',
+    attack: 3,
+    health: 3,
+    keywords: ['BASTION'],
+    description: 'Bastion.',
+    icon: '👁️',
+    flavor: 'A defensive cluster of tentacles.'
+  }
+};
