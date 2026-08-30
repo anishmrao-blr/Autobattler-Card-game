@@ -19,7 +19,8 @@ interface CardTransform {
   rotateX: number;
   rotateY: number;
   rotateZ: number;
-  scale: number;
+  scaleX: number;
+  scaleY: number;
 }
 
 export const CombatArena3D: React.FC<CombatArena3DProps> = ({
@@ -53,7 +54,7 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
   const [screenShake, setScreenShake] = useState(false);
   const [combatFinished, setCombatFinished] = useState(false);
   const [logMessages, setLogMessages] = useState<string[]>([
-    `⚔️ Combat Round: ${player.name} vs ${opponent.name}`
+    `⚔️ Round Engagement: ${player.name} vs ${opponent.name}`
   ]);
 
   // HP tracking
@@ -79,7 +80,7 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
 
     const event = events[currentEventIdx];
     const baseDuration = getEventDuration(event);
-    const delay = Math.max(120, baseDuration / speed);
+    const delay = Math.max(140, baseDuration / speed);
 
     timerRef.current = setTimeout(() => {
       processEvent3D(event);
@@ -93,13 +94,13 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
 
   const getEventDuration = (event: CombatEvent): number => {
     switch (event.type) {
-      case 'ATTACK_START': return 550;
-      case 'DAMAGE_DEALT': return 400;
-      case 'CLEAVE_DAMAGE': return 450;
-      case 'BARRIER_BROKEN': return 400;
-      case 'MINION_DIED': return 350;
-      case 'TOKEN_SPAWNED': return 400;
-      default: return 300;
+      case 'ATTACK_START': return 650;
+      case 'DAMAGE_DEALT': return 420;
+      case 'CLEAVE_DAMAGE': return 480;
+      case 'BARRIER_BROKEN': return 420;
+      case 'MINION_DIED': return 380;
+      case 'TOKEN_SPAWNED': return 420;
+      default: return 320;
     }
   };
 
@@ -110,7 +111,7 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
         sound.playAttackLunge();
 
         setLogMessages(prev => [
-          `⚔️ ${minionName} leaps across the rift to strike ${defenderName}!`,
+          `⚔️ ${minionName} leaps through the astral rift toward ${defenderName}!`,
           ...prev.slice(0, 4)
         ]);
 
@@ -123,33 +124,36 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
 
           const deltaX = defRect.left + defRect.width / 2 - (atkRect.left + atkRect.width / 2);
           const deltaY = defRect.top + defRect.height / 2 - (atkRect.top + atkRect.height / 2);
+          const isAttackingDown = deltaY > 0;
 
-          // 1. Wind-Up
+          // Phase 1: Anticipation & Coiling (0 - 150ms)
           setCardTransforms(prev => ({
             ...prev,
             [attackerId]: {
               x: 0,
-              y: deltaY > 0 ? -25 : 25,
-              z: 50,
-              rotateX: deltaY > 0 ? 20 : -20,
+              y: isAttackingDown ? -30 : 30,
+              z: 60,
+              rotateX: isAttackingDown ? 25 : -25,
               rotateY: 0,
               rotateZ: 0,
-              scale: 1.15,
+              scaleX: 1.15,
+              scaleY: 1.15,
             }
           }));
 
-          // 2. Physical Lunge Strike
+          // Phase 2: Parabolic Apex Leap & Slam (150 - 320ms)
           setTimeout(() => {
             setCardTransforms(prev => ({
               ...prev,
               [attackerId]: {
-                x: deltaX * 0.85,
-                y: deltaY * 0.85,
-                z: 90,
-                rotateX: deltaY > 0 ? -30 : 30,
-                rotateY: deltaX > 0 ? 15 : -15,
-                rotateZ: (Math.random() - 0.5) * 15,
-                scale: 1.25,
+                x: deltaX * 0.9,
+                y: deltaY * 0.9,
+                z: 130, // High parabolic 3D jump altitude
+                rotateX: isAttackingDown ? -35 : 35,
+                rotateY: deltaX > 0 ? 18 : -18,
+                rotateZ: (Math.random() - 0.5) * 16,
+                scaleX: 1.3,
+                scaleY: 0.9, // Squash on impact
               }
             }));
 
@@ -158,26 +162,27 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
             const hitY = defRect.top + defRect.height / 2;
 
             vfxRef.current?.spawnSlashArc(
-              hitX - 70, hitY - 70,
-              hitX + 70, hitY + 70,
+              hitX - 75, hitY - 75,
+              hitX + 75, hitY + 75,
               '#ff2a5f'
             );
-            vfxRef.current?.spawnImpactSparks(hitX, hitY, '#ffd700', 45);
+            vfxRef.current?.spawnImpactSparks(hitX, hitY, '#ffd700', 50);
             triggerScreenShake();
           }, 180 / speed);
 
-          // 3. Defender Stagger & Attacker Recoil
+          // Phase 3: Defender Stagger & Attacker Recoil (320 - 460ms)
           setTimeout(() => {
             setCardTransforms(prev => ({
               ...prev,
               [defenderId]: {
                 x: 0,
-                y: deltaY > 0 ? 30 : -30,
-                z: -25,
-                rotateX: deltaY > 0 ? 25 : -25,
+                y: isAttackingDown ? 35 : -35,
+                z: -30,
+                rotateX: isAttackingDown ? 30 : -30,
                 rotateY: 0,
-                rotateZ: (Math.random() - 0.5) * 12,
-                scale: 0.95,
+                rotateZ: (Math.random() - 0.5) * 14,
+                scaleX: 0.9,
+                scaleY: 1.1,
               }
             }));
 
@@ -186,50 +191,59 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
               [attackerId]: {
                 x: 0, y: 0, z: 0,
                 rotateX: 0, rotateY: 0, rotateZ: 0,
-                scale: 1.0,
+                scaleX: 1.0, scaleY: 1.0,
               }
             }));
-          }, 340 / speed);
+          }, 360 / speed);
 
-          // 4. Settle
+          // Phase 4: Settle (460 - 600ms)
           setTimeout(() => {
             setCardTransforms(prev => ({
               ...prev,
               [defenderId]: {
                 x: 0, y: 0, z: 0,
                 rotateX: 0, rotateY: 0, rotateZ: 0,
-                scale: 1.0,
+                scaleX: 1.0, scaleY: 1.0,
               }
             }));
-          }, 480 / speed);
+          }, 520 / speed);
         }
         break;
       }
 
       case 'DAMAGE_DEALT': {
-        sound.playImpactDamage(event.isLethal);
+        const isCrit = event.amount >= 8 || event.isLethal;
+        sound.playImpactDamage(event.isLethal, isCrit);
         setDamageMap(prev => ({ ...prev, [event.targetId]: event.amount }));
-        setTimeout(() => setDamageMap({}), 400);
+        setTimeout(() => setDamageMap({}), 450);
 
         updateMinionHealth(event.targetId, event.remainingHp);
 
         const elem = cardElements.current.get(event.targetId);
         if (elem) {
           const rect = elem.getBoundingClientRect();
+          const cx = rect.left + rect.width / 2;
+          const cy = rect.top + rect.height / 2;
+
+          if (isCrit) {
+            vfxRef.current?.spawnCritNumber(cx, cy, event.amount);
+          }
+
           vfxRef.current?.spawnImpactSparks(
-            rect.left + rect.width / 2,
-            rect.top + rect.height / 2,
-            event.wasMiasmic ? '#00e676' : '#ff3366',
-            event.isLethal ? 55 : 30
+            cx,
+            cy,
+            event.wasMiasmic ? '#00e676' : isCrit ? '#ffd700' : '#ff3366',
+            isCrit ? 60 : 35
           );
         }
         break;
       }
 
       case 'CLEAVE_DAMAGE': {
-        sound.playImpactDamage(event.isLethal);
+        const isCrit = event.amount >= 8 || event.isLethal;
+        sound.playImpactDamage(event.isLethal, isCrit);
         setDamageMap(prev => ({ ...prev, [event.targetId]: event.amount }));
-        setTimeout(() => setDamageMap({}), 400);
+        setTimeout(() => setDamageMap({}), 450);
         updateMinionHealth(event.targetId, event.remainingHp);
 
         const elem = cardElements.current.get(event.targetId);
@@ -294,12 +308,12 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
       const midX = window.innerWidth / 2;
 
       vfxRef.current?.spawnHeroOrb(midX, sourceY, midX, targetY, () => {
-        sound.playImpactDamage(true);
+        sound.playImpactDamage(true, true);
         triggerScreenShake();
         if (playerWon) {
           setOpponentHp(prev => Math.max(0, prev - combatResult.damageDealt));
           sound.playVictory();
-          confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+          confetti({ particleCount: 140, spread: 85, origin: { y: 0.6 } });
         } else {
           setPlayerHp(prev => Math.max(0, prev - combatResult.damageDealt));
         }
@@ -309,7 +323,7 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
 
   const triggerScreenShake = () => {
     setScreenShake(true);
-    setTimeout(() => setScreenShake(false), 300);
+    setTimeout(() => setScreenShake(false), 350);
   };
 
   const updateMinionHealth = (minionId: string, remainingHp: number) => {
@@ -417,7 +431,7 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
             board2.map(minion => {
               const transform = cardTransforms[minion.instanceId];
               const transformStyle = transform
-                ? `translate3d(${transform.x}px, ${transform.y}px, ${transform.z}px) rotateX(${transform.rotateX}deg) rotateY(${transform.rotateY}deg) rotateZ(${transform.rotateZ}deg) scale(${transform.scale})`
+                ? `translate3d(${transform.x}px, ${transform.y}px, ${transform.z}px) rotateX(${transform.rotateX}deg) rotateY(${transform.rotateY}deg) rotateZ(${transform.rotateZ}deg) scale(${transform.scaleX}, ${transform.scaleY})`
                 : 'translate3d(0,0,0)';
 
               return (
@@ -470,7 +484,7 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
             board1.map(minion => {
               const transform = cardTransforms[minion.instanceId];
               const transformStyle = transform
-                ? `translate3d(${transform.x}px, ${transform.y}px, ${transform.z}px) rotateX(${transform.rotateX}deg) rotateY(${transform.rotateY}deg) rotateZ(${transform.rotateZ}deg) scale(${transform.scale})`
+                ? `translate3d(${transform.x}px, ${transform.y}px, ${transform.z}px) rotateX(${transform.rotateX}deg) rotateY(${transform.rotateY}deg) rotateZ(${transform.rotateZ}deg) scale(${transform.scaleX}, ${transform.scaleY})`
                 : 'translate3d(0,0,0)';
 
               return (
