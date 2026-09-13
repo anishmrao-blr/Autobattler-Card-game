@@ -34,7 +34,7 @@ export const CommanderHeroStation: React.FC<CommanderHeroStationProps> = ({
     player.hero.powerType === 'ACTIVE' && player.coins >= player.hero.powerCost;
 
   return (
-    <div className="relative flex items-center gap-3 bg-[#0d071d]/90 p-2.5 rounded-2xl border-2 border-yellow-500/60 shadow-[0_10px_30px_rgba(0,0,0,0.85)] backdrop-blur-xl select-none z-30">
+    <div className="relative flex items-center gap-2 sm:gap-3 bg-[#0d071d]/90 p-1.5 sm:p-2.5 rounded-2xl border-2 border-yellow-500/60 shadow-[0_10px_30px_rgba(0,0,0,0.85)] backdrop-blur-xl select-none z-30 flex-shrink-0">
       {/* 1. Large Hero Artwork Frame */}
       <div
         onClick={() => {
@@ -42,7 +42,7 @@ export const CommanderHeroStation: React.FC<CommanderHeroStationProps> = ({
           onInspectHero?.();
         }}
         title="Click to inspect Commander Lore & Stats"
-        className="group relative w-20 h-28 sm:w-24 sm:h-32 rounded-2xl border-2 border-yellow-400/80 overflow-hidden bg-black/90 shadow-[0_0_20px_rgba(234,179,8,0.35)] cursor-pointer hover:border-yellow-300 hover:scale-105 transition-all flex-shrink-0"
+        className="group relative w-16 h-24 sm:w-24 sm:h-32 rounded-2xl border-2 border-yellow-400/80 overflow-hidden bg-black/90 shadow-[0_0_20px_rgba(234,179,8,0.35)] cursor-pointer hover:border-yellow-300 hover:scale-105 transition-all flex-shrink-0"
       >
         <CardMediaArt
           artUrl={player.hero.artUrl || player.artUrl || '/assets/art/hero_chronos.jpg'}
@@ -65,14 +65,14 @@ export const CommanderHeroStation: React.FC<CommanderHeroStationProps> = ({
 
         {/* Hero Name Badge */}
         <div className="absolute bottom-1 inset-x-1 text-center">
-          <span className="font-cinzel text-[10px] sm:text-[11px] font-black text-yellow-200 truncate block drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+          <span className="font-cinzel text-[9px] sm:text-[11px] font-black text-yellow-200 truncate block drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
             {player.hero.name}
           </span>
         </div>
       </div>
 
       {/* 2. Hero Power Token & Highly Viewable HP Bar */}
-      <div className="flex flex-col justify-between h-28 sm:h-32 py-0.5 min-w-[135px] sm:min-w-[160px]">
+      <div className="flex flex-col justify-between h-24 sm:h-32 py-0.5 min-w-[105px] sm:min-w-[160px]">
         {/* Commander Callsign & Title */}
         <div className="flex flex-col">
           <span className="font-cinzel text-[10px] text-purple-300 uppercase tracking-wider truncate">

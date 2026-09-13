@@ -41,13 +41,13 @@ export const TavernShop: React.FC<TavernShopProps> = ({
   };
 
   return (
-    <div className="relative w-full bg-[#120a26]/90 border border-yellow-600/40 rounded-2xl p-3 shadow-2xl backdrop-blur-md">
-      <div className="flex items-center justify-between mb-3 px-2">
+    <div className="relative w-full bg-[#120a26]/90 border border-yellow-600/40 rounded-2xl p-2 sm:p-3 shadow-2xl backdrop-blur-md">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-2 sm:mb-3 px-1 sm:px-2">
         {/* Tier & Upgrade */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 bg-yellow-950/80 border border-yellow-500/50 px-3 py-1.5 rounded-xl shadow-inner">
-            <span className="text-sm font-bold text-yellow-400 font-cinzel">TAVERN TIER {player.tavernTier}</span>
-            <span className="text-xs text-yellow-300">{'★'.repeat(player.tavernTier)}</span>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 bg-yellow-950/80 border border-yellow-500/50 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl shadow-inner">
+            <span className="text-xs sm:text-sm font-bold text-yellow-400 font-cinzel">TIER {player.tavernTier}</span>
+            <span className="text-[10px] sm:text-xs text-yellow-300">{'★'.repeat(player.tavernTier)}</span>
           </div>
 
           {player.tavernTier < 6 ? (
@@ -61,36 +61,36 @@ export const TavernShop: React.FC<TavernShopProps> = ({
               }}
               disabled={!canAffordUpgrade}
               className={`
-                flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold text-xs font-cinzel transition-[transform,colors] duration-150 ease-out border
+                flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl font-bold text-[11px] sm:text-xs font-cinzel transition-[transform,colors] duration-150 ease-out border
                 ${canAffordUpgrade
                   ? 'bg-gradient-to-r from-amber-600 to-yellow-500 border-yellow-300 text-black hover:scale-105 shadow-brass active:scale-95'
                   : 'bg-slate-900/60 border-slate-700 text-slate-500 cursor-not-allowed'}
               `}
             >
-              <span>⬆️ UPGRADE TIER</span>
-              <span className="bg-black/40 px-1.5 py-0.5 rounded text-yellow-300">🪙 {upgradeCost}</span>
+              <span>⬆️ <span className="hidden xs:inline">UPGRADE</span></span>
+              <span className="bg-black/40 px-1 py-0.5 rounded text-yellow-300">🪙 {upgradeCost}</span>
             </button>
           ) : (
-            <div className="text-xs font-bold text-yellow-400 px-3 py-1 bg-yellow-950/40 rounded-xl border border-yellow-600/30">
-              👑 MAX TIER REACHED
+            <div className="text-xs font-bold text-yellow-400 px-2 py-1 bg-yellow-950/40 rounded-xl border border-yellow-600/30">
+              👑 MAX
             </div>
           )}
         </div>
 
         {/* Center Title */}
-        <div className="text-center">
+        <div className="text-center hidden md:block">
           <h2 className="text-xs tracking-widest font-cinzel font-bold text-purple-300">
             THE ASTRAL ATRIUM
           </h2>
         </div>
 
         {/* Freeze & Reroll Controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Mechanical Freeze Padlock Button */}
           <button
             onClick={handleToggleFreeze}
             className={`
-              flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold text-xs font-cinzel transition-[transform,colors] duration-150 ease-out border
+              flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl font-bold text-[11px] sm:text-xs font-cinzel transition-[transform,colors] duration-150 ease-out border
               ${player.isFrozen
                 ? 'bg-cyan-950 border-cyan-400 text-cyan-300 shadow-aether scale-105 animate-pulse'
                 : 'bg-slate-900 border-slate-700 text-slate-300 hover:border-cyan-500 hover:text-cyan-300 hover:scale-105 active:scale-95'}
@@ -98,7 +98,7 @@ export const TavernShop: React.FC<TavernShopProps> = ({
           >
             <span className="text-sm">{player.isFrozen ? '🔒' : '🔓'}</span>
             <span>{player.isFrozen ? 'FROZEN' : 'FREEZE'}</span>
-            <span className="text-[10px] text-cyan-400 font-sans">(0🪙)</span>
+            <span className="text-[10px] text-cyan-400 font-sans hidden sm:inline">(0🪙)</span>
           </button>
 
           {/* Mechanical Steam Reroll Lever */}
@@ -106,7 +106,7 @@ export const TavernShop: React.FC<TavernShopProps> = ({
             onClick={handleReroll}
             disabled={!canAffordReroll}
             className={`
-              relative overflow-hidden flex items-center gap-1.5 px-4 py-1.5 rounded-xl font-bold text-xs font-cinzel transition-[transform,colors] duration-150 ease-out border
+              relative overflow-hidden flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-xl font-bold text-[11px] sm:text-xs font-cinzel transition-[transform,colors] duration-150 ease-out border
               ${canAffordReroll
                 ? 'bg-gradient-to-r from-purple-800 to-indigo-700 border-purple-400 text-white hover:scale-105 shadow-void active:scale-95'
                 : 'bg-slate-900/60 border-slate-700 text-slate-500 cursor-not-allowed'}
@@ -116,7 +116,7 @@ export const TavernShop: React.FC<TavernShopProps> = ({
               ⚙️
             </span>
             <span>REROLL</span>
-            <span className="bg-black/40 px-1.5 py-0.5 rounded text-yellow-300">🪙 1</span>
+            <span className="bg-black/40 px-1 py-0.5 rounded text-yellow-300">🪙 1</span>
 
             {isRerolling && (
               <span className="absolute inset-0 bg-white/20 animate-ping pointer-events-none" />
@@ -127,7 +127,7 @@ export const TavernShop: React.FC<TavernShopProps> = ({
 
       {/* Shop Board */}
       <div 
-        className="flex items-center justify-center gap-3 min-h-[250px] p-4 rounded-2xl border-2 border-[#524775]/60 shadow-[0_12px_32px_rgba(0,0,0,0.9)] relative overflow-hidden"
+        className="flex items-center justify-start sm:justify-center gap-2.5 sm:gap-3 min-h-[240px] p-2.5 sm:p-4 rounded-2xl border-2 border-[#524775]/60 shadow-[0_12px_32px_rgba(0,0,0,0.9)] relative overflow-x-auto scrollbar-thin"
         style={{
           backgroundImage: 'radial-gradient(rgba(18, 12, 38, 0.75), rgba(7, 4, 16, 0.94)), url(/assets/art/runic_table.jpg)',
           backgroundSize: 'cover',

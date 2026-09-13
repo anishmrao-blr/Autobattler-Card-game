@@ -5,9 +5,16 @@ import { useLenisScroll } from '../hooks/useLenisScroll';
 interface LeaderboardProps {
   players: PlayerState[];
   currentTurn: number;
+  className?: string;
+  onClose?: () => void;
 }
 
-export const Leaderboard: React.FC<LeaderboardProps> = ({ players, currentTurn }) => {
+export const Leaderboard: React.FC<LeaderboardProps> = ({
+  players,
+  currentTurn,
+  className = 'w-68 border-r border-[#3b2a59]',
+  onClose,
+}) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   useLenisScroll(scrollRef);
 
@@ -19,7 +26,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ players, currentTurn }
   });
 
   return (
-    <div className="w-68 h-full bg-[#0a0717]/95 border-r border-[#3b2a59] flex flex-col p-3 shadow-2xl backdrop-blur-md">
+    <div className={`h-full bg-[#0a0717]/95 flex flex-col p-3 shadow-2xl backdrop-blur-md ${className}`}>
       {/* Header */}
       <div className="flex items-center justify-between pb-2 mb-2 border-b border-yellow-600/30">
         <div className="flex items-center gap-2">
@@ -28,9 +35,20 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ players, currentTurn }
             ASTRAL LOBBY
           </span>
         </div>
-        <span className="text-xs px-2 py-0.5 rounded bg-purple-950/80 text-purple-300 font-bold border border-purple-600/40">
-          Turn {currentTurn}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs px-2 py-0.5 rounded bg-purple-950/80 text-purple-300 font-bold border border-purple-600/40">
+            Turn {currentTurn}
+          </span>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="lg:hidden text-slate-400 hover:text-white text-xs w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center font-bold"
+              title="Close Lobby"
+            >
+              ✕
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Player List */}

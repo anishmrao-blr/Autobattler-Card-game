@@ -51,7 +51,7 @@ export const Board: React.FC<BoardProps> = ({
       </div>
 
       <div
-        className="flex items-center justify-center gap-3 min-h-[190px] p-4 rounded-2xl border-2 border-[#524775]/60 shadow-[0_12px_32px_rgba(0,0,0,0.9)] relative overflow-hidden"
+        className="flex items-center justify-start sm:justify-center gap-2.5 sm:gap-3 min-h-[190px] p-2.5 sm:p-4 rounded-2xl border-2 border-[#524775]/60 shadow-[0_12px_32px_rgba(0,0,0,0.9)] relative overflow-x-auto scrollbar-thin"
         style={{
           backgroundImage: 'radial-gradient(rgba(18, 12, 38, 0.75), rgba(7, 4, 16, 0.94)), url(/assets/art/runic_table.jpg)',
           backgroundSize: 'cover',

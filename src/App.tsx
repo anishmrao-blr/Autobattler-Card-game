@@ -36,6 +36,7 @@ export const App: React.FC = () => {
   const [showCodex, setShowCodex] = useState<boolean>(false);
   const [showGameMenu, setShowGameMenu] = useState<boolean>(false);
   const [showTutorial, setShowTutorial] = useState<boolean>(false);
+  const [showMobileLobby, setShowMobileLobby] = useState<boolean>(false);
   const [playerCallsign, setPlayerCallsign] = useState<string>('Commander Thorne');
 
   const syncState = () => {
@@ -448,12 +449,33 @@ export const App: React.FC = () => {
         isMuted={isMuted}
         onToggleMute={handleToggleMute}
         onOpenMenu={() => setShowGameMenu(true)}
+        onToggleMobileLobby={() => setShowMobileLobby(prev => !prev)}
       />
 
-      <div className="flex-1 flex overflow-hidden">
-        <Leaderboard players={allPlayers} currentTurn={currentTurn} />
+      <div className="flex-1 flex overflow-hidden relative">
+        {/* Desktop Sidebar Leaderboard */}
+        <div className="hidden lg:block h-full flex-shrink-0">
+          <Leaderboard players={allPlayers} currentTurn={currentTurn} />
+        </div>
 
-        <main className="flex-1 flex flex-col justify-between p-4 overflow-y-auto gap-3">
+        {/* Mobile Slide-Over Lobby Drawer */}
+        {showMobileLobby && (
+          <div className="fixed inset-0 z-40 lg:hidden flex animate-fadeIn">
+            <div
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              onClick={() => setShowMobileLobby(false)}
+            />
+            <div className="relative z-10 w-72 max-w-[85vw] h-full bg-[#0a0717] border-r border-yellow-500/40 shadow-2xl">
+              <Leaderboard
+                players={allPlayers}
+                currentTurn={currentTurn}
+                onClose={() => setShowMobileLobby(false)}
+              />
+            </div>
+          </div>
+        )}
+
+        <main className="w-full flex-1 flex flex-col justify-between p-2 sm:p-4 overflow-y-auto gap-2 sm:gap-3">
           <TavernShop
             player={human}
             onBuyMinion={handleBuyMinion}

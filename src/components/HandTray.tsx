@@ -26,7 +26,7 @@ export const HandTray: React.FC<HandTrayProps> = ({
   const isBoardFull = boardCount >= 7;
 
   return (
-    <div className="w-full bg-[#0a0618]/95 border-t-2 border-[#3b2a59] px-4 py-2 flex items-center justify-between gap-4 shadow-2xl backdrop-blur-md z-30">
+    <div className="w-full bg-[#0a0618]/95 border-t-2 border-[#3b2a59] px-2 sm:px-4 py-1.5 sm:py-2 flex items-center justify-between gap-2 sm:gap-4 shadow-2xl backdrop-blur-md z-30">
       {/* 1. Bottom-Left Prominent Commander Hero Station */}
       <CommanderHeroStation
         player={player}
