@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import gsap from 'gsap';
 import { CombatSimulationResult } from '../engine/combat';
 import { BoardMinion, CombatEvent, PlayerState } from '../types';
 import { CardView } from './CardView';
@@ -11,17 +12,6 @@ interface CombatArena3DProps {
   combatResult: CombatSimulationResult;
   turnNumber?: number;
   onFinishCombat: () => void;
-}
-
-interface CardTransform {
-  x: number;
-  y: number;
-  z: number;
-  rotateX: number;
-  rotateY: number;
-  rotateZ: number;
-  scaleX: number;
-  scaleY: number;
 }
 
 export const CombatArena3D: React.FC<CombatArena3DProps> = ({
@@ -49,27 +39,49 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
     return init.map(m => ({ ...m, keywords: [...m.keywords] }));
   });
 
-  // 3D Transforms & Professional Impact Feel States
-  const [transforms, setTransforms] = useState<Record<string, CardTransform>>({});
+  // Combat States
   const [damageMap, setDamageMap] = useState<Record<string, number>>({});
   const [brokenBarrierId, setBrokenBarrierId] = useState<string | undefined>(undefined);
   const [targetedDefenderId, setTargetedDefenderId] = useState<string | null>(null);
-  const [shudderingCardId, setShudderingCardId] = useState<string | null>(null);
   const [dyingMinionIds, setDyingMinionIds] = useState<Set<string>>(new Set());
   const [combatFinished, setCombatFinished] = useState(false);
   const [playerHp, setPlayerHp] = useState(player.hp);
   const [opponentHp, setOpponentHp] = useState(opponent.hp);
-  // Redshift vignette replaces the jarring whole-screen shake
-  const [redshiftActive, setRedshiftActive] = useState<'none' | 'light' | 'heavy'>('none');
   const [logMessages, setLogMessages] = useState<string[]>([]);
 
   const vfxRef = useRef<VFXHandle | null>(null);
+  const redshiftRef = useRef<HTMLDivElement | null>(null);
   const cardElements = useRef<Map<string, HTMLDivElement>>(new Map());
   const playerHeroRef = useRef<HTMLDivElement | null>(null);
   const opponentHeroRef = useRef<HTMLDivElement | null>(null);
 
   const playerWon = (isPlayerSide1 && combatResult.winnerSide === 1) || (!isPlayerSide1 && combatResult.winnerSide === 2);
   const isTie = combatResult.winnerSide === 0;
+
+
+
+  // Professional GSAP Redshift Vignette Micro-Flash
+  const triggerRedshift = (intensity: 'light' | 'heavy') => {
+    if (!redshiftRef.current) return;
+    gsap.killTweensOf(redshiftRef.current);
+    const peakOpacity = intensity === 'heavy' ? 0.92 : 0.6;
+    const dur = (intensity === 'heavy' ? 0.28 : 0.18) / speed;
+    gsap.fromTo(
+      redshiftRef.current,
+      { opacity: peakOpacity, scale: 1.02 },
+      { opacity: 0, scale: 1, duration: dur, ease: 'power2.out' }
+    );
+  };
+
+  // Eased Card Shudder with Elastic Dampening
+  const triggerCardShudder = (elem: HTMLElement, recoilY = 0) => {
+    gsap.killTweensOf(elem);
+    gsap.fromTo(
+      elem,
+      { x: -5, y: recoilY * 0.4, rotation: -1.5, scale: 0.94 },
+      { x: 0, y: 0, rotation: 0, scale: 1, duration: 0.22 / speed, ease: 'elastic.out(1.2, 0.4)' }
+    );
+  };
 
   // Process Events Sequentially with Studio-Paced Delays
   useEffect(() => {
@@ -98,11 +110,6 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
       case 'COMBAT_END': return 850;
       default: return 320;
     }
-  };
-
-  const triggerRedshift = (intensity: 'light' | 'heavy') => {
-    setRedshiftActive(intensity);
-    setTimeout(() => setRedshiftActive('none'), intensity === 'heavy' ? 260 : 180);
   };
 
   const processEvent = (event: CombatEvent) => {
@@ -135,72 +142,66 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
           deltaY = toY - fromY;
         }
 
-        // --- STAGE 1: ANTICIPATION / LIFT-OFF (0ms) ---
-        setTransforms(prev => ({
-          ...prev,
-          [event.attackerId]: {
-            x: 0,
+        if (attackerElem) {
+          gsap.killTweensOf(attackerElem);
+          attackerElem.style.zIndex = '50';
+          const tl = gsap.timeline();
+
+          // Stage 1: Anticipation / Lift-off
+          tl.to(attackerElem, {
             y: isAttackerPlayer ? 35 : -35,
             z: 60,
             rotateX: isAttackerPlayer ? -22 : 22,
-            rotateY: (Math.random() - 0.5) * 6,
-            rotateZ: (Math.random() - 0.5) * 4,
-            scaleX: 1.14,
-            scaleY: 1.14,
-          },
-        }));
-
-        vfxRef.current?.spawnTargetReticle(toX, toY);
-
-        // --- STAGE 2: KINETIC ROCKET DASH (220ms) ---
-        setTimeout(() => {
-          sound.playAttackLunge();
-
-          setTransforms(prev => ({
-            ...prev,
-            [event.attackerId]: {
-              x: deltaX * 0.82,
-              y: deltaY * 0.82,
-              z: 95,
-              rotateX: isAttackerPlayer ? 26 : -26,
-              rotateY: 0,
-              rotateZ: (Math.random() - 0.5) * 10,
-              scaleX: 1.25,
-              scaleY: 1.25,
+            scale: 1.14,
+            duration: 0.2 / speed,
+            ease: 'power2.out',
+            onStart: () => {
+              vfxRef.current?.spawnTargetReticle(toX, toY);
             },
-          }));
-
-          // Trigger lore-tied tribe special attack phenomena (Primal fire breath, ion laser, singularity, etc.)
-          vfxRef.current?.spawnTribeAttackVFX(attackerTribe, fromX, fromY, toX, toY);
-        }, 220 / speed);
-
-        // --- STAGE 3: CRUNCH COLLISION & PHYSICAL RECOIL (380ms) ---
-        setTimeout(() => {
-          setTransforms(prev => ({
-            ...prev,
-            [event.defenderId]: {
-              x: 0,
-              y: isAttackerPlayer ? -35 : 35,
-              z: -65,
-              rotateX: isAttackerPlayer ? 28 : -28,
-              rotateY: (Math.random() - 0.5) * 8,
-              rotateZ: (Math.random() - 0.5) * 6,
-              scaleX: 0.88,
-              scaleY: 0.88,
+          })
+          // Stage 2: Kinetic Rocket Dash
+          .to(attackerElem, {
+            x: deltaX * 0.82,
+            y: deltaY * 0.82,
+            z: 95,
+            rotateX: isAttackerPlayer ? 26 : -26,
+            scale: 1.25,
+            duration: 0.18 / speed,
+            ease: 'power3.in',
+            onStart: () => {
+              sound.playAttackLunge();
+              vfxRef.current?.spawnTribeAttackVFX(attackerTribe, fromX, fromY, toX, toY);
             },
-          }));
-
-          setTargetedDefenderId(null);
-        }, 380 / speed);
-
-        // --- STAGE 4: RETURN & SETTLE (540ms) ---
-        setTimeout(() => {
-          setTransforms(prev => ({
-            ...prev,
-            [event.attackerId]: getResetTransform(),
-            [event.defenderId]: getResetTransform(),
-          }));
-        }, 540 / speed);
+          })
+          // Stage 3: Crunch Collision & Defender Recoil
+          .to(attackerElem, {
+            x: deltaX * 0.72,
+            y: deltaY * 0.72,
+            duration: 0.12 / speed,
+            ease: 'elastic.out(1, 0.4)',
+            onStart: () => {
+              if (defenderElem) {
+                triggerCardShudder(defenderElem, isAttackerPlayer ? -32 : 32);
+              }
+              setTargetedDefenderId(null);
+            },
+          })
+          // Stage 4: Settle & Return
+          .to(attackerElem, {
+            x: 0,
+            y: 0,
+            z: 0,
+            rotateX: 0,
+            rotateY: 0,
+            rotateZ: 0,
+            scale: 1,
+            duration: 0.22 / speed,
+            ease: 'power2.out',
+            onComplete: () => {
+              attackerElem.style.zIndex = '';
+            },
+          });
+        }
 
         break;
       }
@@ -213,12 +214,12 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
 
         updateMinionHealth(event.targetId, event.remainingHp);
 
-        // Professional impact cues: Localized card shudder + Redshift vignette + Fluid spatters
-        setShudderingCardId(event.targetId);
-        setTimeout(() => setShudderingCardId(null), 160);
+        const elem = cardElements.current.get(event.targetId);
+        if (elem) {
+          triggerCardShudder(elem);
+        }
         triggerRedshift(isCrit ? 'heavy' : 'light');
 
-        const elem = cardElements.current.get(event.targetId);
         if (elem) {
           const rect = elem.getBoundingClientRect();
           const cx = rect.left + rect.width / 2;
@@ -259,11 +260,12 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
         setTimeout(() => setDamageMap({}), 450);
         updateMinionHealth(event.targetId, event.remainingHp);
 
-        setShudderingCardId(event.targetId);
-        setTimeout(() => setShudderingCardId(null), 160);
+        const elem = cardElements.current.get(event.targetId);
+        if (elem) {
+          triggerCardShudder(elem);
+        }
         triggerRedshift('light');
 
-        const elem = cardElements.current.get(event.targetId);
         if (elem) {
           const rect = elem.getBoundingClientRect();
           const cx = rect.left + rect.width / 2;
@@ -281,10 +283,11 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
         setBrokenBarrierId(event.targetId);
         setTimeout(() => setBrokenBarrierId(undefined), 500);
 
-        setShudderingCardId(event.targetId);
-        setTimeout(() => setShudderingCardId(null), 160);
-
         const elem = cardElements.current.get(event.targetId);
+        if (elem) {
+          triggerCardShudder(elem);
+        }
+
         if (elem) {
           const rect = elem.getBoundingClientRect();
           const cx = rect.left + rect.width / 2;
@@ -303,6 +306,7 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
         const minionTribe = getMinionTribe(event.minionId);
 
         if (elem) {
+          gsap.killTweensOf(elem);
           const rect = elem.getBoundingClientRect();
           const cx = rect.left + rect.width / 2;
           const cy = rect.top + rect.height / 2;
@@ -384,33 +388,20 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
     return found ? found.tribe : 'NEUTRAL';
   };
 
-  const getResetTransform = (): CardTransform => ({
-    x: 0,
-    y: 0,
-    z: 0,
-    rotateX: 0,
-    rotateY: 0,
-    rotateZ: 0,
-    scaleX: 1,
-    scaleY: 1,
-  });
-
   const effectiveWinStreak = playerWon ? player.winStreak + 1 : 0;
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-[#06030e] flex flex-col justify-between p-4">
-      {/* 2D/3D VFX Canvas Overlay (Includes additive blending for lasers, fire breath, stars) */}
-      <CombatVFXCanvas ref={vfxRef} className="z-40" />
 
-      {/* Subtle Professional Redshift Vignette Micro-Flash (Replaces Jarring Screen Shake) */}
-      {redshiftActive !== 'none' && (
-        <div
-          key={Date.now()}
-          className={`fixed inset-0 pointer-events-none z-30 ${
-            redshiftActive === 'heavy' ? 'redshift-vignette-heavy' : 'redshift-vignette'
-          }`}
-        />
-      )}
+
+      {/* Subtle Professional Redshift Vignette Micro-Flash (GSAP Synchronized) */}
+      <div
+        ref={redshiftRef}
+        className="fixed inset-0 pointer-events-none z-30 opacity-0"
+        style={{
+          background: 'radial-gradient(circle at center, transparent 45%, rgba(153, 27, 27, 0.6) 95%, rgba(69, 10, 10, 0.8) 100%)',
+        }}
+      />
 
       {/* Hero-Themed Streak-Scaled Victory Celebration Particles */}
       {combatFinished && playerWon && (
@@ -473,14 +464,8 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
         <div className="flex items-center justify-center gap-3 z-10 w-full min-h-[140px]">
           {board2.length > 0 ? (
             board2.map(minion => {
-              const transform = transforms[minion.instanceId];
               const isTargeted = targetedDefenderId === minion.instanceId;
               const isDying = dyingMinionIds.has(minion.instanceId);
-              const isShuddering = shudderingCardId === minion.instanceId;
-
-              const transformStyle = transform
-                ? `translate3d(${transform.x}px, ${transform.y}px, ${transform.z}px) rotateX(${transform.rotateX}deg) rotateY(${transform.rotateY}deg) rotateZ(${transform.rotateZ}deg) scale(${transform.scaleX}, ${transform.scaleY})`
-                : 'translate3d(0, 0, 0)';
 
               return (
                 <div
@@ -488,11 +473,10 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
                   ref={el => {
                     if (el) cardElements.current.set(minion.instanceId, el);
                   }}
-                  className={`transition-transform duration-150 ${isTargeted ? 'animate-target-lock' : ''} ${isDying ? 'animate-card-dissolve' : ''} ${isShuddering ? 'animate-card-shudder' : ''}`}
+                  className={`${isTargeted ? 'animate-target-lock' : ''} ${isDying ? 'animate-card-dissolve' : ''}`}
                   style={{
-                    transform: transformStyle,
                     transformStyle: 'preserve-3d',
-                    zIndex: transform?.z && transform.z > 0 ? 40 : 10,
+                    zIndex: 10,
                   }}
                 >
                   <CardView
@@ -528,14 +512,8 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
         <div className="flex items-center justify-center gap-3 z-10 w-full min-h-[140px]">
           {board1.length > 0 ? (
             board1.map(minion => {
-              const transform = transforms[minion.instanceId];
               const isTargeted = targetedDefenderId === minion.instanceId;
               const isDying = dyingMinionIds.has(minion.instanceId);
-              const isShuddering = shudderingCardId === minion.instanceId;
-
-              const transformStyle = transform
-                ? `translate3d(${transform.x}px, ${transform.y}px, ${transform.z}px) rotateX(${transform.rotateX}deg) rotateY(${transform.rotateY}deg) rotateZ(${transform.rotateZ}deg) scale(${transform.scaleX}, ${transform.scaleY})`
-                : 'translate3d(0, 0, 0)';
 
               return (
                 <div
@@ -543,11 +521,10 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
                   ref={el => {
                     if (el) cardElements.current.set(minion.instanceId, el);
                   }}
-                  className={`transition-transform duration-150 ${isTargeted ? 'animate-target-lock' : ''} ${isDying ? 'animate-card-dissolve' : ''} ${isShuddering ? 'animate-card-shudder' : ''}`}
+                  className={`${isTargeted ? 'animate-target-lock' : ''} ${isDying ? 'animate-card-dissolve' : ''}`}
                   style={{
-                    transform: transformStyle,
                     transformStyle: 'preserve-3d',
-                    zIndex: transform?.z && transform.z > 0 ? 40 : 10,
+                    zIndex: 10,
                   }}
                 >
                   <CardView
@@ -655,6 +632,9 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
           </div>
         </div>
       )}
+
+      {/* 2D/3D WebGL VFX Overlay (Includes real bloom, painted flame/slash/laser textures) */}
+      <CombatVFXCanvas ref={vfxRef} className="z-[9999]" />
     </div>
   );
 };
