@@ -1216,8 +1216,26 @@ export const CombatVFXCanvas = forwardRef<VFXHandle, { className?: string }>(({ 
     if (!container) return;
 
     let isDestroyed = false;
+    let appDestroyed = false;
     const app = new Application();
     appRef.current = app;
+
+    const destroyApp = () => {
+      if (appDestroyed) return;
+      appDestroyed = true;
+      try {
+        if (bloomContainerRef.current) {
+          bloomContainerRef.current.filters = [];
+        }
+        if (bloomFilterRef.current) {
+          bloomFilterRef.current.destroy();
+          bloomFilterRef.current = null;
+        }
+        app.destroy(true, { children: true, texture: false, textureSource: false });
+      } catch {
+        // Ignore cleanup errors
+      }
+    };
 
     const initPixi = async () => {
       await app.init({
@@ -1229,7 +1247,7 @@ export const CombatVFXCanvas = forwardRef<VFXHandle, { className?: string }>(({ 
       });
 
       if (isDestroyed) {
-        app.destroy(true, { children: true });
+        destroyApp();
         return;
       }
 
@@ -1401,17 +1419,8 @@ export const CombatVFXCanvas = forwardRef<VFXHandle, { className?: string }>(({ 
       particlePoolRef.current = [];
       floatingTextsRef.current = [];
       heroOrbsRef.current = [];
-      if (appRef.current) {
-        try {
-          if (bloomContainerRef.current) {
-            bloomContainerRef.current.filters = [];
-          }
-          appRef.current.destroy(true, { children: true, texture: false, textureSource: false });
-        } catch {
-          // Ignore unmount cleanup errors
-        }
-        appRef.current = null;
-      }
+      destroyApp();
+      appRef.current = null;
     };
   }, []);
 

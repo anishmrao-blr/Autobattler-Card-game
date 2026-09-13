@@ -221,34 +221,3 @@
 .animate-target-lock {
   animation: targetLockPulse 0.4s infinite ease-in-out;
 }
-/* Professional Localized Impact Feedback (Replacing Jarring Full-Screen Shake) */
-
-@keyframes cardShudder {
-  0% { transform: translate3d(0, 0, 0); }
-  25% { transform: translate3d(-4px, 2px, 0) rotate(-1deg); }
-  50% { transform: translate3d(4px, -2px, 0) rotate(1deg); }
-  75% { transform: translate3d(-2px, 1px, 0) rotate(-0.4deg); }
-  100% { transform: translate3d(0, 0, 0); }
-}
-
-.animate-card-shudder {
-  animation: cardShudder 0.16s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-}
-
-@keyframes redshiftPulse {
-  0% { opacity: 0; transform: scale(1); }
-  25% { opacity: 1; transform: scale(1.01); }
-  100% { opacity: 0; transform: scale(1); }
-}
-
-.redshift-vignette {
-  background: radial-gradient(circle at center, transparent 60%, rgba(220, 38, 38, 0.38) 100%);
-  pointer-events: none;
-  animation: redshiftPulse 0.18s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-}
-
-.redshift-vignette-heavy {
-  background: radial-gradient(circle at center, transparent 45%, rgba(153, 27, 27, 0.6) 95%, rgba(69, 10, 10, 0.8) 100%);
-  pointer-events: none;
-  animation: redshiftPulse 0.26s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-}

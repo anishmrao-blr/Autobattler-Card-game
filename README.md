@@ -51,9 +51,11 @@
 
 ## 🛠️ Tech Stack
 
-* **Frontend**: React 18, TypeScript, Tailwind CSS, Lucide Icons, Canvas 2D / 3D Perspective
+* **Frontend**: React 19, TypeScript, Tailwind CSS, Lucide Icons
+* **Card Board & Hero Station**: DOM + CSS 3D transforms (perspective, holo-foil shimmer, tavern-tier layout)
+* **Combat VFX**: PixiJS 8 (WebGL) with `pixi-filters` real-time bloom and GSAP-choreographed card shudder/attack dash
 * **Build & Dev**: Vite 6, Vitest (100% test coverage on game & combat engine)
-* **Design & Styling**: Custom Dark Steel CSS shaders, Additive Blending (`globalCompositeOperation = 'lighter'`), Holo-foil keyframes, Cinzel typography
+* **Design & Styling**: Custom Dark Steel CSS shaders, painted particle textures, Holo-foil keyframes, Cinzel typography
 
 ---
 
