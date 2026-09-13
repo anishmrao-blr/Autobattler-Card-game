@@ -279,9 +279,35 @@ export const App: React.FC = () => {
     }
 
     return (
-      <div className="fixed inset-0 bg-[#05030b] flex flex-col items-center justify-center p-6 text-center z-50">
-        <div className="max-w-md w-full bg-[#120a26] border-2 border-yellow-500 rounded-3xl p-8 shadow-golden flex flex-col items-center">
-          <span className="text-6xl mb-3">{isWinner ? '👑' : '💀'}</span>
+      <div className="fixed inset-0 bg-[#05030b] flex flex-col items-center justify-center p-6 text-center z-50 overflow-hidden">
+        {/* Ambient Victory / Defeat Background Video */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover opacity-25 pointer-events-none filter blur-sm"
+          src={isWinner ? '/assets/video/reward_chest.mp4' : '/assets/video/defeat_monster.mp4'}
+        />
+        <div className="absolute inset-0 bg-black/60 pointer-events-none" />
+
+        <div className="relative max-w-md w-full bg-[#120a26]/95 border-2 border-yellow-500 rounded-3xl p-8 shadow-golden flex flex-col items-center z-10">
+          {/* Result Cinematic Video Badge */}
+          <div className="relative w-24 h-24 rounded-2xl overflow-hidden border-2 border-yellow-500/70 shadow-lg mb-3 bg-black/90 flex items-center justify-center">
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover"
+              src={isWinner ? '/assets/video/elemental_burst.mp4' : '/assets/video/defeat_monster.mp4'}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+            <span className="absolute bottom-1 right-1 text-xl">
+              {isWinner ? '👑' : '💀'}
+            </span>
+          </div>
+
           <h1 className={`font-cinzel text-3xl font-black mb-2 ${isWinner ? 'text-yellow-400' : 'text-red-500'}`}>
             {isWinner ? 'CHAMPION OF THE AETHERIUM!' : 'MATCH CONCLUDED'}
           </h1>

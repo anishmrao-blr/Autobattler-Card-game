@@ -121,6 +121,7 @@ export interface Hero {
   powerDescription: string;
   avatarIcon: string;
   artUrl?: string;
+  videoUrl?: string;
   onMatchStart?: (player: PlayerState) => void;
   onTavernRoll?: (player: PlayerState) => void;
   onBuy?: (player: PlayerState, card: MinionCard) => void;

@@ -14,6 +14,19 @@ export const DiscoverModal: React.FC<DiscoverModalProps> = ({ options, tier, onC
   return (
     <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex flex-col items-center justify-center z-50 animate-fadeIn p-4">
       <div className="max-w-3xl w-full bg-gradient-to-b from-[#1c1236] via-[#100a21] to-[#080412] border-2 border-yellow-400 rounded-3xl p-6 shadow-golden flex flex-col items-center text-center">
+        {/* Animated Reward Chest Cinematic */}
+        <div className="relative w-20 h-20 rounded-2xl overflow-hidden border border-yellow-400/60 shadow-[0_0_25px_rgba(234,179,8,0.5)] mb-3 bg-black/80">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+            src="/assets/video/reward_chest.mp4"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
+        </div>
+
         {/* Glow Title */}
         <div className="flex items-center gap-2 mb-1">
           <span className="text-3xl animate-spin-slow">✨</span>

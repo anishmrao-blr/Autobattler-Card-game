@@ -62,6 +62,7 @@ export const HERO_DATABASE: Hero[] = [
     powerDescription: 'Passive: The first Automata you buy each turn costs 1 less Cog-Coin.',
     avatarIcon: '🕰️',
     artUrl: '/assets/art/hero_chronos.jpg',
+    videoUrl: '/assets/video/hero_chronos.mp4',
   },
   {
     id: 'hero_nyx',
@@ -75,6 +76,7 @@ export const HERO_DATABASE: Hero[] = [
     powerDescription: 'Cost (1): Target a friendly minion to sacrifice it and add a random Voidborn to your hand.',
     avatarIcon: '🔮',
     artUrl: '/assets/art/hero_nyx.jpg',
+    videoUrl: '/assets/video/hero_nyx.mp4',
   },
   {
     id: 'hero_artificer',
@@ -88,6 +90,7 @@ export const HERO_DATABASE: Hero[] = [
     powerDescription: 'Passive: Start of Combat: Grant your leftmost minion +3 Attack and Aether Barrier for this combat.',
     avatarIcon: '⚡',
     artUrl: '/assets/art/auto_titan.jpg',
+    videoUrl: '/assets/video/hero_spark.mp4',
   },
   {
     id: 'hero_vespera',
@@ -101,6 +104,7 @@ export const HERO_DATABASE: Hero[] = [
     powerDescription: 'Cost (1): Discover a random Celestial from your current Tavern Tier.',
     avatarIcon: '✨',
     artUrl: '/assets/art/celestial_weaver.jpg',
+    videoUrl: '/assets/video/hero_vespera.mp4',
   },
   {
     id: 'hero_baron',
@@ -114,6 +118,7 @@ export const HERO_DATABASE: Hero[] = [
     powerDescription: 'Passive: Upgrading the Astral Atrium costs 1 less Cog-Coin every tier.',
     avatarIcon: '🎩',
     artUrl: '/assets/art/hero_baron.jpg',
+    videoUrl: '/assets/video/hero_baron.mp4',
   },
   {
     id: 'hero_malakor',
@@ -127,6 +132,7 @@ export const HERO_DATABASE: Hero[] = [
     powerDescription: 'Passive: Whenever a friendly Beast dies in combat, your remaining Beasts gain +1/+1 permanently.',
     avatarIcon: '🐺',
     artUrl: '/assets/art/beast_apex.jpg',
+    videoUrl: '/assets/video/hero_malakor.mp4',
   },
   {
     id: 'hero_skylar',
@@ -140,6 +146,7 @@ export const HERO_DATABASE: Hero[] = [
     powerDescription: 'Cost (1): The next minion you buy this turn grants +2 Attack and Sweep to a random friendly minion.',
     avatarIcon: '🏴‍☠️',
     artUrl: '/assets/art/pirate_admiral.jpg',
+    videoUrl: '/assets/video/hero_skylar.mp4',
   },
   {
     id: 'hero_aurelius',
@@ -153,5 +160,6 @@ export const HERO_DATABASE: Hero[] = [
     powerDescription: 'Cost (1): Give a friendly minion +2/+2 and Aether Barrier.',
     avatarIcon: '🧪',
     artUrl: '/assets/art/alchemist.jpg',
+    videoUrl: '/assets/video/hero_aurelius.mp4',
   }
 ];

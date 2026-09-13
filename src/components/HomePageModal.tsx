@@ -44,6 +44,17 @@ export const HomePageModal: React.FC<HomePageModalProps> = ({ onLogin, onOpenCod
         backgroundPosition: 'center',
       }}
     >
+      {/* Background Cinematic Video with Static Poster Fallback */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        poster="/assets/art/astral_portal.jpg"
+        className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
+        src="/assets/video/title_portal.mp4"
+      />
+
       {/* Top Right: Codex Button */}
       {onOpenCodex && (
         <button

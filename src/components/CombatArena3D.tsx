@@ -394,7 +394,16 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-[#06030e] flex flex-col justify-between p-4">
-
+      {/* Dynamic Battleground Atmospheric Loop */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        poster="/assets/art/runic_table.jpg"
+        className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none filter blur-[1px]"
+        src="/assets/video/tutorial_arena.mp4"
+      />
 
       {/* Subtle Professional Redshift Vignette Micro-Flash (GSAP Synchronized) */}
       <div
@@ -611,9 +620,21 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
               </div>
             )}
 
-            <span className="text-6xl mb-2">
-              {playerWon ? '🏆' : isTie ? '⚖️' : '💀'}
-            </span>
+            {/* Cinematic Result Emblem Video */}
+            <div className="relative w-20 h-20 rounded-2xl overflow-hidden border border-yellow-500/40 mb-2 shadow-lg bg-black/80 flex items-center justify-center">
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-cover object-center"
+                src={playerWon ? '/assets/video/elemental_burst.mp4' : isTie ? '/assets/video/tutorial_arena.mp4' : '/assets/video/defeat_monster.mp4'}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+              <span className="absolute bottom-1 right-1 text-base">
+                {playerWon ? '🏆' : isTie ? '⚖️' : '💀'}
+              </span>
+            </div>
 
             <h2 className={`font-cinzel text-2xl font-black mb-1 ${playerWon ? 'text-yellow-400' : isTie ? 'text-slate-300' : 'text-red-500'}`}>
               {playerWon ? 'VICTORY!' : isTie ? 'STALEMATE (TIE)' : 'DEFEAT!'}

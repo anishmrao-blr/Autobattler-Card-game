@@ -1,6 +1,7 @@
 import React from 'react';
 import { Hero } from '../types';
 import { HERO_PROFILES } from '../engine/heroes';
+import { CardMediaArt } from './CardMediaArt';
 import { sound } from '../audio/sound';
 
 interface HeroProfileModalProps {
@@ -41,10 +42,12 @@ export const HeroProfileModal: React.FC<HeroProfileModalProps> = ({
 
         {/* Left: Massive Illustrated Hero Portrait */}
         <div className="relative w-72 h-96 rounded-3xl overflow-hidden border-2 border-yellow-500/80 shadow-[0_0_35px_rgba(234,179,8,0.3)] bg-black/90 flex-shrink-0 group">
-          <img
-            src={hero.artUrl || '/assets/art/hero_chronos.jpg'}
+          <CardMediaArt
+            artUrl={hero.artUrl || '/assets/art/hero_chronos.jpg'}
+            videoUrl={hero.videoUrl}
             alt={hero.name}
-            className="w-full h-full object-cover object-center transform transition-transform duration-700 group-hover:scale-105"
+            className="w-full h-full object-cover object-center"
+            hoverZoom={true}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/30 pointer-events-none" />
 

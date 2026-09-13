@@ -227,6 +227,31 @@ export const AstralCodexModal: React.FC<AstralCodexModalProps> = ({ onClose }) =
                   </div>
                   <span className="text-xl">🔮</span>
                 </div>
+
+                {/* Character Concept Moodboard Sheet */}
+                {selectedFaction.moodboardUrl && (
+                  <div className="bg-[#120a26] p-3.5 rounded-xl border border-purple-900/60">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="text-[10px] font-cinzel font-bold text-cyan-300 uppercase flex items-center gap-1.5">
+                        <span>🎨</span>
+                        <span>{selectedFaction.name} Concept Grid & Unit Moodboard</span>
+                      </div>
+                      <span className="text-[9px] font-mono text-slate-400">CONCEPT DOSSIER</span>
+                    </div>
+                    <div className="relative w-full rounded-xl overflow-hidden border border-yellow-500/40 shadow-inner group/mb">
+                      <img
+                        src={selectedFaction.moodboardUrl}
+                        alt={`${selectedFaction.name} Moodboard`}
+                        className="w-full h-auto object-cover transform transition-transform duration-500 group-hover/mb:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
+                      <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between text-[10px] text-yellow-300 font-cinzel font-bold">
+                        <span>{selectedFaction.tribe} WARBAND UNITS</span>
+                        <span className="text-slate-300 text-[9px] font-sans">Official Concept Art</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

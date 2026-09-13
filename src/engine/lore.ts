@@ -16,6 +16,7 @@ export interface FactionEntry {
   leader: string;
   motto: string;
   image: string;
+  moodboardUrl?: string;
   doctrine: string;
   lore: string;
   signatureRelic: string;
@@ -89,6 +90,7 @@ export const FACTIONS_LORE: FactionEntry[] = [
     leader: 'Professor Chronos & Baron Von Cog',
     motto: '"Precision in Steel, Perfection in Motion."',
     image: '/assets/art/auto_titan.jpg',
+    moodboardUrl: '/assets/art/moodboards/automata_grid.jpg',
     doctrine: 'Relentless industrial scaling through magnetic module fusion and recurring energy barriers.',
     lore: 'Once simple mechanical helpers, the Automata gained sentience during the Grand Synthesis. They view organic life as fragile and strive to forge an indestructible mechanical sanctuary.',
     signatureRelic: 'The Chrono-Resonator Core'
@@ -100,6 +102,7 @@ export const FACTIONS_LORE: FactionEntry[] = [
     leader: 'Madame Nyx',
     motto: '"In Nothingness, We Multiply."',
     image: '/assets/art/hero_nyx.jpg',
+    moodboardUrl: '/assets/art/moodboards/voidborn_grid.jpg',
     doctrine: 'Sacrificing board health and friendly units to unleash uncontrollable swarms of deathrattle horrors.',
     lore: 'Worshippers of the dark spaces between stars. The Covenant believes that death is merely a gateway to greater cosmic multiplication and entropy.',
     signatureRelic: 'The Black Sun Monolith'
@@ -111,6 +114,7 @@ export const FACTIONS_LORE: FactionEntry[] = [
     leader: 'Dr. Aurelius',
     motto: '"Through Volatility, Transcendence."',
     image: '/assets/art/alchemist.jpg',
+    moodboardUrl: '/assets/art/moodboards/alchemist_grid.jpg',
     doctrine: 'Sudden exponential stat surges and defensive potion infusions delivered directly into combat lines.',
     lore: 'Hermetic scholars who unlocked the chemical secret of liquid Aetherium. Their laboratory vats produce serums capable of turning scrap metal into unbreakable armor.',
     signatureRelic: 'The Philosopher’s Crucible'
@@ -122,6 +126,7 @@ export const FACTIONS_LORE: FactionEntry[] = [
     leader: 'Vespera the Seer',
     motto: '"The Constellations Do Not Lie."',
     image: '/assets/art/celestial_weaver.jpg',
+    moodboardUrl: '/assets/art/moodboards/celestial_grid.jpg',
     doctrine: 'Warband-wide passive stat amplification and impenetrable Divine Barrier protections.',
     lore: 'Ancient architects of the galaxy. They observe the mortal conflicts of the Aetherium from high stellar perches, descending only when cosmic balance requires intervention.',
     signatureRelic: 'The Loom of Starlight'
@@ -133,6 +138,7 @@ export const FACTIONS_LORE: FactionEntry[] = [
     leader: 'Malakor the Ancient',
     motto: '"The Weak Feed the Strong."',
     image: '/assets/art/beast_apex.jpg',
+    moodboardUrl: '/assets/art/moodboards/beast_grid.jpg',
     doctrine: 'Darwinian swarm tactics where every fallen packmate permanently strengthens surviving predators.',
     lore: 'Native beasts of the untamed astral wilderness infused with raw cosmic dark matter, possessing feral intelligence and voracious apex instincts.',
     signatureRelic: 'The Blood-Amber Fang'
@@ -144,6 +150,7 @@ export const FACTIONS_LORE: FactionEntry[] = [
     leader: 'Captain Skylar',
     motto: '"No Gods, No Masters, Only Plunder."',
     image: '/assets/art/pirate_admiral.jpg',
+    moodboardUrl: '/assets/art/moodboards/pirate_grid.jpg',
     doctrine: 'High-speed attack chaining, sweeping multi-target cutlass strikes, and aggressive economy generation.',
     lore: 'Renegade sailors who abandoned the Grand Empires to sail the solar winds on armed skiffs, answering to no sovereign but the pirate code.',
     signatureRelic: 'The Corsair Sovereign Wheel'

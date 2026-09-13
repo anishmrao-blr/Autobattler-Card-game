@@ -138,10 +138,26 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ isOpen, onClos
     onClose();
   };
 
+  const isArenaStep = currentStepIndex >= 4;
+  const ambientVideoSrc = isArenaStep ? '/assets/video/tutorial_arena.mp4' : '/assets/video/tutorial_tavern.mp4';
+  const ambientPoster = isArenaStep ? '/assets/art/runic_table.jpg' : '/assets/art/astral_portal.jpg';
+
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn select-none">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn select-none overflow-hidden">
+      {/* Dynamic Ambient Cinematic Atmosphere (Tavern / Battleground Arena) */}
+      <video
+        key={ambientVideoSrc}
+        autoPlay
+        loop
+        muted
+        playsInline
+        poster={ambientPoster}
+        className="absolute inset-0 w-full h-full object-cover opacity-30 pointer-events-none filter blur-[2px] transition-opacity duration-700"
+        src={ambientVideoSrc}
+      />
+
       {/* Background click dismisses / skips */}
-      <div className="absolute inset-0" onClick={handleComplete} />
+      <div className="absolute inset-0 z-0 bg-black/40" onClick={handleComplete} />
 
       {/* Tutorial Card Dialog */}
       <div

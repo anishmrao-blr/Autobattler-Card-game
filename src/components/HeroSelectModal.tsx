@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Hero } from '../types';
 import { HERO_DATABASE } from '../engine/heroes';
 import { HeroProfileModal } from './HeroProfileModal';
+import { CardMediaArt } from './CardMediaArt';
 import { sound } from '../audio/sound';
 
 interface HeroSelectModalProps {
@@ -76,13 +77,14 @@ export const HeroSelectModal: React.FC<HeroSelectModalProps> = ({ onSelectHero, 
             >
               {/* Illustrated Hero Portrait Viewport */}
               <div className="relative w-28 h-28 rounded-2xl overflow-hidden border-2 border-yellow-500/70 shadow-lg mb-3 group-hover/art:scale-105 transition-transform bg-black/80">
-                <img
-                  src={hero.artUrl || '/assets/art/hero_chronos.jpg'}
+                <CardMediaArt
+                  artUrl={hero.artUrl || '/assets/art/hero_chronos.jpg'}
+                  videoUrl={hero.videoUrl}
                   alt={hero.name}
                   className="w-full h-full object-cover object-center"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
-                <div className="absolute bottom-1 right-1 text-xs bg-black/70 px-1.5 py-0.5 rounded-full border border-yellow-500/50">
+                <div className="absolute bottom-1 right-1 text-xs bg-black/70 px-1.5 py-0.5 rounded-full border border-yellow-500/50 z-10">
                   {hero.avatarIcon}
                 </div>
               </div>

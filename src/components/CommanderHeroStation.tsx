@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { PlayerState } from '../types';
+import { CardMediaArt } from './CardMediaArt';
 import { sound } from '../audio/sound';
 
 interface CommanderHeroStationProps {
@@ -43,10 +44,12 @@ export const CommanderHeroStation: React.FC<CommanderHeroStationProps> = ({
         title="Click to inspect Commander Lore & Stats"
         className="group relative w-20 h-28 sm:w-24 sm:h-32 rounded-2xl border-2 border-yellow-400/80 overflow-hidden bg-black/90 shadow-[0_0_20px_rgba(234,179,8,0.35)] cursor-pointer hover:border-yellow-300 hover:scale-105 transition-all flex-shrink-0"
       >
-        <img
-          src={player.hero.artUrl || player.artUrl || '/assets/art/hero_chronos.jpg'}
+        <CardMediaArt
+          artUrl={player.hero.artUrl || player.artUrl || '/assets/art/hero_chronos.jpg'}
+          videoUrl={player.hero.videoUrl}
           alt={player.hero.name}
-          className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-300"
+          className="w-full h-full object-cover object-top"
+          hoverZoom={true}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent pointer-events-none" />
 
