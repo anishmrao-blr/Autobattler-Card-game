@@ -469,7 +469,7 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
         <div
           className="absolute inset-0 bg-contain bg-center opacity-35 pointer-events-none"
           style={{
-            backgroundImage: `url('/assets/art/arena_bg.jpg')`,
+            backgroundImage: `url('/assets/art/runic_table.jpg')`,
             transform: 'rotateX(38deg) scale(1.15) translateZ(-80px)',
             transformOrigin: '50% 50%',
           }}
