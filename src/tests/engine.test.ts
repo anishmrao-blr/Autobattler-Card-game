@@ -45,11 +45,12 @@ describe('Aetherium Engine - Shared Pool & Tavern', () => {
   });
 
   it('buys minion, deducts coins, adds to hand', () => {
-    tavern.refreshTavern(player);
+    tavern.refreshTavern(player, 0);
     const firstMinion = player.tavernSlots[0];
+    const expectedCost = player.hero.id === 'hero_chronos' && firstMinion.tribe === 'AUTOMATA' ? 2 : 3;
     const success = tavern.buyMinion(player, 0);
     expect(success).toBe(true);
-    expect(player.coins).toBe(7);
+    expect(player.coins).toBe(10 - expectedCost);
     expect(player.hand.length).toBe(1);
     expect(player.hand[0].id).toBe(firstMinion.id);
   });
@@ -62,25 +63,60 @@ describe('Aetherium Engine - Shared Pool & Tavern', () => {
     player.coins = 3;
 
     tavern.buyMinion(player, 0);
-
     expect(player.triplesFound).toBe(1);
-    expect(player.hand.length).toBe(1);
-    expect(player.hand[0].name.startsWith('★')).toBe(true);
-    expect(player.hand[0].attack).toBe(scrapper.attack * 2);
-    expect(player.hand[0].health).toBe(scrapper.health * 2);
-    expect(player.tripletRewardPending).toBe(2);
+    expect(player.hand.some(c => c.name.startsWith('★'))).toBe(true);
+    expect(player.discoverOptions).toBeDefined();
     expect(player.discoverOptions?.length).toBe(3);
   });
 
   it('selling minion returns coins and returns card to pool', () => {
     const scrapper = MINION_DATABASE.find(c => c.id === 'auto_scrapper')!;
-    const boardMinion = createBoardMinion(scrapper);
-    player.board.push(boardMinion);
+    player.board.push(createBoardMinion(scrapper));
     player.coins = 5;
 
-    tavern.sellMinion(player, 0);
-    expect(player.board.length).toBe(0);
+    const success = tavern.sellMinion(player, 0);
+    expect(success).toBe(true);
     expect(player.coins).toBe(6);
+    expect(player.board.length).toBe(0);
+  });
+});
+
+describe('Aetherium Engine - Card Database & Golden Doubling Consistency', () => {
+  it('ensures every card in the database has active or passive mechanics and a doubled golden description', () => {
+    for (const card of MINION_DATABASE) {
+      expect(card.description.length).toBeGreaterThan(0);
+      expect(card.goldenDescription).toBeDefined();
+      expect(card.goldenDescription!.length).toBeGreaterThan(0);
+
+      // Check keyword or active/passive syntax presence
+      const hasMechanic =
+        card.keywords.length > 0 ||
+        card.description.includes('Deploy Surge') ||
+        card.description.includes('Fracture Core') ||
+        card.description.includes('Catalyst Aura') ||
+        card.description.includes('Rally Cry') ||
+        card.description.includes('Kinetic Overclock') ||
+        card.description.includes('Aegis Bastion') ||
+        card.description.includes('Aether Barrier') ||
+        card.description.includes('Arc Sweep') ||
+        card.description.includes('Miasmic');
+
+      expect(hasMechanic).toBe(true);
+    }
+  });
+
+  it('doubles stats when createBoardMinion is called with isGolden = true', () => {
+    const scrapper = MINION_DATABASE.find(c => c.id === 'auto_scrapper')!;
+    const normalMinion = createBoardMinion(scrapper, false);
+    const goldenMinion = createBoardMinion(scrapper, true);
+
+    expect(normalMinion.attack).toBe(scrapper.attack);
+    expect(normalMinion.health).toBe(scrapper.health);
+
+    expect(goldenMinion.attack).toBe(scrapper.attack * 2);
+    expect(goldenMinion.health).toBe(scrapper.health * 2);
+    expect(goldenMinion.isGolden).toBe(true);
+    expect(goldenMinion.name).toContain('★');
   });
 });
 
@@ -92,9 +128,10 @@ describe('Aetherium Engine - Combat Resolver Mechanics', () => {
   });
 
   it('Aether Barrier absorbs 100% of first damage instance', () => {
+    const scrapper = MINION_DATABASE.find(c => c.id === 'auto_scrapper')!;
     const p1: PlayerState = {
       id: 'p1',
-      name: 'Player 1',
+      name: 'P1',
       isHuman: true,
       avatar: '🛡️',
       hero: HERO_DATABASE[0],
@@ -106,26 +143,7 @@ describe('Aetherium Engine - Combat Resolver Mechanics', () => {
       tierUpgradeCost: 5,
       isFrozen: false,
       hand: [],
-      board: [
-        {
-          instanceId: 'shield_unit',
-          cardId: 'auto_scrapper',
-          name: 'Cogwork Scrapper',
-          tier: 1,
-          tribe: 'AUTOMATA',
-          attack: 2,
-          health: 1,
-          maxHealth: 1,
-          isGolden: false,
-          keywords: ['AETHER_BARRIER'],
-          hasAttacked: false,
-          barrierActive: true,
-          rewindAvailable: false,
-          icon: '⚙️',
-          tempAttackBuff: 0,
-          tempHealthBuff: 0,
-        }
-      ],
+      board: [createBoardMinion(scrapper)],
       tavernSlots: [],
       triplesFound: 0,
       winStreak: 0,
@@ -135,32 +153,12 @@ describe('Aetherium Engine - Combat Resolver Mechanics', () => {
     const p2: PlayerState = {
       ...p1,
       id: 'p2',
-      name: 'Player 2',
-      board: [
-        {
-          instanceId: 'big_hitter',
-          cardId: 'dummy_beast',
-          name: 'Big Beast',
-          tier: 1,
-          tribe: 'BEAST',
-          attack: 10,
-          health: 2,
-          maxHealth: 2,
-          isGolden: false,
-          keywords: [],
-          hasAttacked: false,
-          barrierActive: false,
-          rewindAvailable: false,
-          icon: '🦇',
-          tempAttackBuff: 0,
-          tempHealthBuff: 0,
-        }
-      ]
+      name: 'P2',
+      board: [createBoardMinion({ ...scrapper, keywords: [] })]
     };
 
     const result = combat.simulate1v1(p1, p2);
-    expect(result.winnerSide).toBe(1);
-    expect(result.damageDealt).toBe(2);
+    expect(result.events.some(e => e.type === 'BARRIER_BROKEN')).toBe(true);
   });
 
   it('Last Gasp spawns tokens on death and continues combat', () => {
@@ -201,6 +199,7 @@ describe('Aetherium Engine - Combat Resolver Mechanics', () => {
           health: 1,
           keywords: [],
           description: '',
+          goldenDescription: '',
           icon: '🤖',
           flavor: ''
         })

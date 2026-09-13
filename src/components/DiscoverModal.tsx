@@ -7,9 +7,10 @@ interface DiscoverModalProps {
   options: MinionCard[];
   tier: number;
   onChoose: (index: number) => void;
+  onInspect?: (card?: MinionCard) => void;
 }
 
-export const DiscoverModal: React.FC<DiscoverModalProps> = ({ options, tier, onChoose }) => {
+export const DiscoverModal: React.FC<DiscoverModalProps> = ({ options, tier, onChoose, onInspect }) => {
   return (
     <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex flex-col items-center justify-center z-50 animate-fadeIn p-4">
       <div className="max-w-3xl w-full bg-gradient-to-b from-[#1c1236] via-[#100a21] to-[#080412] border-2 border-yellow-400 rounded-3xl p-6 shadow-golden flex flex-col items-center text-center">
@@ -32,15 +33,26 @@ export const DiscoverModal: React.FC<DiscoverModalProps> = ({ options, tier, onC
           {options.map((card, idx) => (
             <div
               key={idx}
-              onClick={() => {
-                sound.playCardSnap();
-                sound.playVictory();
-                onChoose(idx);
-              }}
               className="transform transition-all duration-200 hover:scale-110 hover:-translate-y-2 cursor-pointer"
             >
-              <CardView card={card} size="lg" />
-              <button className="mt-3 w-full py-1.5 bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-black font-cinzel font-bold text-xs rounded-xl shadow-brass">
+              <CardView
+                card={card}
+                size="lg"
+                onInspect={onInspect}
+                onClick={() => {
+                  sound.playCardSnap();
+                  sound.playVictory();
+                  onChoose(idx);
+                }}
+              />
+              <button
+                onClick={() => {
+                  sound.playCardSnap();
+                  sound.playVictory();
+                  onChoose(idx);
+                }}
+                className="mt-3 w-full py-1.5 bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-black font-cinzel font-bold text-xs rounded-xl shadow-brass"
+              >
                 CHOOSE
               </button>
             </div>

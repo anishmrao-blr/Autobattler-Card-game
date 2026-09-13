@@ -21,6 +21,7 @@ export interface MinionCard {
   description: string;
   goldenDescription?: string;
   icon: string;
+  artUrl?: string;
   flavor: string;
   // Trigger effects identifiers
   onDeploy?: (ctx: DeployContext) => void;
@@ -46,6 +47,7 @@ export interface BoardMinion {
   barrierActive: boolean;
   rewindAvailable: boolean;
   icon: string;
+  artUrl?: string;
   tempAttackBuff: number;
   tempHealthBuff: number;
 }
@@ -116,6 +118,7 @@ export interface Hero {
   powerType: 'PASSIVE' | 'ACTIVE';
   powerDescription: string;
   avatarIcon: string;
+  artUrl?: string;
   onMatchStart?: (player: PlayerState) => void;
   onTavernRoll?: (player: PlayerState) => void;
   onBuy?: (player: PlayerState, card: MinionCard) => void;
@@ -128,6 +131,7 @@ export interface PlayerState {
   name: string;
   isHuman: boolean;
   avatar: string;
+  artUrl?: string;
   hero: Hero;
   hp: number;
   maxHp: number;

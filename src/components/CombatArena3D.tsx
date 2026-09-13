@@ -3,12 +3,13 @@ import { CombatSimulationResult } from '../engine/combat';
 import { BoardMinion, CombatEvent, PlayerState } from '../types';
 import { CardView } from './CardView';
 import { CombatVFXCanvas, VFXHandle } from './CombatVFXCanvas';
+import { VictoryCelebrationVFX } from './VictoryCelebrationVFX';
 import { sound } from '../audio/sound';
-import confetti from 'canvas-confetti';
 
 interface CombatArena3DProps {
   player: PlayerState;
   combatResult: CombatSimulationResult;
+  turnNumber?: number;
   onFinishCombat: () => void;
 }
 
@@ -26,6 +27,7 @@ interface CardTransform {
 export const CombatArena3D: React.FC<CombatArena3DProps> = ({
   player,
   combatResult,
+  turnNumber = 1,
   onFinishCombat,
 }) => {
   // Determine sides
@@ -47,167 +49,159 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
     return init.map(m => ({ ...m, keywords: [...m.keywords] }));
   });
 
-  // 3D Transforms
-  const [cardTransforms, setCardTransforms] = useState<Record<string, CardTransform>>({});
+  // 3D Transforms & Professional Impact Feel States
+  const [transforms, setTransforms] = useState<Record<string, CardTransform>>({});
   const [damageMap, setDamageMap] = useState<Record<string, number>>({});
-  const [brokenBarrierId, setBrokenBarrierId] = useState<string | undefined>();
-  const [screenShake, setScreenShake] = useState(false);
+  const [brokenBarrierId, setBrokenBarrierId] = useState<string | undefined>(undefined);
+  const [targetedDefenderId, setTargetedDefenderId] = useState<string | null>(null);
+  const [shudderingCardId, setShudderingCardId] = useState<string | null>(null);
+  const [dyingMinionIds, setDyingMinionIds] = useState<Set<string>>(new Set());
   const [combatFinished, setCombatFinished] = useState(false);
-  const [logMessages, setLogMessages] = useState<string[]>([
-    `⚔️ Round Engagement: ${player.name} vs ${opponent.name}`
-  ]);
-
-  // HP tracking
-  const [opponentHp, setOpponentHp] = useState(opponent.hp);
   const [playerHp, setPlayerHp] = useState(player.hp);
+  const [opponentHp, setOpponentHp] = useState(opponent.hp);
+  // Redshift vignette replaces the jarring whole-screen shake
+  const [redshiftActive, setRedshiftActive] = useState<'none' | 'light' | 'heavy'>('none');
+  const [logMessages, setLogMessages] = useState<string[]>([]);
 
-  // DOM Refs
-  const cardElements = useRef<Map<string, HTMLDivElement>>(new Map());
   const vfxRef = useRef<VFXHandle | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const opponentHeroRef = useRef<HTMLDivElement | null>(null);
+  const cardElements = useRef<Map<string, HTMLDivElement>>(new Map());
   const playerHeroRef = useRef<HTMLDivElement | null>(null);
+  const opponentHeroRef = useRef<HTMLDivElement | null>(null);
 
-  // Main Playback Loop
+  const playerWon = (isPlayerSide1 && combatResult.winnerSide === 1) || (!isPlayerSide1 && combatResult.winnerSide === 2);
+  const isTie = combatResult.winnerSide === 0;
+
+  // Process Events Sequentially with Studio-Paced Delays
   useEffect(() => {
-    if (!isPlaying || combatFinished) return;
+    if (!isPlaying || currentEventIdx >= combatResult.events.length) return;
 
-    const events = combatResult.events;
-    if (currentEventIdx >= events.length) {
-      handleCombatConclusion();
-      return;
-    }
-
-    const event = events[currentEventIdx];
+    const event = combatResult.events[currentEventIdx];
     const baseDuration = getEventDuration(event);
-    const delay = Math.max(140, baseDuration / speed);
+    const delay = baseDuration / speed;
 
-    timerRef.current = setTimeout(() => {
-      processEvent3D(event);
+    const timer = setTimeout(() => {
+      processEvent(event);
       setCurrentEventIdx(prev => prev + 1);
     }, delay);
 
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, [currentEventIdx, isPlaying, speed, combatResult, combatFinished]);
+    return () => clearTimeout(timer);
+  }, [currentEventIdx, isPlaying, speed]);
 
   const getEventDuration = (event: CombatEvent): number => {
     switch (event.type) {
-      case 'ATTACK_START': return 650;
-      case 'DAMAGE_DEALT': return 420;
-      case 'CLEAVE_DAMAGE': return 480;
-      case 'BARRIER_BROKEN': return 420;
-      case 'MINION_DIED': return 380;
+      case 'ATTACK_START': return 750;
+      case 'DAMAGE_DEALT':
+      case 'CLEAVE_DAMAGE': return 380;
+      case 'BARRIER_BROKEN': return 450;
+      case 'MINION_DIED': return 500;
       case 'TOKEN_SPAWNED': return 420;
+      case 'COMBAT_END': return 850;
       default: return 320;
     }
   };
 
-  const processEvent3D = (event: CombatEvent) => {
+  const triggerRedshift = (intensity: 'light' | 'heavy') => {
+    setRedshiftActive(intensity);
+    setTimeout(() => setRedshiftActive('none'), intensity === 'heavy' ? 260 : 180);
+  };
+
+  const processEvent = (event: CombatEvent) => {
     switch (event.type) {
       case 'ATTACK_START': {
-        const { attackerId, defenderId, minionName, defenderName } = event;
-        sound.playAttackLunge();
+        const isAttackerPlayer = (isPlayerSide1 && event.attackerSide === 1) || (!isPlayerSide1 && event.attackerSide === 2);
+        const attackerTribe = getMinionTribe(event.attackerId);
 
-        setLogMessages(prev => [
-          `⚔️ ${minionName} leaps through the astral rift toward ${defenderName}!`,
-          ...prev.slice(0, 4)
-        ]);
+        setLogMessages(prev => [`⚔️ ${event.minionName} strikes ${event.defenderName}`, ...prev.slice(0, 4)]);
+        setTargetedDefenderId(event.defenderId);
 
-        const atkElem = cardElements.current.get(attackerId);
-        const defElem = cardElements.current.get(defenderId);
+        const attackerElem = cardElements.current.get(event.attackerId);
+        const defenderElem = cardElements.current.get(event.defenderId);
 
-        if (atkElem && defElem) {
-          const atkRect = atkElem.getBoundingClientRect();
-          const defRect = defElem.getBoundingClientRect();
+        let deltaX = 0;
+        let deltaY = isAttackerPlayer ? -180 : 180;
+        let fromX = window.innerWidth / 2;
+        let fromY = isAttackerPlayer ? window.innerHeight * 0.7 : window.innerHeight * 0.3;
+        let toX = window.innerWidth / 2;
+        let toY = isAttackerPlayer ? window.innerHeight * 0.3 : window.innerHeight * 0.7;
 
-          const deltaX = defRect.left + defRect.width / 2 - (atkRect.left + atkRect.width / 2);
-          const deltaY = defRect.top + defRect.height / 2 - (atkRect.top + atkRect.height / 2);
-          const isAttackingDown = deltaY > 0;
+        if (attackerElem && defenderElem) {
+          const rectA = attackerElem.getBoundingClientRect();
+          const rectB = defenderElem.getBoundingClientRect();
+          fromX = rectA.left + rectA.width / 2;
+          fromY = rectA.top + rectA.height / 2;
+          toX = rectB.left + rectB.width / 2;
+          toY = rectB.top + rectB.height / 2;
+          deltaX = toX - fromX;
+          deltaY = toY - fromY;
+        }
 
-          // Phase 1: Anticipation & Coiling (0 - 150ms)
-          setCardTransforms(prev => ({
+        // --- STAGE 1: ANTICIPATION / LIFT-OFF (0ms) ---
+        setTransforms(prev => ({
+          ...prev,
+          [event.attackerId]: {
+            x: 0,
+            y: isAttackerPlayer ? 35 : -35,
+            z: 60,
+            rotateX: isAttackerPlayer ? -22 : 22,
+            rotateY: (Math.random() - 0.5) * 6,
+            rotateZ: (Math.random() - 0.5) * 4,
+            scaleX: 1.14,
+            scaleY: 1.14,
+          },
+        }));
+
+        vfxRef.current?.spawnTargetReticle(toX, toY);
+
+        // --- STAGE 2: KINETIC ROCKET DASH (220ms) ---
+        setTimeout(() => {
+          sound.playAttackLunge();
+
+          setTransforms(prev => ({
             ...prev,
-            [attackerId]: {
-              x: 0,
-              y: isAttackingDown ? -30 : 30,
-              z: 60,
-              rotateX: isAttackingDown ? 25 : -25,
+            [event.attackerId]: {
+              x: deltaX * 0.82,
+              y: deltaY * 0.82,
+              z: 95,
+              rotateX: isAttackerPlayer ? 26 : -26,
               rotateY: 0,
-              rotateZ: 0,
-              scaleX: 1.15,
-              scaleY: 1.15,
-            }
+              rotateZ: (Math.random() - 0.5) * 10,
+              scaleX: 1.25,
+              scaleY: 1.25,
+            },
           }));
 
-          // Phase 2: Parabolic Apex Leap & Slam (150 - 320ms)
-          setTimeout(() => {
-            setCardTransforms(prev => ({
-              ...prev,
-              [attackerId]: {
-                x: deltaX * 0.9,
-                y: deltaY * 0.9,
-                z: 130, // High parabolic 3D jump altitude
-                rotateX: isAttackingDown ? -35 : 35,
-                rotateY: deltaX > 0 ? 18 : -18,
-                rotateZ: (Math.random() - 0.5) * 16,
-                scaleX: 1.3,
-                scaleY: 0.9, // Squash on impact
-              }
-            }));
+          // Trigger lore-tied tribe special attack phenomena (Primal fire breath, ion laser, singularity, etc.)
+          vfxRef.current?.spawnTribeAttackVFX(attackerTribe, fromX, fromY, toX, toY);
+        }, 220 / speed);
 
-            // Spawn Slash VFX & Impact Sparks at defender position
-            const hitX = defRect.left + defRect.width / 2;
-            const hitY = defRect.top + defRect.height / 2;
+        // --- STAGE 3: CRUNCH COLLISION & PHYSICAL RECOIL (380ms) ---
+        setTimeout(() => {
+          setTransforms(prev => ({
+            ...prev,
+            [event.defenderId]: {
+              x: 0,
+              y: isAttackerPlayer ? -35 : 35,
+              z: -65,
+              rotateX: isAttackerPlayer ? 28 : -28,
+              rotateY: (Math.random() - 0.5) * 8,
+              rotateZ: (Math.random() - 0.5) * 6,
+              scaleX: 0.88,
+              scaleY: 0.88,
+            },
+          }));
 
-            vfxRef.current?.spawnSlashArc(
-              hitX - 75, hitY - 75,
-              hitX + 75, hitY + 75,
-              '#ff2a5f'
-            );
-            vfxRef.current?.spawnImpactSparks(hitX, hitY, '#ffd700', 50);
-            triggerScreenShake();
-          }, 180 / speed);
+          setTargetedDefenderId(null);
+        }, 380 / speed);
 
-          // Phase 3: Defender Stagger & Attacker Recoil (320 - 460ms)
-          setTimeout(() => {
-            setCardTransforms(prev => ({
-              ...prev,
-              [defenderId]: {
-                x: 0,
-                y: isAttackingDown ? 35 : -35,
-                z: -30,
-                rotateX: isAttackingDown ? 30 : -30,
-                rotateY: 0,
-                rotateZ: (Math.random() - 0.5) * 14,
-                scaleX: 0.9,
-                scaleY: 1.1,
-              }
-            }));
+        // --- STAGE 4: RETURN & SETTLE (540ms) ---
+        setTimeout(() => {
+          setTransforms(prev => ({
+            ...prev,
+            [event.attackerId]: getResetTransform(),
+            [event.defenderId]: getResetTransform(),
+          }));
+        }, 540 / speed);
 
-            setCardTransforms(prev => ({
-              ...prev,
-              [attackerId]: {
-                x: 0, y: 0, z: 0,
-                rotateX: 0, rotateY: 0, rotateZ: 0,
-                scaleX: 1.0, scaleY: 1.0,
-              }
-            }));
-          }, 360 / speed);
-
-          // Phase 4: Settle (460 - 600ms)
-          setTimeout(() => {
-            setCardTransforms(prev => ({
-              ...prev,
-              [defenderId]: {
-                x: 0, y: 0, z: 0,
-                rotateX: 0, rotateY: 0, rotateZ: 0,
-                scaleX: 1.0, scaleY: 1.0,
-              }
-            }));
-          }, 520 / speed);
-        }
         break;
       }
 
@@ -219,22 +213,41 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
 
         updateMinionHealth(event.targetId, event.remainingHp);
 
+        // Professional impact cues: Localized card shudder + Redshift vignette + Fluid spatters
+        setShudderingCardId(event.targetId);
+        setTimeout(() => setShudderingCardId(null), 160);
+        triggerRedshift(isCrit ? 'heavy' : 'light');
+
         const elem = cardElements.current.get(event.targetId);
         if (elem) {
           const rect = elem.getBoundingClientRect();
           const cx = rect.left + rect.width / 2;
           const cy = rect.top + rect.height / 2;
 
-          if (isCrit) {
-            vfxRef.current?.spawnCritNumber(cx, cy, event.amount);
-          }
-
-          vfxRef.current?.spawnImpactSparks(
+          vfxRef.current?.spawnFloatingDamage(
             cx,
             cy,
-            event.wasMiasmic ? '#00e676' : isCrit ? '#ffd700' : '#ff3366',
-            isCrit ? 60 : 35
+            `-${event.amount}${isCrit ? '! CRIT' : ''}`,
+            isCrit ? 'CRIT' : 'NORMAL'
           );
+
+          vfxRef.current?.spawnFluidSpatters(
+            cx,
+            cy,
+            event.wasMiasmic ? '#10b981' : '#dc2626',
+            isCrit
+          );
+
+          if (isCrit) {
+            vfxRef.current?.spawn3DImpactBurst(cx, cy, '#ffd700', true);
+          } else {
+            vfxRef.current?.spawn3DImpactBurst(
+              cx,
+              cy,
+              event.wasMiasmic ? '#00e676' : '#ff003c',
+              false
+            );
+          }
         }
         break;
       }
@@ -246,10 +259,19 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
         setTimeout(() => setDamageMap({}), 450);
         updateMinionHealth(event.targetId, event.remainingHp);
 
+        setShudderingCardId(event.targetId);
+        setTimeout(() => setShudderingCardId(null), 160);
+        triggerRedshift('light');
+
         const elem = cardElements.current.get(event.targetId);
         if (elem) {
           const rect = elem.getBoundingClientRect();
-          vfxRef.current?.spawnCleaveWave(rect.left + rect.width / 2, rect.top + rect.height / 2, rect.width);
+          const cx = rect.left + rect.width / 2;
+          const cy = rect.top + rect.height / 2;
+          vfxRef.current?.spawnCleaveWave(cx, cy, rect.width);
+          vfxRef.current?.spawnFloatingDamage(cx, cy, `-${event.amount} CLEAVE`, 'NORMAL');
+          vfxRef.current?.spawnFluidSpatters(cx, cy, '#ea580c', false);
+          vfxRef.current?.spawn3DImpactBurst(cx, cy, '#ff6600', isCrit);
         }
         break;
       }
@@ -259,22 +281,44 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
         setBrokenBarrierId(event.targetId);
         setTimeout(() => setBrokenBarrierId(undefined), 500);
 
+        setShudderingCardId(event.targetId);
+        setTimeout(() => setShudderingCardId(null), 160);
+
         const elem = cardElements.current.get(event.targetId);
         if (elem) {
           const rect = elem.getBoundingClientRect();
-          vfxRef.current?.spawnBarrierShatter(rect.left + rect.width / 2, rect.top + rect.height / 2);
+          const cx = rect.left + rect.width / 2;
+          const cy = rect.top + rect.height / 2;
+          vfxRef.current?.spawnBarrierShatter(cx, cy);
+          vfxRef.current?.spawnFluidSpatters(cx, cy, '#38bdf8', false);
         }
         break;
       }
 
       case 'MINION_DIED': {
         setLogMessages(prev => [`💀 ${event.minionName} was obliterated!`, ...prev.slice(0, 4)]);
+        setDyingMinionIds(prev => new Set(prev).add(event.minionId));
+
         const elem = cardElements.current.get(event.minionId);
+        const minionTribe = getMinionTribe(event.minionId);
+
         if (elem) {
           const rect = elem.getBoundingClientRect();
-          vfxRef.current?.spawnDeathExplosion(rect.left + rect.width / 2, rect.top + rect.height / 2);
+          const cx = rect.left + rect.width / 2;
+          const cy = rect.top + rect.height / 2;
+          vfxRef.current?.spawnDeathExplosion(cx, cy, minionTribe);
+          vfxRef.current?.spawnFluidSpatters(cx, cy, '#ef4444', true);
         }
-        removeMinionFromBoard(event.minionId);
+
+        setTimeout(() => {
+          removeMinionFromBoard(event.minionId);
+          setDyingMinionIds(prev => {
+            const next = new Set(prev);
+            next.delete(event.minionId);
+            return next;
+          });
+        }, 420 / speed);
+
         break;
       }
 
@@ -299,9 +343,6 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
   const handleCombatConclusion = () => {
     setCombatFinished(true);
 
-    const playerWon = (isPlayerSide1 && combatResult.winnerSide === 1) || (!isPlayerSide1 && combatResult.winnerSide === 2);
-    const isTie = combatResult.winnerSide === 0;
-
     if (!isTie) {
       const sourceY = playerWon ? window.innerHeight * 0.7 : window.innerHeight * 0.3;
       const targetY = playerWon ? 60 : window.innerHeight - 80;
@@ -309,21 +350,18 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
 
       vfxRef.current?.spawnHeroOrb(midX, sourceY, midX, targetY, () => {
         sound.playImpactDamage(true, true);
-        triggerScreenShake();
+        triggerRedshift('heavy');
+        vfxRef.current?.spawnFluidSpatters(midX, targetY, playerWon ? '#dc2626' : '#ffd700', true);
+
         if (playerWon) {
           setOpponentHp(prev => Math.max(0, prev - combatResult.damageDealt));
           sound.playVictory();
-          confetti({ particleCount: 140, spread: 85, origin: { y: 0.6 } });
         } else {
           setPlayerHp(prev => Math.max(0, prev - combatResult.damageDealt));
+          sound.playDefeat();
         }
       });
     }
-  };
-
-  const triggerScreenShake = () => {
-    setScreenShake(true);
-    setTimeout(() => setScreenShake(false), 350);
   };
 
   const updateMinionHealth = (minionId: string, remainingHp: number) => {
@@ -340,99 +378,109 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
     setBoard2(prev => prev.filter(m => m.instanceId !== minionId));
   };
 
-  const skipToEnd = () => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    setCurrentEventIdx(combatResult.events.length);
-    handleCombatConclusion();
+  const getMinionTribe = (instanceId: string): string => {
+    const all = [...board1, ...board2];
+    const found = all.find(m => m.instanceId === instanceId);
+    return found ? found.tribe : 'NEUTRAL';
   };
 
-  const playerWon = (isPlayerSide1 && combatResult.winnerSide === 1) || (!isPlayerSide1 && combatResult.winnerSide === 2);
-  const isTie = combatResult.winnerSide === 0;
+  const getResetTransform = (): CardTransform => ({
+    x: 0,
+    y: 0,
+    z: 0,
+    rotateX: 0,
+    rotateY: 0,
+    rotateZ: 0,
+    scaleX: 1,
+    scaleY: 1,
+  });
+
+  const effectiveWinStreak = playerWon ? player.winStreak + 1 : 0;
 
   return (
-    <div className={`relative w-full h-full flex flex-col justify-between p-4 bg-[#070412] overflow-hidden select-none ${screenShake ? 'animate-wiggle' : ''}`}>
-      <CombatVFXCanvas ref={vfxRef} />
+    <div className="relative w-full h-screen overflow-hidden bg-[#06030e] flex flex-col justify-between p-4">
+      {/* 2D/3D VFX Canvas Overlay (Includes additive blending for lasers, fire breath, stars) */}
+      <CombatVFXCanvas ref={vfxRef} className="z-40" />
 
-      {/* Cosmic Nebula Backdrops */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_#211042_0%,_#0d061c_60%,_#020108_100%)] pointer-events-none" />
-      <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#c89b3c_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
+      {/* Subtle Professional Redshift Vignette Micro-Flash (Replaces Jarring Screen Shake) */}
+      {redshiftActive !== 'none' && (
+        <div
+          key={Date.now()}
+          className={`fixed inset-0 pointer-events-none z-30 ${
+            redshiftActive === 'heavy' ? 'redshift-vignette-heavy' : 'redshift-vignette'
+          }`}
+        />
+      )}
+
+      {/* Hero-Themed Streak-Scaled Victory Celebration Particles */}
+      {combatFinished && playerWon && (
+        <VictoryCelebrationVFX
+          hero={player.hero}
+          winStreak={effectiveWinStreak}
+          turnNumber={turnNumber}
+        />
+      )}
 
       {/* Top HUD: Opponent Hero Portrait & Controls */}
-      <div className="flex items-center justify-between z-30 bg-[#120a26]/90 border border-yellow-600/30 p-2.5 rounded-2xl shadow-2xl backdrop-blur-md">
+      <div className="flex items-center justify-between z-30 bg-[#100724]/90 border border-purple-900/50 p-2.5 rounded-2xl shadow-xl backdrop-blur-md">
         <div ref={opponentHeroRef} className="flex items-center gap-3">
-          <div className="relative w-12 h-12 rounded-full bg-black/80 border-2 border-purple-400 flex items-center justify-center text-2xl shadow-void">
+          <div className="relative w-12 h-12 rounded-full bg-black/80 border-2 border-red-500/80 flex items-center justify-center text-2xl shadow-brass">
             {opponent.avatar}
-            <div className="absolute -bottom-1 -right-1 bg-yellow-950 border border-yellow-400 rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold text-yellow-300 shadow">
-              ★{opponent.tavernTier}
-            </div>
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-cinzel font-bold text-sm text-purple-300">
-                {opponent.name}
-              </h3>
-              <span className="text-[10px] text-purple-400 bg-purple-950 px-1.5 py-0.5 rounded border border-purple-800">
-                {opponent.hero.name}
-              </span>
-            </div>
+            <h3 className="font-cinzel font-bold text-sm text-red-300">
+              {opponent.hero.name} ({opponent.name})
+            </h3>
             <span className="text-xs font-bold text-red-400">
               ❤️ {opponentHp} / {opponent.maxHp} HP
             </span>
           </div>
         </div>
 
-        {/* Playback Controls */}
+        {/* Combat Speed & Playback Controls */}
         <div className="flex items-center gap-2">
-          <div className="flex items-center bg-black/60 rounded-xl p-1 border border-slate-700 text-xs font-bold">
-            {[1, 2, 4].map(s => (
-              <button
-                key={s}
-                onClick={() => setSpeed(s)}
-                className={`px-2.5 py-0.5 rounded-lg transition-all ${speed === s ? 'bg-cyan-500 text-black font-black shadow' : 'text-slate-400 hover:text-white'}`}
-              >
-                {s}x
-              </button>
-            ))}
-          </div>
-
+          <button
+            onClick={() => setSpeed(s => (s === 1 ? 1.5 : s === 1.5 ? 2.5 : 1))}
+            className="px-3 py-1 bg-purple-950 hover:bg-purple-900 border border-purple-700 text-yellow-300 font-cinzel font-bold text-xs rounded-xl shadow transition-colors cursor-pointer"
+          >
+            ⚡ {speed}x SPEED
+          </button>
           <button
             onClick={() => setIsPlaying(!isPlaying)}
-            className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-xs font-bold rounded-xl border border-slate-600 shadow"
+            className="px-3 py-1 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-cinzel font-bold text-xs rounded-xl shadow transition-colors cursor-pointer"
           >
-            {isPlaying ? '⏸️ Pause' : '▶️ Resume'}
-          </button>
-
-          <button
-            onClick={skipToEnd}
-            className="px-3.5 py-1 bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-black text-xs font-cinzel font-bold rounded-xl shadow-brass"
-          >
-            ⏩ Fast Forward
+            {isPlaying ? '⏸ PAUSE' : '▶ RESUME'}
           </button>
         </div>
       </div>
 
-      {/* 3D Isometric Battlefield */}
+      {/* 3D Battle Arena Viewport */}
       <div
-        className="flex-1 flex flex-col justify-center gap-8 my-2 z-20"
-        style={{
-          perspective: '1200px',
-          perspectiveOrigin: '50% 50%',
-        }}
+        className="relative flex-1 flex flex-col justify-around items-center my-2"
+        style={{ perspective: '1400px' }}
       >
-        {/* Top 3D Formation (Opponent Minions) */}
+        {/* Arena Floor Runes Texture with Perspective */}
         <div
-          className="flex items-center justify-center gap-3 p-3 bg-[#130b29]/80 rounded-2xl border-2 border-purple-900/60 shadow-[0_15px_30px_rgba(0,0,0,0.8)] velvet-mat transition-all duration-300 min-h-[140px]"
+          className="absolute inset-0 bg-contain bg-center opacity-35 pointer-events-none"
           style={{
-            transform: 'rotateX(18deg) translateZ(0px)',
-            transformStyle: 'preserve-3d',
+            backgroundImage: `url('/assets/art/arena_bg.jpg')`,
+            transform: 'rotateX(38deg) scale(1.15) translateZ(-80px)',
+            transformOrigin: '50% 50%',
           }}
-        >
+        />
+
+        {/* Top Board: Opponent Formation */}
+        <div className="flex items-center justify-center gap-3 z-10 w-full min-h-[140px]">
           {board2.length > 0 ? (
             board2.map(minion => {
-              const transform = cardTransforms[minion.instanceId];
+              const transform = transforms[minion.instanceId];
+              const isTargeted = targetedDefenderId === minion.instanceId;
+              const isDying = dyingMinionIds.has(minion.instanceId);
+              const isShuddering = shudderingCardId === minion.instanceId;
+
               const transformStyle = transform
                 ? `translate3d(${transform.x}px, ${transform.y}px, ${transform.z}px) rotateX(${transform.rotateX}deg) rotateY(${transform.rotateY}deg) rotateZ(${transform.rotateZ}deg) scale(${transform.scaleX}, ${transform.scaleY})`
-                : 'translate3d(0,0,0)';
+                : 'translate3d(0, 0, 0)';
 
               return (
                 <div
@@ -440,7 +488,7 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
                   ref={el => {
                     if (el) cardElements.current.set(minion.instanceId, el);
                   }}
-                  className="transition-transform duration-150"
+                  className={`transition-transform duration-150 ${isTargeted ? 'animate-target-lock' : ''} ${isDying ? 'animate-card-dissolve' : ''} ${isShuddering ? 'animate-card-shudder' : ''}`}
                   style={{
                     transform: transformStyle,
                     transformStyle: 'preserve-3d',
@@ -458,34 +506,36 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
             })
           ) : (
             <div className="text-slate-500 font-cinzel text-xs py-8">
-              Enemy lines obliterated.
+              Enemy formation shattered.
             </div>
           )}
         </div>
 
-        {/* Center Clash Rift & Narration Banner */}
-        <div className="flex items-center justify-between px-8 z-10">
-          <div className="h-0.5 flex-1 bg-gradient-to-r from-transparent via-yellow-500/60 to-transparent" />
-          <div className="px-6 py-1.5 bg-[#180e38] border-2 border-yellow-500/60 rounded-full text-xs font-cinzel font-bold text-yellow-300 shadow-brass animate-pulse">
-            {logMessages[0] || '⚔️ THE ASTRAL CLASH ⚔️'}
-          </div>
-          <div className="h-0.5 flex-1 bg-gradient-to-r from-transparent via-yellow-500/60 to-transparent" />
+        {/* Middle Clash Zone & Tactical Combat Ticker */}
+        <div className="z-20 text-center pointer-events-none py-1">
+          {logMessages.length > 0 ? (
+            <div className="inline-block bg-black/80 border border-yellow-500/50 px-4 py-1.5 rounded-full text-xs font-cinzel text-yellow-300 shadow-brass animate-fadeIn">
+              {logMessages[0]}
+            </div>
+          ) : (
+            <div className="text-[11px] font-cinzel text-slate-500">
+              ⚡ ASTRAL CLASH IN PROGRESS
+            </div>
+          )}
         </div>
 
-        {/* Bottom 3D Formation (Player Minions) */}
-        <div
-          className="flex items-center justify-center gap-3 p-3 bg-[#100a26]/80 rounded-2xl border-2 border-cyan-900/60 shadow-[0_15px_30px_rgba(0,0,0,0.8)] velvet-mat transition-all duration-300 min-h-[140px]"
-          style={{
-            transform: 'rotateX(-12deg) translateZ(0px)',
-            transformStyle: 'preserve-3d',
-          }}
-        >
+        {/* Bottom Board: Player Formation */}
+        <div className="flex items-center justify-center gap-3 z-10 w-full min-h-[140px]">
           {board1.length > 0 ? (
             board1.map(minion => {
-              const transform = cardTransforms[minion.instanceId];
+              const transform = transforms[minion.instanceId];
+              const isTargeted = targetedDefenderId === minion.instanceId;
+              const isDying = dyingMinionIds.has(minion.instanceId);
+              const isShuddering = shudderingCardId === minion.instanceId;
+
               const transformStyle = transform
                 ? `translate3d(${transform.x}px, ${transform.y}px, ${transform.z}px) rotateX(${transform.rotateX}deg) rotateY(${transform.rotateY}deg) rotateZ(${transform.rotateZ}deg) scale(${transform.scaleX}, ${transform.scaleY})`
-                : 'translate3d(0,0,0)';
+                : 'translate3d(0, 0, 0)';
 
               return (
                 <div
@@ -493,7 +543,7 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
                   ref={el => {
                     if (el) cardElements.current.set(minion.instanceId, el);
                   }}
-                  className="transition-transform duration-150"
+                  className={`transition-transform duration-150 ${isTargeted ? 'animate-target-lock' : ''} ${isDying ? 'animate-card-dissolve' : ''} ${isShuddering ? 'animate-card-shudder' : ''}`}
                   style={{
                     transform: transformStyle,
                     transformStyle: 'preserve-3d',
@@ -538,13 +588,41 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
         </div>
       </div>
 
-      {/* Victory / Defeat Modal */}
+      {/* Hero-Themed Streak-Scaled Victory / Defeat Modal */}
       {combatFinished && (
         <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex flex-col items-center justify-center z-50 animate-fadeIn p-6">
-          <div className="max-w-md w-full bg-[#140b2b] border-2 border-yellow-400 rounded-3xl p-6 shadow-golden text-center flex flex-col items-center">
-            <span className="text-6xl mb-2 animate-bounce">
+          <div className={`max-w-md w-full bg-[#140b2b]/95 border-2 rounded-3xl p-6 text-center flex flex-col items-center shadow-2xl ${
+            playerWon
+              ? effectiveWinStreak >= 3
+                ? 'border-yellow-400 shadow-[0_0_50px_rgba(234,179,8,0.7)] animate-pulse'
+                : 'border-yellow-500/80 shadow-[0_0_30px_rgba(234,179,8,0.4)]'
+              : isTie
+              ? 'border-slate-600 shadow-slate-900'
+              : 'border-red-600 shadow-[0_0_30px_rgba(239,68,68,0.4)]'
+          }`}>
+            {/* Streak Intensity Banner */}
+            {playerWon && (
+              <div className="mb-2">
+                {effectiveWinStreak >= 3 ? (
+                  <div className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 border border-yellow-300 text-black font-cinzel font-black text-xs shadow-lg animate-bounce">
+                    <span>🔥 {effectiveWinStreak}X UNSTOPPABLE STREAK!</span>
+                  </div>
+                ) : effectiveWinStreak === 2 ? (
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-950 border border-yellow-500/60 text-yellow-300 font-cinzel font-bold text-[11px]">
+                    <span>⚡ 2X WIN STREAK (+2 BONUS MOMENTUM)</span>
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 font-cinzel font-bold text-[10px]">
+                    <span>⚔️ ROUND VICTORY</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <span className="text-6xl mb-2">
               {playerWon ? '🏆' : isTie ? '⚖️' : '💀'}
             </span>
+
             <h2 className={`font-cinzel text-2xl font-black mb-1 ${playerWon ? 'text-yellow-400' : isTie ? 'text-slate-300' : 'text-red-500'}`}>
               {playerWon ? 'VICTORY!' : isTie ? 'STALEMATE (TIE)' : 'DEFEAT!'}
             </h2>
@@ -570,7 +648,7 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
 
             <button
               onClick={onFinishCombat}
-              className="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-black font-cinzel font-bold text-sm rounded-xl shadow-brass transition-all hover:scale-105 active:scale-95"
+              className="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-black font-cinzel font-black text-sm rounded-xl shadow-brass transition-all hover:scale-105 active:scale-95 cursor-pointer"
             >
               CONTINUE TO TAVERN (NEXT ROUND) ➔
             </button>

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Hero } from '../types';
 import { HERO_DATABASE } from '../engine/heroes';
+import { HeroProfileModal } from './HeroProfileModal';
 import { sound } from '../audio/sound';
 
 interface HeroSelectModalProps {
@@ -8,24 +9,38 @@ interface HeroSelectModalProps {
 }
 
 export const HeroSelectModal: React.FC<HeroSelectModalProps> = ({ onSelectHero }) => {
-  // Show 4 random heroes
-  const [heroes] = React.useState<Hero[]>(() => {
+  const [heroes] = useState<Hero[]>(() => {
     return [...HERO_DATABASE].sort(() => 0.5 - Math.random()).slice(0, 4);
   });
 
+  const [inspectingHero, setInspectingHero] = useState<Hero | null>(null);
+
   return (
-    <div className="fixed inset-0 bg-[#05030b]/95 backdrop-blur-lg flex flex-col items-center justify-center z-50 p-6">
+    <div className="fixed inset-0 bg-[#05030b]/95 backdrop-blur-lg flex flex-col items-center justify-center z-50 p-4 sm:p-6">
+      {inspectingHero && (
+        <HeroProfileModal
+          hero={inspectingHero}
+          onClose={() => setInspectingHero(null)}
+          onSelect={() => {
+            const h = inspectingHero;
+            setInspectingHero(null);
+            onSelectHero(h);
+          }}
+          canSelect={true}
+        />
+      )}
+
       {/* Title & Banner */}
-      <div className="text-center mb-8">
+      <div className="text-center mb-6">
         <div className="flex items-center justify-center gap-3 mb-2">
-          <span className="text-4xl">⚡</span>
-          <h1 className="font-cinzel text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-200 to-amber-500 tracking-widest drop-shadow-[0_0_15px_rgba(200,155,60,0.6)]">
+          <span className="text-3xl text-amber-400">⚡</span>
+          <h1 className="font-cinzel text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-200 to-amber-500 tracking-widest drop-shadow-[0_0_15px_rgba(200,155,60,0.6)]">
             AETHERIUM: ASTRAL BATTLEGROUNDS
           </h1>
-          <span className="text-4xl">⚡</span>
+          <span className="text-3xl text-amber-400">⚡</span>
         </div>
-        <p className="text-sm text-purple-300 font-sans tracking-wide">
-          Select your Commander to lead your Astral War-Automata and Voidborn Aberrations
+        <p className="text-xs sm:text-sm text-purple-300 font-sans tracking-wide">
+          Select your Commander to lead your Astral Warband into the Dark Steel Arena
         </p>
       </div>
 
@@ -34,46 +49,84 @@ export const HeroSelectModal: React.FC<HeroSelectModalProps> = ({ onSelectHero }
         {heroes.map((hero) => (
           <div
             key={hero.id}
-            onClick={() => {
-              sound.playCardSnap();
-              sound.playTierUpgrade();
-              onSelectHero(hero);
-            }}
-            className="group relative flex flex-col justify-between bg-gradient-to-b from-[#180e2f] via-[#100921] to-[#080512] border-2 border-yellow-600/50 hover:border-yellow-400 rounded-3xl p-5 shadow-2xl hover:shadow-brass transition-all duration-300 transform hover:-translate-y-3 cursor-pointer"
+            className="group relative flex flex-col justify-between dark-steel-card rounded-3xl p-4 shadow-2xl transition-all duration-300 transform hover:-translate-y-2 hover:border-yellow-400 hover:shadow-[0_15px_35px_rgba(234,179,8,0.3)] cursor-pointer"
           >
+            {/* Quick Inspect Button on Top Right */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                sound.playCardSnap();
+                setInspectingHero(hero);
+              }}
+              title="Zoom & Inspect Hero Lore"
+              className="absolute top-3 right-3 bg-black/80 hover:bg-yellow-500 hover:text-black text-yellow-300 border border-yellow-500/60 rounded-full px-2 py-0.5 text-[10px] font-cinzel font-bold z-30 transition-all shadow-md flex items-center gap-1"
+            >
+              <span>🔍</span>
+              <span>Lore</span>
+            </button>
+
             {/* Top: Avatar & Title */}
-            <div className="flex flex-col items-center text-center">
-              <div className="w-20 h-20 rounded-full bg-black/80 border-2 border-yellow-500 flex items-center justify-center text-4xl shadow-inner mb-3 group-hover:scale-110 transition-transform">
-                {hero.avatarIcon}
+            <div
+              onClick={() => {
+                sound.playCardSnap();
+                setInspectingHero(hero);
+              }}
+              className="flex flex-col items-center text-center group/art"
+            >
+              {/* Illustrated Hero Portrait Viewport */}
+              <div className="relative w-28 h-28 rounded-2xl overflow-hidden border-2 border-yellow-500/70 shadow-lg mb-3 group-hover/art:scale-105 transition-transform bg-black/80">
+                <img
+                  src={hero.artUrl || '/assets/art/hero_chronos.jpg'}
+                  alt={hero.name}
+                  className="w-full h-full object-cover object-center"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
+                <div className="absolute bottom-1 right-1 text-xs bg-black/70 px-1.5 py-0.5 rounded-full border border-yellow-500/50">
+                  {hero.avatarIcon}
+                </div>
               </div>
-              <h3 className="font-cinzel font-bold text-lg text-yellow-300 tracking-wide">
+
+              <h3 className="font-cinzel font-bold text-base text-yellow-300 tracking-wide group-hover:text-yellow-200">
                 {hero.name}
               </h3>
-              <span className="text-[11px] text-purple-300 font-bold uppercase tracking-wider mb-2">
+              <span className="text-[10px] text-purple-300 font-bold uppercase tracking-wider mb-2">
                 {hero.title}
               </span>
-              <div className="text-xs font-bold text-emerald-400 bg-emerald-950/80 px-2.5 py-0.5 rounded-full border border-emerald-500/50 mb-3">
+              <div className="text-xs font-bold text-emerald-300 bg-emerald-950/90 px-3 py-0.5 rounded-full border border-emerald-500/60 mb-2 shadow-inner">
                 ❤️ {hero.hp} Health
               </div>
             </div>
 
             {/* Middle: Hero Power Card */}
-            <div className="bg-[#090514]/90 border border-purple-900/60 rounded-2xl p-3.5 my-2">
-              <div className="flex items-center justify-between mb-1 pb-1 border-b border-purple-950">
+            <div
+              onClick={() => {
+                sound.playCardSnap();
+                setInspectingHero(hero);
+              }}
+              className="steel-text-plaque rounded-xl p-3 my-2 border border-[#433961]"
+            >
+              <div className="flex items-center justify-between mb-1 pb-1 border-b border-purple-950/80">
                 <span className="font-cinzel text-xs font-bold text-cyan-300">
                   {hero.powerName}
                 </span>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-black/60 text-yellow-300 border border-yellow-600/40">
+                <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-black/80 text-yellow-300 border border-yellow-600/50">
                   {hero.powerType === 'PASSIVE' ? 'PASSIVE' : `🪙 ${hero.powerCost}`}
                 </span>
               </div>
-              <p className="text-xs text-slate-300 leading-relaxed font-sans mt-1">
+              <p className="text-[11px] text-slate-300 leading-relaxed font-sans mt-1">
                 {hero.powerDescription}
               </p>
             </div>
 
             {/* Bottom Button */}
-            <button className="mt-4 w-full py-2.5 bg-gradient-to-r from-amber-600 to-yellow-500 group-hover:from-amber-500 group-hover:to-yellow-400 text-black font-cinzel font-bold text-xs rounded-xl shadow-brass transition-all group-hover:scale-105">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                sound.playTierUpgrade();
+                onSelectHero(hero);
+              }}
+              className="mt-3 w-full py-2.5 bg-gradient-to-r from-amber-600 to-yellow-500 group-hover:from-amber-500 group-hover:to-yellow-400 text-black font-cinzel font-black text-xs rounded-xl shadow-brass transition-all group-hover:scale-105 active:scale-95"
+            >
               CHOOSE COMMANDER ➔
             </button>
           </div>

@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    background: radial-gradient(circle at 50% 30%, #170d2b 0%, #080512 80%, #030206 100%);
+    background: radial-gradient(circle at 50% 30%, #120b24 0%, #080512 70%, #020106 100%);
     color: #e2e8f0;
     font-family: 'Rajdhani', sans-serif;
     user-select: none;
@@ -30,34 +30,49 @@
   background: #c89b3c;
 }
 
-/* Custom Glows & Borders */
-.brass-border {
-  border: 2px solid #c89b3c;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7), 0 0 10px rgba(200, 155, 60, 0.3), inset 0 0 8px rgba(200, 155, 60, 0.2);
+/* Dark Steel Runic Card Styling */
+.dark-steel-card {
+  background: linear-gradient(180deg, #18122c 0%, #0e0a1c 50%, #07040f 100%);
+  border: 2px solid #524775;
+  box-shadow: 
+    0 12px 28px rgba(0, 0, 0, 0.9),
+    inset 0 0 12px rgba(0, 0, 0, 0.95),
+    inset 0 1px 1px rgba(255, 255, 255, 0.3),
+    0 0 8px rgba(147, 51, 234, 0.2);
 }
 
-.golden-border {
-  border: 2px solid #ffd700;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.8), 0 0 18px rgba(255, 215, 0, 0.6), inset 0 0 12px rgba(255, 215, 0, 0.4);
-  background: linear-gradient(135deg, rgba(255, 215, 0, 0.18), rgba(74, 4, 78, 0.4));
+.golden-steel-card {
+  background: linear-gradient(180deg, #2b1c09 0%, #170d04 50%, #0d0602 100%);
+  border: 2px solid #eab308;
+  box-shadow: 
+    0 14px 32px rgba(0, 0, 0, 0.95),
+    inset 0 0 15px rgba(234, 179, 8, 0.3),
+    inset 0 1px 2px rgba(255, 255, 255, 0.5),
+    0 0 20px rgba(234, 179, 8, 0.5);
 }
 
-.void-border {
-  border: 2px solid #9d4edd;
-  box-shadow: 0 0 15px rgba(157, 78, 221, 0.4);
+.steel-name-plate {
+  background: linear-gradient(180deg, #2f274a 0%, #1a1430 50%, #100b21 100%);
+  border: 1px solid #63558f;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25), 0 2px 5px rgba(0, 0, 0, 0.7);
 }
 
-.aether-border {
-  border: 2px solid #00f0ff;
-  box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+.steel-text-plaque {
+  background: linear-gradient(180deg, #130e24 0%, #0a0614 100%);
+  border: 1px solid #433961;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.85);
 }
 
-/* Velvet Mat Texture */
-.velvet-mat {
-  background-color: #0e091d;
-  background-image: radial-gradient(#261743 1px, transparent 1px), radial-gradient(#180f2d 1px, #0e091d 1px);
-  background-size: 20px 20px;
-  background-position: 0 0, 10px 10px;
+.stat-medallion-atk {
+  background: radial-gradient(circle at 35% 35%, #9f1239 0%, #4c0519 75%, #1f020a 100%);
+  border: 2px solid #fda4af;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.85), inset 0 1px 2px rgba(255, 255, 255, 0.4), 0 0 8px rgba(225, 29, 72, 0.5);
+}
+
+.stat-medallion-hp {
+  background: radial-gradient(circle at 35% 35%, #047857 0%, #022c22 75%, #01130e 100%);
+  border: 2px solid #6ee7b7;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.85), inset 0 1px 2px rgba(255, 255, 255, 0.4), 0 0 8px rgba(16, 185, 129, 0.5);
 }
 
 /* Holographic Chromatic Aberration Foil Shimmer */
@@ -110,7 +125,7 @@
 
 /* Frost Ice Overlay */
 .frost-card {
-  box-shadow: 0 0 15px rgba(56, 189, 248, 0.6), inset 0 0 12px rgba(56, 189, 248, 0.5) !important;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.7), inset 0 0 15px rgba(56, 189, 248, 0.6) !important;
   border-color: #38bdf8 !important;
 }
 
@@ -136,4 +151,104 @@
 
 .animate-wiggle {
   animation: boardTremor 0.35s cubic-bezier(.36,.07,.19,.97) both;
+}
+/* Studio-Grade Card Combat Animations & Game Feel */
+
+@keyframes heavyTremor {
+  0% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  15% { transform: translate3d(-10px, 8px, 0) rotate(-1.5deg); }
+  30% { transform: translate3d(9px, -8px, 0) rotate(1.2deg); }
+  45% { transform: translate3d(-7px, 6px, 0) rotate(-0.9deg); }
+  60% { transform: translate3d(6px, -5px, 0) rotate(0.6deg); }
+  75% { transform: translate3d(-4px, 3px, 0) rotate(-0.3deg); }
+  90% { transform: translate3d(2px, -1px, 0) rotate(0.1deg); }
+  100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+}
+
+.animate-shake-heavy {
+  animation: heavyTremor 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes cardWindup {
+  0% { transform: translateZ(0) scale(1); filter: brightness(1); }
+  50% { transform: translateZ(40px) scale(1.08); filter: brightness(1.2) drop-shadow(0 20px 30px rgba(0,0,0,0.8)); }
+  100% { transform: translateZ(70px) scale(1.18); filter: brightness(1.35) drop-shadow(0 30px 45px rgba(234,179,8,0.6)); }
+}
+
+.animate-card-windup {
+  animation: cardWindup 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes cardDissolve {
+  0% {
+    filter: brightness(2.8) contrast(1.8);
+    opacity: 1;
+    transform: scale(1) rotateZ(0deg);
+  }
+  35% {
+    filter: brightness(4) contrast(2) drop-shadow(0 0 35px #ff2a5f);
+    opacity: 0.85;
+    transform: scale(1.08) rotateZ(-3deg);
+  }
+  70% {
+    filter: brightness(2) contrast(1.5);
+    opacity: 0.4;
+    transform: scale(0.85) rotateZ(6deg) translateY(15px);
+  }
+  100% {
+    filter: brightness(0);
+    opacity: 0;
+    transform: scale(0.4) rotateZ(15deg) translateY(35px);
+  }
+}
+
+.animate-card-dissolve {
+  animation: cardDissolve 0.45s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  pointer-events: none;
+}
+
+@keyframes targetLockPulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.6), inset 0 0 10px rgba(239, 68, 68, 0.4);
+    border-color: rgba(239, 68, 68, 0.9);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(239, 68, 68, 0.95), inset 0 0 20px rgba(239, 68, 68, 0.7);
+    border-color: rgba(254, 202, 202, 1);
+  }
+}
+
+.animate-target-lock {
+  animation: targetLockPulse 0.4s infinite ease-in-out;
+}
+/* Professional Localized Impact Feedback (Replacing Jarring Full-Screen Shake) */
+
+@keyframes cardShudder {
+  0% { transform: translate3d(0, 0, 0); }
+  25% { transform: translate3d(-4px, 2px, 0) rotate(-1deg); }
+  50% { transform: translate3d(4px, -2px, 0) rotate(1deg); }
+  75% { transform: translate3d(-2px, 1px, 0) rotate(-0.4deg); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
+.animate-card-shudder {
+  animation: cardShudder 0.16s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes redshiftPulse {
+  0% { opacity: 0; transform: scale(1); }
+  25% { opacity: 1; transform: scale(1.01); }
+  100% { opacity: 0; transform: scale(1); }
+}
+
+.redshift-vignette {
+  background: radial-gradient(circle at center, transparent 60%, rgba(220, 38, 38, 0.38) 100%);
+  pointer-events: none;
+  animation: redshiftPulse 0.18s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.redshift-vignette-heavy {
+  background: radial-gradient(circle at center, transparent 45%, rgba(153, 27, 27, 0.6) 95%, rgba(69, 10, 10, 0.8) 100%);
+  pointer-events: none;
+  animation: redshiftPulse 0.26s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }

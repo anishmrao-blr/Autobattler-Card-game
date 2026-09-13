@@ -1,81 +1,78 @@
-import { MinionCard, PlayerState, BoardMinion } from '../types';
 import { SharedCardPool } from './pool';
+import { PlayerState, MinionCard, BoardMinion } from '../types';
 import { MINION_DATABASE, createBoardMinion } from './cards';
 
-const TIER_SLOT_COUNTS: Record<number, number> = {
-  1: 3,
-  2: 4,
-  3: 4,
-  4: 5,
-  5: 5,
-  6: 6,
-};
-
-const BASE_UPGRADE_COSTS: Record<number, number> = {
-  1: 5,  // Tier 1 -> 2
-  2: 7,  // Tier 2 -> 3
-  3: 8,  // Tier 3 -> 4
-  4: 9,  // Tier 4 -> 5
-  5: 10, // Tier 5 -> 6
-};
-
 export class TavernManager {
-  constructor(private pool: SharedCardPool) {}
+  private pool: SharedCardPool;
+
+  constructor(pool: SharedCardPool) {
+    this.pool = pool;
+  }
+
+  public getUpgradeCost(_currentTier: number, baseCost: number): number {
+    return Math.max(0, baseCost);
+  }
 
   public startPlayerTurn(player: PlayerState, turnNumber: number): void {
-    player.maxCoins = Math.min(10, 2 + turnNumber);
+    player.maxCoins = Math.min(10, turnNumber + 2);
     player.coins = player.maxCoins;
+    this.refreshTavern(player, 0);
+    this.processTurnStartBuffs(player);
+  }
 
-    if (player.tavernTier < 6) {
-      player.tierUpgradeCost = Math.max(0, player.tierUpgradeCost - 1);
+  public upgradeTier(player: PlayerState): boolean {
+    if (player.tavernTier >= 6) return false;
+    if (player.coins < player.tierUpgradeCost) return false;
+
+    player.coins -= player.tierUpgradeCost;
+    player.tavernTier += 1;
+
+    const baseCosts = [0, 5, 7, 8, 9, 10, 0];
+    player.tierUpgradeCost = baseCosts[player.tavernTier] || 10;
+    return true;
+  }
+
+  public refreshTavern(player: PlayerState, cost = 1): boolean {
+    if (cost > 0) {
+      if (player.coins < cost) return false;
+      player.coins -= cost;
+    }
+
+    const slotCounts = [0, 3, 4, 4, 5, 5, 6];
+    const numSlots = slotCounts[player.tavernTier] || 3;
+
+    if (player.tavernSlots.length > 0 && !player.isFrozen) {
+      this.pool.returnCards(player.tavernSlots);
     }
 
     if (!player.isFrozen) {
-      this.refreshTavern(player);
+      player.tavernSlots = this.pool.rollTavern(player.tavernTier, numSlots);
     } else {
       player.isFrozen = false;
     }
 
-    this.processTurnStartBuffs(player);
-  }
-
-  public refreshTavern(player: PlayerState): void {
-    const slotCount = TIER_SLOT_COUNTS[player.tavernTier] || 3;
-    player.tavernSlots = this.pool.rollTavern(player.tavernTier, slotCount);
+    return true;
   }
 
   public reroll(player: PlayerState): boolean {
-    if (player.coins < 1) return false;
-    player.coins -= 1;
     player.isFrozen = false;
-    this.refreshTavern(player);
-    return true;
+    return this.refreshTavern(player, 1);
   }
 
   public toggleFreeze(player: PlayerState): void {
     player.isFrozen = !player.isFrozen;
   }
 
-  public upgradeTier(player: PlayerState): boolean {
-    if (player.tavernTier >= 6) return false;
-    const cost = Math.max(0, player.tierUpgradeCost - (player.hero.id === 'hero_baron' ? 1 : 0));
-    if (player.coins < cost) return false;
-
-    player.coins -= cost;
-    player.tavernTier += 1;
-    if (player.tavernTier < 6) {
-      player.tierUpgradeCost = BASE_UPGRADE_COSTS[player.tavernTier] || 8;
-    }
-    return true;
-  }
-
   public buyMinion(player: PlayerState, shopIndex: number): boolean {
+    if (shopIndex < 0 || shopIndex >= player.tavernSlots.length) return false;
     const minion = player.tavernSlots[shopIndex];
     if (!minion) return false;
-    
+
     let cost = 3;
+    // Hero: Chronos passive discount on first Automata
     if (player.hero.id === 'hero_chronos' && minion.tribe === 'AUTOMATA') {
-      cost = 2;
+      const alreadyDiscounted = player.hand.some(c => c.tribe === 'AUTOMATA') || player.board.some(b => b.tribe === 'AUTOMATA');
+      if (!alreadyDiscounted) cost = 2;
     }
 
     if (player.coins < cost) return false;
@@ -85,6 +82,7 @@ export class TavernManager {
     player.tavernSlots.splice(shopIndex, 1);
     player.hand.push(minion);
 
+    // On-Buy Tribal Triggers (e.g. Star Shard)
     for (const b of player.board) {
       if (b.cardId === 'celest_spark' && minion.tribe === 'CELESTIAL') {
         b.attack += b.isGolden ? 2 : 1;
@@ -195,6 +193,7 @@ export class TavernManager {
   }
 
   private resolveDeployEffects(player: PlayerState, minion: BoardMinion): void {
+    // Alchemist Tier 1: Elixir Apprentice (Deploy Surge: +1/+1 or Golden +2/+2)
     if (minion.cardId === 'alch_brewer') {
       const buff = minion.isGolden ? 2 : 1;
       const targets = player.board.filter(b => b.instanceId !== minion.instanceId);
@@ -206,25 +205,56 @@ export class TavernManager {
       }
     }
 
+    // Alchemist Tier 2: Volatile Homunculus
     if (minion.cardId === 'alch_homunculus') {
       player.hp = Math.max(1, player.hp - 2);
     }
 
+    // Celestial Tier 3: Starlight Envoy (Grant Barrier, Golden: grant 2 Barriers)
     if (minion.cardId === 'celest_envoy') {
+      const count = minion.isGolden ? 2 : 1;
       const targets = player.board.filter(b => b.instanceId !== minion.instanceId && !b.barrierActive);
-      if (targets.length > 0) {
-        targets[0].barrierActive = true;
-        if (!targets[0].keywords.includes('AETHER_BARRIER')) {
-          targets[0].keywords.push('AETHER_BARRIER');
+      targets.slice(0, count).forEach(t => {
+        t.barrierActive = true;
+        if (!t.keywords.includes('AETHER_BARRIER')) {
+          t.keywords.push('AETHER_BARRIER');
         }
+      });
+    }
+
+    // Celestial Tier 4: Nova Archon (Deploy Surge: +1/+1 per Celestial, Golden: +2/+2)
+    if (minion.cardId === 'celest_archon') {
+      const celestials = player.board.filter(m => m.tribe === 'CELESTIAL').length;
+      const multiplier = minion.isGolden ? 2 : 1;
+      const buff = celestials * multiplier;
+      if (buff > 0) {
+        player.board.forEach(m => {
+          m.attack += buff;
+          m.health += buff;
+          m.maxHealth += buff;
+        });
       }
     }
 
+    // Pirate Tier 4: Corsair Captain (Deploy Surge: +3 coins, Golden +6 coins)
     if (minion.cardId === 'pirate_captain') {
       const bonus = minion.isGolden ? 6 : 3;
       player.coins = Math.min(player.maxCoins + bonus, player.coins + bonus);
     }
 
+    // Alchemist Tier 5: Philosopher Grandmaster (Transform tavern minion into +1 tier higher)
+    if (minion.cardId === 'alch_philosopher' && player.tavernSlots.length > 0) {
+      const count = minion.isGolden ? 2 : 1;
+      for (let i = 0; i < count && i < player.tavernSlots.length; i++) {
+        const nextTier = Math.min(6, player.tavernSlots[i].tier + 1);
+        const rolled = this.pool.rollTavern(nextTier, 1);
+        if (rolled.length > 0) {
+          player.tavernSlots[i] = rolled[0];
+        }
+      }
+    }
+
+    // Automata Tier 3: Cogwheel Assembler (Whenever another Automata is played, +2/+2 or Golden +4/+4)
     if (minion.tribe === 'AUTOMATA') {
       for (const b of player.board) {
         if (b.cardId === 'auto_assembler' && b.instanceId !== minion.instanceId) {
@@ -237,8 +267,9 @@ export class TavernManager {
     }
   }
 
-  private processTurnStartBuffs(player: PlayerState): void {
+  public processTurnStartBuffs(player: PlayerState): void {
     for (const b of player.board) {
+      // Celestial Tier 2: Astral Scribe (+1/+2, Golden +2/+4)
       if (b.cardId === 'celest_scribe') {
         const buffAtk = b.isGolden ? 2 : 1;
         const buffHp = b.isGolden ? 4 : 2;
@@ -251,28 +282,37 @@ export class TavernManager {
         }
       }
 
+      // Alchemist Tier 4: Arcane Transmuter (+3/+3 to leftmost minion, Golden: 2 leftmost minions +6/+6)
       if (b.cardId === 'alch_transmuter' && player.board.length > 0) {
         const buff = b.isGolden ? 6 : 3;
-        const leftmost = player.board[0];
-        leftmost.attack += buff;
-        leftmost.health += buff;
-        leftmost.maxHealth += buff;
-        if (!leftmost.keywords.includes('MIASMIC')) {
-          leftmost.keywords.push('MIASMIC');
-        }
+        const count = b.isGolden ? 2 : 1;
+        player.board.slice(0, count).forEach(leftmost => {
+          leftmost.attack += buff;
+          leftmost.health += buff;
+          leftmost.maxHealth += buff;
+        });
       }
 
-      if (b.cardId === 'celest_galaxy_titan') {
-        const tribes = new Set(player.board.map(m => m.tribe).filter(t => t !== 'NEUTRAL'));
-        const multiplier = b.isGolden ? 8 : 4;
-        const totalBuff = tribes.size * multiplier;
-        if (totalBuff > 0) {
-          for (const m of player.board) {
-            m.attack += totalBuff;
-            m.health += totalBuff;
-            m.maxHealth += totalBuff;
+      // Automata Tier 5: Clockwork Overlord (Give all friendly Automata +2/+2, Golden +4/+4)
+      if (b.cardId === 'auto_overlord') {
+        const buff = b.isGolden ? 4 : 2;
+        player.board.forEach(m => {
+          if (m.tribe === 'AUTOMATA') {
+            m.attack += buff;
+            m.health += buff;
+            m.maxHealth += buff;
           }
-        }
+        });
+      }
+
+      // Alchemist Tier 6: Arch-Alchemist Aurelius (Double stats of leftmost minion, Golden: 2 leftmost minions)
+      if (b.cardId === 'alch_elixir_master' && player.board.length > 0) {
+        const count = b.isGolden ? 2 : 1;
+        player.board.slice(0, count).forEach(target => {
+          target.attack *= 2;
+          target.health *= 2;
+          target.maxHealth *= 2;
+        });
       }
     }
   }

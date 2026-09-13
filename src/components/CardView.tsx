@@ -1,11 +1,14 @@
 import React from 'react';
 import { MinionCard, BoardMinion, Tribe, Keyword } from '../types';
+import { TRIBE_ART_MAP } from '../engine/cards';
+import { sound } from '../audio/sound';
 
 interface CardViewProps {
   card?: MinionCard;
   boardMinion?: BoardMinion;
   onClick?: () => void;
   onRightClick?: (e: React.MouseEvent) => void;
+  onInspect?: (card?: MinionCard, boardMinion?: BoardMinion) => void;
   size?: 'sm' | 'md' | 'lg';
   showPrice?: boolean;
   price?: number;
@@ -18,25 +21,35 @@ interface CardViewProps {
   isFrozen?: boolean;
 }
 
-const TRIBE_COLORS: Record<Tribe, { bg: string; text: string; border: string }> = {
-  AUTOMATA: { bg: 'bg-amber-950/80', text: 'text-amber-300', border: 'border-amber-500' },
-  VOIDBORN: { bg: 'bg-purple-950/80', text: 'text-purple-300', border: 'border-purple-500' },
-  ALCHEMIST: { bg: 'bg-emerald-950/80', text: 'text-emerald-300', border: 'border-emerald-500' },
-  CELESTIAL: { bg: 'bg-cyan-950/80', text: 'text-cyan-300', border: 'border-cyan-500' },
-  BEAST: { bg: 'bg-rose-950/80', text: 'text-rose-300', border: 'border-rose-500' },
-  PIRATE: { bg: 'bg-yellow-950/80', text: 'text-yellow-300', border: 'border-yellow-500' },
-  NEUTRAL: { bg: 'bg-slate-900/80', text: 'text-slate-300', border: 'border-slate-500' },
+const TRIBE_ICONS: Record<Tribe, string> = {
+  AUTOMATA: '⚙️',
+  VOIDBORN: '👁️',
+  ALCHEMIST: '🧪',
+  CELESTIAL: '✨',
+  BEAST: '🐺',
+  PIRATE: '⚔️',
+  NEUTRAL: '🔮',
 };
 
-const KEYWORD_LABELS: Record<Keyword, { label: string; color: string; icon: string }> = {
-  BASTION: { label: 'Bastion', color: 'text-blue-300 bg-blue-950/70 border-blue-500', icon: '🛡️' },
-  AETHER_BARRIER: { label: 'Barrier', color: 'text-cyan-300 bg-cyan-950/70 border-cyan-400', icon: '✨' },
-  LAST_GASP: { label: 'Last Gasp', color: 'text-purple-300 bg-purple-950/70 border-purple-500', icon: '💀' },
-  MIASMIC: { label: 'Miasmic', color: 'text-emerald-300 bg-emerald-950/70 border-emerald-400', icon: '☣️' },
-  OVERCLOCK: { label: 'Overclock', color: 'text-yellow-300 bg-yellow-950/70 border-yellow-400', icon: '⚡' },
-  RE_WIND: { label: 'Re-wind', color: 'text-indigo-300 bg-indigo-950/70 border-indigo-400', icon: '⏳' },
-  SWEEP: { label: 'Sweep', color: 'text-red-300 bg-red-950/70 border-red-500', icon: '⚔️' },
-  MAGNETIC: { label: 'Magnetic', color: 'text-amber-300 bg-amber-950/70 border-amber-400', icon: '🧲' },
+const TRIBE_COLORS: Record<Tribe, { text: string; border: string; bg: string }> = {
+  AUTOMATA: { text: 'text-amber-300', border: 'border-amber-500/70', bg: 'bg-amber-950/80' },
+  VOIDBORN: { text: 'text-purple-300', border: 'border-purple-500/70', bg: 'bg-purple-950/80' },
+  ALCHEMIST: { text: 'text-emerald-300', border: 'border-emerald-500/70', bg: 'bg-emerald-950/80' },
+  CELESTIAL: { text: 'text-cyan-300', border: 'border-cyan-500/70', bg: 'bg-cyan-950/80' },
+  BEAST: { text: 'text-rose-300', border: 'border-rose-500/70', bg: 'bg-rose-950/80' },
+  PIRATE: { text: 'text-yellow-300', border: 'border-yellow-500/70', bg: 'bg-yellow-950/80' },
+  NEUTRAL: { text: 'text-slate-300', border: 'border-slate-500/70', bg: 'bg-slate-900/80' },
+};
+
+const KEYWORD_BADGES: Record<Keyword, { label: string; color: string }> = {
+  BASTION: { label: 'Bastion', color: 'text-blue-300' },
+  AETHER_BARRIER: { label: 'Barrier', color: 'text-cyan-300' },
+  LAST_GASP: { label: 'Last Gasp', color: 'text-purple-300' },
+  MIASMIC: { label: 'Miasmic', color: 'text-emerald-300' },
+  OVERCLOCK: { label: 'Overclock', color: 'text-yellow-300' },
+  RE_WIND: { label: 'Re-wind', color: 'text-indigo-300' },
+  SWEEP: { label: 'Sweep', color: 'text-red-300' },
+  MAGNETIC: { label: 'Magnetic', color: 'text-amber-300' },
 };
 
 export const CardView: React.FC<CardViewProps> = ({
@@ -44,6 +57,7 @@ export const CardView: React.FC<CardViewProps> = ({
   boardMinion,
   onClick,
   onRightClick,
+  onInspect,
   size = 'md',
   showPrice = false,
   price = 3,
@@ -64,43 +78,53 @@ export const CardView: React.FC<CardViewProps> = ({
   const isGolden = boardMinion?.isGolden || card?.name.startsWith('★') || false;
   const keywords = boardMinion?.keywords || card?.keywords || [];
   const description = card?.description || (isGolden ? card?.goldenDescription : '') || '';
-  const icon = boardMinion?.icon || card?.icon || '🃏';
   const hasBarrier = boardMinion ? boardMinion.barrierActive : keywords.includes('AETHER_BARRIER');
   const hasBastion = keywords.includes('BASTION');
   const isMiasmic = keywords.includes('MIASMIC');
 
-  const tribeStyle = TRIBE_COLORS[tribe];
+  const artUrl = boardMinion?.artUrl || card?.artUrl || TRIBE_ART_MAP[tribe] || '/assets/art/hero_chronos.jpg';
+  const tribeInfo = TRIBE_COLORS[tribe];
 
-  const sizeClasses = {
-    sm: 'w-24 h-36 text-xs',
-    md: 'w-36 h-52 text-sm',
-    lg: 'w-48 h-68 text-base',
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    sound.playCardSnap();
+    if (onInspect) {
+      onInspect(card, boardMinion);
+    } else if (onRightClick) {
+      onRightClick(e);
+    }
+  };
+
+  const sizeDimensions = {
+    sm: 'w-28 h-44 text-[10px]',
+    md: 'w-40 h-64 text-xs',
+    lg: 'w-52 h-80 text-sm',
   }[size];
 
   return (
     <div
       onClick={!disabled ? onClick : undefined}
-      onContextMenu={onRightClick}
+      onContextMenu={handleContextMenu}
       className={`
-        relative select-none flex flex-col justify-between rounded-xl p-2.5 transition-all duration-200 cursor-pointer
-        ${sizeClasses}
-        ${isGolden ? 'golden-border shimmer-foil' : 'brass-border bg-gradient-to-b from-[#191131] via-[#100b21] to-[#0a0717]'}
+        relative select-none flex flex-col justify-between rounded-2xl p-1.5 transition-all duration-200 cursor-pointer overflow-hidden group/card
+        ${sizeDimensions}
+        ${isGolden ? 'golden-steel-card shimmer-foil' : 'dark-steel-card'}
         ${isFrozen ? 'frost-card' : ''}
-        ${isSelected ? 'ring-4 ring-cyan-400 scale-105 shadow-aether' : 'hover:scale-105 hover:shadow-brass'}
+        ${isSelected ? 'ring-4 ring-cyan-400 scale-105 shadow-[0_0_25px_rgba(0,240,255,0.7)]' : 'hover:scale-105 hover:shadow-[0_15px_30px_rgba(0,0,0,0.9)]'}
         ${isAttacking ? 'scale-110 -translate-y-4 ring-4 ring-yellow-400 z-30 transition-transform duration-150' : ''}
         ${isHit ? 'animate-wiggle ring-4 ring-red-500 scale-95 duration-100' : ''}
         ${hasBastion ? 'ring-2 ring-blue-500/80 rounded-2xl' : ''}
-        ${isMiasmic ? 'shadow-[inset_0_0_12px_rgba(0,230,118,0.35)]' : ''}
+        ${isMiasmic ? 'shadow-[inset_0_0_15px_rgba(0,230,118,0.4)]' : ''}
         ${disabled ? 'opacity-50 cursor-not-allowed grayscale' : ''}
       `}
     >
       {/* Hexagonal Forcefield Barrier Overlay */}
       {hasBarrier && (
-        <div className="absolute inset-0 rounded-xl border-2 border-cyan-400/90 bg-cyan-400/15 hex-barrier pointer-events-none z-20 flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 rounded-2xl border-2 border-cyan-400/90 bg-cyan-400/20 hex-barrier pointer-events-none z-30 flex items-center justify-center overflow-hidden">
           <svg className="absolute inset-0 w-full h-full opacity-40 animate-spin" style={{ animationDuration: '12s' }} viewBox="0 0 100 100">
             <polygon points="50 3, 90 25, 90 75, 50 97, 10 75, 10 25" fill="none" stroke="#00f0ff" strokeWidth="2" strokeDasharray="6,4" />
           </svg>
-          <span className="text-[10px] font-black tracking-widest text-cyan-200 uppercase bg-cyan-950/90 px-2 py-0.5 rounded-full border border-cyan-300 shadow-aether">
+          <span className="text-[9px] font-black tracking-widest text-cyan-200 uppercase bg-cyan-950/90 px-2 py-0.5 rounded-full border border-cyan-300 shadow-aether">
             ✨ BARRIER
           </span>
         </div>
@@ -108,10 +132,25 @@ export const CardView: React.FC<CardViewProps> = ({
 
       {/* Frost Corners when Frozen in Shop */}
       {isFrozen && (
-        <div className="absolute inset-0 pointer-events-none z-20 rounded-xl overflow-hidden bg-sky-950/20">
-          <div className="absolute top-1 right-1 text-xs">❄️</div>
-          <div className="absolute bottom-1 left-1 text-xs">❄️</div>
+        <div className="absolute inset-0 pointer-events-none z-30 rounded-2xl overflow-hidden bg-sky-950/25">
+          <div className="absolute top-1 right-1 text-sm">❄️</div>
+          <div className="absolute bottom-1 left-1 text-sm">❄️</div>
         </div>
+      )}
+
+      {/* Quick Inspect Lens Hover Icon */}
+      {onInspect && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            sound.playCardSnap();
+            onInspect(card, boardMinion);
+          }}
+          title="Zoom & Inspect Artwork"
+          className="absolute top-2 right-2 bg-black/80 hover:bg-yellow-500 hover:text-black text-yellow-300 border border-yellow-500/60 rounded-full w-5 h-5 flex items-center justify-center text-[10px] opacity-0 group-hover/card:opacity-100 transition-all z-40 shadow-lg"
+        >
+          🔍
+        </button>
       )}
 
       {/* Damage Received Floater */}
@@ -127,60 +166,83 @@ export const CardView: React.FC<CardViewProps> = ({
         </div>
       )}
 
-      {/* Top Header: Tier Stars & Card Name */}
-      <div className="flex items-start justify-between gap-1 z-10">
-        <div className="flex items-center gap-0.5 bg-black/70 px-1.5 py-0.5 rounded-md border border-yellow-500/50 text-[10px] text-yellow-400 font-bold shadow">
-          {'★'.repeat(tier)}
+      {/* Top Header: Class/Tribe Crest & Arched Name Plaque */}
+      <div className="relative flex items-center gap-1 z-10 w-full mb-1">
+        {/* Tribal Metallic Badge */}
+        <div className={`flex items-center justify-center w-6 h-6 rounded-full border ${tribeInfo.border} ${tribeInfo.bg} shadow-md text-xs`}>
+          {TRIBE_ICONS[tribe]}
         </div>
-        <span className={`text-[11px] font-bold truncate leading-tight font-cinzel ${isGolden ? 'text-yellow-300 drop-shadow-[0_0_8px_rgba(255,215,0,0.8)]' : 'text-slate-100'}`}>
-          {name.replace('★ ', '')}
-        </span>
+
+        {/* Steel Name Plate */}
+        <div className="flex-1 steel-name-plate py-0.5 px-2 rounded-md flex items-center justify-between overflow-hidden">
+          <span className={`text-[11px] font-bold truncate leading-tight font-cinzel tracking-wide ${isGolden ? 'text-yellow-300 drop-shadow-[0_0_6px_rgba(255,215,0,0.8)]' : 'text-slate-100'}`}>
+            {name.replace('★ ', '')}
+          </span>
+          <span className="text-[9px] text-yellow-400 font-bold ml-1 font-mono">
+            {'★'.repeat(tier)}
+          </span>
+        </div>
       </div>
 
-      {/* Center Graphic & Tribe Badge */}
-      <div className="relative my-auto flex flex-col items-center justify-center py-1">
-        <div className="text-4xl drop-shadow-[0_0_12px_rgba(200,155,60,0.6)] transform transition-transform hover:scale-125">
-          {icon}
-        </div>
+      {/* Illustrated Painterly Portrait Viewport */}
+      <div className="relative w-full flex-1 rounded-lg overflow-hidden border border-[#5a4d7a] shadow-inner group bg-black/80 min-h-[90px]">
+        <img
+          src={artUrl}
+          alt={name}
+          className="w-full h-full object-cover object-center transform transition-transform duration-300 group-hover:scale-110"
+          loading="lazy"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/30 pointer-events-none" />
 
-        <div className={`mt-1 text-[9px] font-bold px-2 py-0.5 rounded-full border shadow ${tribeStyle.bg} ${tribeStyle.text} ${tribeStyle.border}`}>
+        {/* Flanking Tribe Ribbon Badge on Art */}
+        <div className={`absolute bottom-1 right-1 text-[8px] font-bold px-2 py-0.5 rounded-full border shadow-md backdrop-blur-md ${tribeInfo.bg} ${tribeInfo.text} ${tribeInfo.border}`}>
           {tribe}
         </div>
       </div>
 
-      {/* Card Rules / Flavor Text */}
-      {size !== 'sm' && (
-        <div className="text-[10px] text-slate-200 bg-black/70 p-1.5 rounded-lg border border-purple-900/60 line-clamp-2 leading-tight my-1 text-center font-sans">
-          {description || keywords.join(', ')}
+      {/* Description Slate Plaque */}
+      <div className="relative steel-text-plaque p-1.5 rounded-lg my-1 flex flex-col justify-between min-h-[46px] z-10">
+        <div className="text-[10px] text-slate-300 line-clamp-2 leading-snug font-sans">
+          {description ? (
+            <span>
+              {keywords.map(kw => (
+                <strong key={kw} className={`font-bold mr-1 ${KEYWORD_BADGES[kw]?.color || 'text-yellow-400'}`}>
+                  {KEYWORD_BADGES[kw]?.label || kw}:
+                </strong>
+              ))}
+              {description}
+            </span>
+          ) : (
+            <span className="text-slate-400 italic">No additional combat triggers.</span>
+          )}
         </div>
-      )}
 
-      {/* Keyword Badges */}
-      <div className="flex flex-wrap gap-0.5 justify-center mb-1">
-        {keywords.slice(0, 3).map((kw, i) => (
-          <span
-            key={i}
-            className={`text-[8px] font-bold px-1.5 py-0.2 rounded border shadow ${KEYWORD_LABELS[kw]?.color || 'text-slate-300'}`}
-          >
-            {KEYWORD_LABELS[kw]?.icon} {KEYWORD_LABELS[kw]?.label}
-          </span>
-        ))}
+        {/* 5-Diamond Tier Pips */}
+        <div className="flex items-center justify-center gap-1 mt-0.5 text-[8px]">
+          {[1, 2, 3, 4, 5, 6].map(t => (
+            <span key={t} className={t <= tier ? (isGolden ? 'text-yellow-400' : 'text-purple-400') : 'text-slate-700'}>
+              ◆
+            </span>
+          ))}
+        </div>
       </div>
 
-      {/* Bottom Footer: Attack, Price, Health */}
-      <div className="flex items-center justify-between mt-auto pt-1.5 border-t border-yellow-600/30 z-10">
-        <div className="flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-red-600 to-rose-950 border-2 border-amber-400 font-bold text-white shadow-lg text-xs">
-          ⚔️ {attack}
+      {/* Bottom Footer: Attack Medallion, Price Coin, Health Medallion */}
+      <div className="flex items-center justify-between mt-auto pt-0.5 z-20">
+        {/* Attack Stat Medallion */}
+        <div className="stat-medallion-atk flex items-center justify-center w-8 h-8 rounded-full font-black text-white font-cinzel text-sm">
+          {attack}
         </div>
 
         {showPrice && (
-          <div className="flex items-center gap-1 bg-yellow-950/90 border border-yellow-400 text-yellow-300 font-bold text-[10px] px-2 py-0.5 rounded-full shadow-brass">
+          <div className="flex items-center gap-1 bg-yellow-950/90 border border-yellow-400 text-yellow-300 font-bold text-[10px] px-2 py-0.5 rounded-full shadow-md">
             <span>🪙</span> {price}
           </div>
         )}
 
-        <div className={`flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-emerald-600 to-emerald-950 border-2 border-emerald-300 font-bold text-white shadow-lg text-xs ${health < maxHealth ? 'text-red-300 animate-pulse' : ''}`}>
-          🛡️ {health}
+        {/* Health Stat Medallion */}
+        <div className={`stat-medallion-hp flex items-center justify-center w-8 h-8 rounded-full font-black text-white font-cinzel text-sm ${health < maxHealth ? 'animate-pulse text-red-200' : ''}`}>
+          {health}
         </div>
       </div>
     </div>

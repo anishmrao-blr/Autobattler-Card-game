@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PlayerState } from '../types';
+import { MinionCard, BoardMinion, PlayerState } from '../types';
 import { CardView } from './CardView';
 import { sound } from '../audio/sound';
 
@@ -9,6 +9,7 @@ interface TavernShopProps {
   onReroll: () => void;
   onToggleFreeze: () => void;
   onUpgradeTier: () => void;
+  onInspect?: (card?: MinionCard, boardMinion?: BoardMinion) => void;
 }
 
 export const TavernShop: React.FC<TavernShopProps> = ({
@@ -17,6 +18,7 @@ export const TavernShop: React.FC<TavernShopProps> = ({
   onReroll,
   onToggleFreeze,
   onUpgradeTier,
+  onInspect,
 }) => {
   const [isRerolling, setIsRerolling] = useState(false);
   const upgradeCost = Math.max(0, player.tierUpgradeCost - (player.hero.id === 'hero_baron' ? 1 : 0));
@@ -124,7 +126,14 @@ export const TavernShop: React.FC<TavernShopProps> = ({
       </div>
 
       {/* Shop Board */}
-      <div className="flex items-center justify-center gap-3 min-h-[220px] p-2 bg-[#090514]/70 rounded-xl border border-purple-950/60 velvet-mat">
+      <div 
+        className="flex items-center justify-center gap-3 min-h-[250px] p-4 rounded-2xl border-2 border-[#524775]/60 shadow-[0_12px_32px_rgba(0,0,0,0.9)] relative overflow-hidden"
+        style={{
+          backgroundImage: 'radial-gradient(rgba(18, 12, 38, 0.75), rgba(7, 4, 16, 0.94)), url(/assets/art/runic_table.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
         {player.tavernSlots.length > 0 ? (
           player.tavernSlots.map((minion, idx) => {
             const cost = (player.hero.id === 'hero_chronos' && minion.tribe === 'AUTOMATA') ? 2 : 3;
@@ -137,6 +146,7 @@ export const TavernShop: React.FC<TavernShopProps> = ({
                   price={cost}
                   isFrozen={player.isFrozen}
                   disabled={!canAfford}
+                  onInspect={onInspect}
                   onClick={() => {
                     if (canAfford) {
                       sound.playCardSnap();

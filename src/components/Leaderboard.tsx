@@ -15,11 +15,11 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ players, currentTurn }
   });
 
   return (
-    <div className="w-64 h-full bg-[#0a0717]/95 border-r border-[#3b2a59] flex flex-col p-3 shadow-2xl backdrop-blur-md">
+    <div className="w-68 h-full bg-[#0a0717]/95 border-r border-[#3b2a59] flex flex-col p-3 shadow-2xl backdrop-blur-md">
       {/* Header */}
       <div className="flex items-center justify-between pb-2 mb-2 border-b border-yellow-600/30">
         <div className="flex items-center gap-2">
-          <span className="text-xl">🌌</span>
+          <span className="text-xl text-yellow-400">🌌</span>
           <span className="font-cinzel font-bold text-sm tracking-wider text-yellow-300">
             ASTRAL LOBBY
           </span>
@@ -46,12 +46,14 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ players, currentTurn }
             hpBarColor = 'bg-yellow-500';
           }
 
+          const heroArt = p.hero.artUrl || p.artUrl || '/assets/art/hero_chronos.jpg';
+
           return (
             <div
               key={p.id}
               className={`
-                relative flex items-center gap-2 p-2 rounded-lg border transition-all duration-200
-                ${p.isHuman ? 'border-cyan-400 bg-cyan-950/40 shadow-aether' : 'border-slate-800 bg-[#120e24]/80'}
+                relative flex items-center gap-2 p-2 rounded-xl border transition-all duration-200
+                ${p.isHuman ? 'border-cyan-400 bg-cyan-950/40 shadow-[0_0_15px_rgba(0,240,255,0.25)]' : 'border-[#3d3257] bg-[#120e24]/80'}
                 ${isDead ? 'opacity-40 grayscale border-red-950 bg-black/80' : 'hover:border-yellow-500/50'}
               `}
             >
@@ -60,11 +62,15 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ players, currentTurn }
                 #{idx + 1}
               </div>
 
-              {/* Avatar Icon */}
-              <div className="relative w-9 h-9 rounded-full bg-black/60 border border-yellow-500/50 flex items-center justify-center text-lg shadow-inner flex-shrink-0">
-                {p.avatar}
+              {/* Avatar Portrait */}
+              <div className="relative w-10 h-10 rounded-full bg-black/80 border-2 border-yellow-500/60 overflow-hidden shadow-inner flex-shrink-0">
+                <img
+                  src={heroArt}
+                  alt={p.hero.name}
+                  className="w-full h-full object-cover object-center"
+                />
                 {/* Tavern Tier Badge */}
-                <div className="absolute -bottom-1 -right-1 bg-yellow-950 border border-yellow-400 rounded-full w-4 h-4 flex items-center justify-center text-[9px] font-bold text-yellow-300 shadow">
+                <div className="absolute -bottom-0.5 -right-0.5 bg-yellow-950 border border-yellow-400 rounded-full w-4 h-4 flex items-center justify-center text-[9px] font-bold text-yellow-300 shadow">
                   {p.tavernTier}
                 </div>
               </div>
@@ -76,7 +82,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ players, currentTurn }
                     {p.name}
                   </span>
                   <span className={`font-bold ${isDead ? 'text-red-500' : hpColor}`}>
-                    {isDead ? '☠️ ELIMINATED' : `${p.hp} HP`}
+                    {isDead ? '☠️ DEAD' : `${p.hp} HP`}
                   </span>
                 </div>
 
@@ -92,7 +98,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ players, currentTurn }
 
                 {/* Status / Streaks */}
                 <div className="flex items-center justify-between text-[10px] text-slate-400 mt-0.5">
-                  <span className="truncate text-[9px]">{p.hero.name}</span>
+                  <span className="truncate text-[9px] text-purple-300 font-medium">{p.hero.name}</span>
                   {p.winStreak >= 2 && !isDead && (
                     <span className="text-amber-400 font-bold flex items-center gap-0.5">
                       🔥 {p.winStreak}

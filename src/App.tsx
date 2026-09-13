@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { GameCoordinator } from './engine/game';
-import { Hero, PlayerState, MinionCard } from './types';
+import { Hero, PlayerState, MinionCard, BoardMinion } from './types';
+import { HomePageModal } from './components/HomePageModal';
 import { HeroSelectModal } from './components/HeroSelectModal';
+import { HeroProfileModal } from './components/HeroProfileModal';
+import { CardInspectorModal } from './components/CardInspectorModal';
+import { AstralCodexModal } from './components/AstralCodexModal';
 import { DiscoverModal } from './components/DiscoverModal';
 import { HeaderHUD } from './components/HeaderHUD';
 import { Leaderboard } from './components/Leaderboard';
@@ -14,14 +18,21 @@ import confetti from 'canvas-confetti';
 
 export const App: React.FC = () => {
   const gameRef = useRef<GameCoordinator>(new GameCoordinator());
-  const [phase, setPhase] = useState<'HERO_SELECT' | 'TAVERN' | 'COMBAT' | 'GAME_OVER'>('HERO_SELECT');
+  const [phase, setPhase] = useState<'HOME' | 'HERO_SELECT' | 'TAVERN' | 'COMBAT' | 'GAME_OVER'>('HOME');
   const [human, setHuman] = useState<PlayerState | null>(null);
   const [allPlayers, setAllPlayers] = useState<PlayerState[]>([]);
   const [currentTurn, setCurrentTurn] = useState(1);
-  const [timeLeft, setTimeLeft] = useState(45);
+  const [timeLeft, setTimeLeft] = useState(70);
   const [isMuted, setIsMuted] = useState(false);
   const [discoverOptions, setDiscoverOptions] = useState<MinionCard[] | null>(null);
   const [discoverTier, setDiscoverTier] = useState<number>(2);
+
+  // Inspector & Codex States
+  const [inspectingCard, setInspectingCard] = useState<MinionCard | undefined>(undefined);
+  const [inspectingBoardMinion, setInspectingBoardMinion] = useState<BoardMinion | undefined>(undefined);
+  const [inspectingHero, setInspectingHero] = useState<Hero | null>(null);
+  const [showCodex, setShowCodex] = useState<boolean>(false);
+  const [playerCallsign, setPlayerCallsign] = useState<string>('Commander Thorne');
 
   const syncState = () => {
     const game = gameRef.current;
@@ -40,9 +51,8 @@ export const App: React.FC = () => {
   };
 
   useEffect(() => {
-    if (phase !== 'TAVERN') return;
+    if (phase !== 'TAVERN' || inspectingCard || inspectingBoardMinion || inspectingHero || showCodex) return;
 
-    setTimeLeft(45);
     const interval = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) {
@@ -55,11 +65,17 @@ export const App: React.FC = () => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [phase, currentTurn]);
+  }, [phase, currentTurn, inspectingCard, inspectingBoardMinion, inspectingHero, showCodex]);
+
+  const handleLogin = (name: string, _title: string) => {
+    setPlayerCallsign(name);
+    setPhase('HERO_SELECT');
+  };
 
   const handleSelectHero = (hero: Hero) => {
     const game = gameRef.current;
-    game.initGame(hero, 'Commander Player');
+    setTimeLeft(70);
+    game.initGame(hero, playerCallsign || 'Commander Player');
     syncState();
   };
 
@@ -147,6 +163,11 @@ export const App: React.FC = () => {
     syncState();
   };
 
+  const handleInspectCard = (card?: MinionCard, boardMinion?: BoardMinion) => {
+    setInspectingCard(card);
+    setInspectingBoardMinion(boardMinion);
+  };
+
   const handleReadyCombat = () => {
     const game = gameRef.current;
     game.resolveCombatPhase();
@@ -158,6 +179,7 @@ export const App: React.FC = () => {
     if (game.matchPhase === 'GAME_OVER') {
       syncState();
     } else {
+      setTimeLeft(70);
       game.startNewTurn();
       syncState();
     }
@@ -165,7 +187,7 @@ export const App: React.FC = () => {
 
   const handleRestartGame = () => {
     gameRef.current = new GameCoordinator();
-    setPhase('HERO_SELECT');
+    setPhase('HOME');
     setHuman(null);
     setDiscoverOptions(null);
   };
@@ -175,10 +197,30 @@ export const App: React.FC = () => {
     setIsMuted(muted);
   };
 
-  if (phase === 'HERO_SELECT' || !human) {
-    return <HeroSelectModal onSelectHero={handleSelectHero} />;
+  // HOME / LOGIN PHASE
+  if (phase === 'HOME') {
+    return (
+      <>
+        {showCodex && <AstralCodexModal onClose={() => setShowCodex(false)} />}
+        <HomePageModal
+          onLogin={handleLogin}
+          onOpenCodex={() => setShowCodex(true)}
+        />
+      </>
+    );
   }
 
+  // HERO SELECT PHASE
+  if (phase === 'HERO_SELECT' || !human) {
+    return (
+      <>
+        {showCodex && <AstralCodexModal onClose={() => setShowCodex(false)} />}
+        <HeroSelectModal onSelectHero={handleSelectHero} />
+      </>
+    );
+  }
+
+  // GAME OVER SCREEN
   if (phase === 'GAME_OVER') {
     const isWinner = human.placement === 1;
     if (isWinner) {
@@ -226,8 +268,10 @@ export const App: React.FC = () => {
   if (phase === 'COMBAT' && gameRef.current.lastHumanCombatResult) {
     return (
       <CombatArena3D
+        key={`combat-${currentTurn}`}
         player={human}
         combatResult={gameRef.current.lastHumanCombatResult}
+        turnNumber={currentTurn}
         onFinishCombat={handleFinishCombat}
       />
     );
@@ -236,11 +280,36 @@ export const App: React.FC = () => {
   // MAIN TAVERN SHOP & BATTLEFIELD VIEW
   return (
     <div className="relative w-screen h-screen flex flex-col justify-between overflow-hidden bg-[#070412]">
+      {/* Astral Codex Modal */}
+      {showCodex && <AstralCodexModal onClose={() => setShowCodex(false)} />}
+
+      {/* Global Card Inspector Modal */}
+      {(inspectingCard || inspectingBoardMinion) && (
+        <CardInspectorModal
+          card={inspectingCard}
+          boardMinion={inspectingBoardMinion}
+          onClose={() => {
+            setInspectingCard(undefined);
+            setInspectingBoardMinion(undefined);
+          }}
+        />
+      )}
+
+      {/* Hero Profile Showcase Modal */}
+      {inspectingHero && (
+        <HeroProfileModal
+          hero={inspectingHero}
+          onClose={() => setInspectingHero(null)}
+        />
+      )}
+
+      {/* Triplet Discover Modal */}
       {discoverOptions && (
         <DiscoverModal
           options={discoverOptions}
           tier={discoverTier}
           onChoose={handleChooseDiscover}
+          onInspect={handleInspectCard}
         />
       )}
 
@@ -249,7 +318,7 @@ export const App: React.FC = () => {
         currentTurn={currentTurn}
         timeLeft={timeLeft}
         onReadyCombat={handleReadyCombat}
-        onUseHeroPower={handleUseHeroPower}
+        onOpenCodex={() => setShowCodex(true)}
         isMuted={isMuted}
         onToggleMute={handleToggleMute}
       />
@@ -264,20 +333,26 @@ export const App: React.FC = () => {
             onReroll={handleReroll}
             onToggleFreeze={handleToggleFreeze}
             onUpgradeTier={handleUpgradeTier}
+            onInspect={handleInspectCard}
           />
 
           <Board
             minions={human.board}
             onReorder={handleReorderBoard}
             onSellMinion={handleSellMinion}
+            onInspect={handleInspectCard}
           />
         </main>
       </div>
 
       <HandTray
+        player={human}
         hand={human.hand}
         boardCount={human.board.length}
         onPlayCard={handlePlayCard}
+        onUseHeroPower={handleUseHeroPower}
+        onInspectHero={() => setInspectingHero(human.hero)}
+        onInspect={handleInspectCard}
       />
     </div>
   );
