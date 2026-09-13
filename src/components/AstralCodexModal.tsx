@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { REALMS_LORE, FACTIONS_LORE, TIMELINE_LORE, RELICS_LORE, RealmEntry, FactionEntry } from '../engine/lore';
 import { sound } from '../audio/sound';
+import { useLenisScroll } from '../hooks/useLenisScroll';
 
 interface AstralCodexModalProps {
   onClose: () => void;
@@ -12,6 +13,8 @@ export const AstralCodexModal: React.FC<AstralCodexModalProps> = ({ onClose }) =
   const [activeTab, setActiveTab] = useState<CodexTab>('REALMS');
   const [selectedRealm, setSelectedRealm] = useState<RealmEntry>(REALMS_LORE[0]);
   const [selectedFaction, setSelectedFaction] = useState<FactionEntry>(FACTIONS_LORE[0]);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useLenisScroll(scrollRef, undefined, [activeTab, selectedRealm, selectedFaction]);
 
   return (
     <div
@@ -101,7 +104,7 @@ export const AstralCodexModal: React.FC<AstralCodexModalProps> = ({ onClose }) =
             </div>
 
             {/* Selected Realm Spotlight Card */}
-            <div className="flex-1 dark-steel-card rounded-3xl p-5 flex flex-col justify-between overflow-y-auto border-2 border-yellow-500/50">
+            <div ref={scrollRef} className="flex-1 dark-steel-card rounded-3xl p-5 flex flex-col justify-between overflow-y-auto border-2 border-yellow-500/50">
               <div className="relative w-full h-48 rounded-2xl overflow-hidden border-2 border-[#5a4d7a] shadow-inner mb-4 flex-shrink-0">
                 <img
                   src={selectedRealm.image}
@@ -185,7 +188,7 @@ export const AstralCodexModal: React.FC<AstralCodexModalProps> = ({ onClose }) =
             </div>
 
             {/* Selected Faction Spotlight */}
-            <div className="flex-1 dark-steel-card rounded-3xl p-5 flex flex-col justify-between overflow-y-auto border-2 border-yellow-500/50">
+            <div ref={scrollRef} className="flex-1 dark-steel-card rounded-3xl p-5 flex flex-col justify-between overflow-y-auto border-2 border-yellow-500/50">
               <div className="flex items-center gap-4 mb-3 pb-3 border-b border-purple-950">
                 <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-yellow-500/70 shadow-lg flex-shrink-0">
                   <img src={selectedFaction.image} alt={selectedFaction.name} className="w-full h-full object-cover" />
@@ -231,7 +234,7 @@ export const AstralCodexModal: React.FC<AstralCodexModalProps> = ({ onClose }) =
 
         {/* TAB 3: THE ASTRAL TIMELINE */}
         {activeTab === 'TIMELINE' && (
-          <div className="flex-1 flex flex-col gap-4 my-4 overflow-y-auto pr-1">
+          <div ref={scrollRef} className="flex-1 flex flex-col gap-4 my-4 overflow-y-auto pr-1">
             {TIMELINE_LORE.map((t, idx) => (
               <div
                 key={idx}
@@ -260,7 +263,7 @@ export const AstralCodexModal: React.FC<AstralCodexModalProps> = ({ onClose }) =
 
         {/* TAB 4: RELICS OF POWER */}
         {activeTab === 'RELICS' && (
-          <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 my-4 overflow-y-auto pr-1">
+          <div ref={scrollRef} className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 my-4 overflow-y-auto pr-1">
             {RELICS_LORE.map((relic) => (
               <div
                 key={relic.id}

@@ -61,7 +61,7 @@ export const TavernShop: React.FC<TavernShopProps> = ({
               }}
               disabled={!canAffordUpgrade}
               className={`
-                flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold text-xs font-cinzel transition-all duration-200 border
+                flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold text-xs font-cinzel transition-[transform,colors] duration-150 ease-out border
                 ${canAffordUpgrade
                   ? 'bg-gradient-to-r from-amber-600 to-yellow-500 border-yellow-300 text-black hover:scale-105 shadow-brass active:scale-95'
                   : 'bg-slate-900/60 border-slate-700 text-slate-500 cursor-not-allowed'}
@@ -90,7 +90,7 @@ export const TavernShop: React.FC<TavernShopProps> = ({
           <button
             onClick={handleToggleFreeze}
             className={`
-              flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold text-xs font-cinzel transition-all border
+              flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold text-xs font-cinzel transition-[transform,colors] duration-150 ease-out border
               ${player.isFrozen
                 ? 'bg-cyan-950 border-cyan-400 text-cyan-300 shadow-aether scale-105 animate-pulse'
                 : 'bg-slate-900 border-slate-700 text-slate-300 hover:border-cyan-500 hover:text-cyan-300 hover:scale-105 active:scale-95'}
@@ -106,7 +106,7 @@ export const TavernShop: React.FC<TavernShopProps> = ({
             onClick={handleReroll}
             disabled={!canAffordReroll}
             className={`
-              relative overflow-hidden flex items-center gap-1.5 px-4 py-1.5 rounded-xl font-bold text-xs font-cinzel transition-all border
+              relative overflow-hidden flex items-center gap-1.5 px-4 py-1.5 rounded-xl font-bold text-xs font-cinzel transition-[transform,colors] duration-150 ease-out border
               ${canAffordReroll
                 ? 'bg-gradient-to-r from-purple-800 to-indigo-700 border-purple-400 text-white hover:scale-105 shadow-void active:scale-95'
                 : 'bg-slate-900/60 border-slate-700 text-slate-500 cursor-not-allowed'}

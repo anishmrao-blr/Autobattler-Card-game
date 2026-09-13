@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { MinionCard, BoardMinion, Tribe, Keyword } from '../types';
 import { TRIBE_ART_MAP } from '../engine/cards';
+import { CardMediaArt } from './CardMediaArt';
 import { sound } from '../audio/sound';
 
 interface CardInspectorModalProps {
@@ -9,7 +10,7 @@ interface CardInspectorModalProps {
   onClose: () => void;
 }
 
-const KEYWORD_EXPLANATIONS: Record<Keyword, { label: string; desc: string; icon: string }> = {
+export const KEYWORD_EXPLANATIONS: Record<Keyword, { label: string; desc: string; icon: string }> = {
   BASTION: { label: 'Bastion', desc: 'Enemies must attack this minion first.', icon: '🛡️' },
   AETHER_BARRIER: { label: 'Aether Barrier', desc: 'Completely absorbs the first instance of damage received.', icon: '✨' },
   LAST_GASP: { label: 'Last Gasp', desc: 'Triggers a special effect when this minion is destroyed in battle.', icon: '💀' },
@@ -20,7 +21,7 @@ const KEYWORD_EXPLANATIONS: Record<Keyword, { label: string; desc: string; icon:
   MAGNETIC: { label: 'Magnetic', desc: 'Can be snapped onto friendly Automata to fuse stats and keywords.', icon: '🧲' },
 };
 
-const TRIBE_LORE: Record<Tribe, string> = {
+export const TRIBE_LORE: Record<Tribe, string> = {
   AUTOMATA: 'Clockwork constructs forged with pressurized steam, magnetic plating, and kinetic barriers.',
   VOIDBORN: 'Eldritch aberrations manifesting from cosmic rifts, thriving on death and sacrificial summoning.',
   ALCHEMIST: 'Arcane transmuters specializing in volatile concoctions, stat surges, and potion brewing.',
@@ -109,10 +110,11 @@ export const CardInspectorModal: React.FC<CardInspectorModalProps> = ({
 
             {/* Giant Illustrated Artwork Window */}
             <div className="relative my-2 w-full flex-1 rounded-xl overflow-hidden border-2 border-[#5a4d7a] shadow-inner group bg-black/90 min-h-[190px]">
-              <img
-                src={artUrl}
+              <CardMediaArt
+                artUrl={artUrl}
+                videoUrl={boardMinion?.videoUrl || card?.videoUrl}
                 alt={name}
-                className="w-full h-full object-cover object-center transform transition-transform duration-500 group-hover:scale-110"
+                hoverZoom={true}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/30 pointer-events-none" />
               

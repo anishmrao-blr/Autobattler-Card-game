@@ -50,7 +50,7 @@ export const HeroSelectModal: React.FC<HeroSelectModalProps> = ({ onSelectHero, 
         {heroes.map((hero) => (
           <div
             key={hero.id}
-            className="group relative flex flex-col justify-between dark-steel-card rounded-3xl p-4 shadow-2xl transition-all duration-300 transform hover:-translate-y-2 hover:border-yellow-400 hover:shadow-[0_15px_35px_rgba(234,179,8,0.3)] cursor-pointer"
+            className="group relative flex flex-col justify-between dark-steel-card rounded-3xl p-4 shadow-2xl transition-[transform,box-shadow,border-color] duration-200 ease-out transform hover:-translate-y-2 hover:border-yellow-400 hover:shadow-[0_15px_35px_rgba(234,179,8,0.3)] cursor-pointer"
           >
             {/* Quick Inspect Button on Top Right */}
             <button
@@ -60,7 +60,7 @@ export const HeroSelectModal: React.FC<HeroSelectModalProps> = ({ onSelectHero, 
                 setInspectingHero(hero);
               }}
               title="Zoom & Inspect Hero Lore"
-              className="absolute top-3 right-3 bg-black/80 hover:bg-yellow-500 hover:text-black text-yellow-300 border border-yellow-500/60 rounded-full px-2 py-0.5 text-[10px] font-cinzel font-bold z-30 transition-all shadow-md flex items-center gap-1"
+              className="absolute top-3 right-3 bg-black/80 hover:bg-yellow-500 hover:text-black text-yellow-300 border border-yellow-500/60 rounded-full px-2 py-0.5 text-[10px] font-cinzel font-bold z-30 transition-colors duration-150 shadow-md flex items-center gap-1"
             >
               <span>🔍</span>
               <span>Lore</span>
@@ -126,7 +126,7 @@ export const HeroSelectModal: React.FC<HeroSelectModalProps> = ({ onSelectHero, 
                 sound.playTierUpgrade();
                 onSelectHero(hero);
               }}
-              className="mt-3 w-full py-2.5 bg-gradient-to-r from-amber-600 to-yellow-500 group-hover:from-amber-500 group-hover:to-yellow-400 text-black font-cinzel font-black text-xs rounded-xl shadow-brass transition-all group-hover:scale-105 active:scale-95"
+              className="mt-3 w-full py-2.5 bg-gradient-to-r from-amber-600 to-yellow-500 group-hover:from-amber-500 group-hover:to-yellow-400 text-black font-cinzel font-black text-xs rounded-xl shadow-brass transition-transform duration-150 group-hover:scale-105 active:scale-95"
             >
               CHOOSE COMMANDER ➔
             </button>
@@ -141,7 +141,7 @@ export const HeroSelectModal: React.FC<HeroSelectModalProps> = ({ onSelectHero, 
             sound.playCardSnap();
             onBackToLogin();
           }}
-          className="mt-6 px-5 py-2.5 bg-slate-900/90 hover:bg-slate-800 border border-slate-700 hover:border-yellow-500/50 text-slate-300 hover:text-white font-cinzel font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2 cursor-pointer hover:scale-105 active:scale-95"
+          className="mt-6 px-5 py-2.5 bg-slate-900/90 hover:bg-slate-800 border border-slate-700 hover:border-yellow-500/50 text-slate-300 hover:text-white font-cinzel font-bold text-xs rounded-xl shadow transition-colors duration-150 flex items-center gap-2 cursor-pointer active:scale-95"
         >
           <span>←</span>
           <span>BACK TO LOGIN CALLSIGN</span>

@@ -6,6 +6,7 @@ interface GameMenuModalProps {
   onConcede: () => void;
   onExitToLogin: () => void;
   onOpenCodex?: () => void;
+  onOpenTutorial?: () => void;
   predictedPlacement?: number;
   playerName?: string;
   heroName?: string;
@@ -22,6 +23,7 @@ export const GameMenuModal: React.FC<GameMenuModalProps> = ({
   onConcede,
   onExitToLogin,
   onOpenCodex,
+  onOpenTutorial,
   predictedPlacement = 8,
   playerName = 'Commander',
   heroName = 'Astral Hero',
@@ -176,6 +178,21 @@ export const GameMenuModal: React.FC<GameMenuModalProps> = ({
                   </div>
                 )}
               </div>
+
+              {/* How to Play / Tutorial */}
+              {onOpenTutorial && (
+                <button
+                  onClick={() => {
+                    sound.playCardSnap();
+                    onClose();
+                    onOpenTutorial();
+                  }}
+                  className="w-full py-2.5 px-4 bg-[#181035] hover:bg-[#25174f] border border-cyan-500/50 hover:border-cyan-400 text-cyan-200 font-cinzel font-bold text-xs rounded-xl shadow transition-colors duration-150 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>🎓</span>
+                  <span>HOW TO PLAY (GUIDED TUTORIAL)</span>
+                </button>
+              )}
 
               <div className="h-px bg-gradient-to-r from-transparent via-purple-700/50 to-transparent my-1" />
 

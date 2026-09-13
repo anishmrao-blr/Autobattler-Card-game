@@ -51,7 +51,7 @@ export const HomePageModal: React.FC<HomePageModalProps> = ({ onLogin, onOpenCod
             sound.playCardSnap();
             onOpenCodex();
           }}
-          className="absolute top-6 right-6 bg-[#0c071d]/90 hover:bg-yellow-500 hover:text-black text-yellow-300 border-2 border-yellow-500/60 px-4 py-2 rounded-2xl font-cinzel font-bold text-xs shadow-[0_0_20px_rgba(234,179,8,0.4)] transition-all flex items-center gap-2 z-20"
+          className="absolute top-6 right-6 bg-[#0c071d]/90 hover:bg-yellow-500 hover:text-black text-yellow-300 border-2 border-yellow-500/60 px-4 py-2 rounded-2xl font-cinzel font-bold text-xs shadow-[0_0_20px_rgba(234,179,8,0.4)] transition-colors duration-150 flex items-center gap-2 z-20"
         >
           <span>📖</span>
           <span>ASTRAL CODEX</span>
@@ -100,7 +100,7 @@ export const HomePageModal: React.FC<HomePageModalProps> = ({ onLogin, onOpenCod
                 onChange={(e) => setPlayerName(e.target.value)}
                 maxLength={20}
                 placeholder="Enter Callsign..."
-                className="w-full bg-[#0d071d]/90 border-2 border-[#524775] focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/30 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 outline-none transition-all shadow-inner font-sans"
+                className="w-full bg-[#0d071d]/90 border-2 border-[#524775] focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/30 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 outline-none transition-colors duration-150 shadow-inner font-sans"
               />
               <span className="absolute right-3 top-2.5 text-slate-500 text-xs">⚔️</span>
             </div>
@@ -119,7 +119,7 @@ export const HomePageModal: React.FC<HomePageModalProps> = ({ onLogin, onOpenCod
                     sound.playCardSnap();
                     setSelectedTitle(title);
                   }}
-                  className={`text-[11px] py-1.5 px-2 rounded-lg border font-sans truncate transition-all text-left ${
+                  className={`text-[11px] py-1.5 px-2 rounded-lg border font-sans truncate transition-colors duration-150 text-left ${
                     selectedTitle === title
                       ? 'bg-yellow-950/80 border-yellow-400 text-yellow-200 shadow-[0_0_10px_rgba(234,179,8,0.3)] font-bold'
                       : 'bg-black/50 border-slate-800 text-slate-400 hover:border-slate-600'
@@ -135,7 +135,7 @@ export const HomePageModal: React.FC<HomePageModalProps> = ({ onLogin, onOpenCod
           <button
             type="submit"
             disabled={isAuthenticating || !playerName.trim()}
-            className="w-full mt-4 py-3.5 bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 hover:from-amber-500 hover:to-yellow-400 text-black font-cinzel font-black text-sm rounded-xl shadow-[0_0_25px_rgba(234,179,8,0.5)] transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 tracking-wider"
+            className="w-full mt-4 py-3.5 bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 hover:from-amber-500 hover:to-yellow-400 text-black font-cinzel font-black text-sm rounded-xl shadow-[0_0_25px_rgba(234,179,8,0.5)] transition-[transform,opacity] duration-150 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 tracking-wider"
           >
             {isAuthenticating ? (
               <>

@@ -21,7 +21,9 @@ export default {
       },
       fontFamily: {
         serif: ['Cinzel', 'Georgia', 'serif'],
-        sans: ['Rajdhani', 'sans-serif'],
+        cinzel: ['Cinzel', 'Georgia', 'serif'],
+        sans: ['Familjen Grotesk', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
       },
       boxShadow: {
         'brass': '0 0 15px rgba(200, 155, 60, 0.4), inset 0 0 10px rgba(200, 155, 60, 0.2)',

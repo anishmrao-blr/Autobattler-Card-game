@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { PlayerState } from '../types';
+import { useLenisScroll } from '../hooks/useLenisScroll';
 
 interface LeaderboardProps {
   players: PlayerState[];
@@ -7,6 +8,9 @@ interface LeaderboardProps {
 }
 
 export const Leaderboard: React.FC<LeaderboardProps> = ({ players, currentTurn }) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useLenisScroll(scrollRef);
+
   const sorted = [...players].sort((a, b) => {
     if (a.isEliminated && !b.isEliminated) return 1;
     if (!a.isEliminated && b.isEliminated) return -1;
@@ -30,7 +34,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ players, currentTurn }
       </div>
 
       {/* Player List */}
-      <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-2 pr-1">
         {sorted.map((p, idx) => {
           const isDead = p.isEliminated || p.hp <= 0;
           const hpPercent = Math.max(0, Math.min(100, (p.hp / p.maxHp) * 100));

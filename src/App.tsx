@@ -14,6 +14,7 @@ import { Board } from './components/Board';
 import { HandTray } from './components/HandTray';
 import { CombatArena3D } from './components/CombatArena3D';
 import { GameMenuModal } from './components/GameMenuModal';
+import { TutorialOverlay, TUTORIAL_STORAGE_KEY } from './components/TutorialOverlay';
 import { sound } from './audio/sound';
 import confetti from 'canvas-confetti';
 
@@ -34,6 +35,7 @@ export const App: React.FC = () => {
   const [inspectingHero, setInspectingHero] = useState<Hero | null>(null);
   const [showCodex, setShowCodex] = useState<boolean>(false);
   const [showGameMenu, setShowGameMenu] = useState<boolean>(false);
+  const [showTutorial, setShowTutorial] = useState<boolean>(false);
   const [playerCallsign, setPlayerCallsign] = useState<string>('Commander Thorne');
 
   const syncState = () => {
@@ -53,7 +55,7 @@ export const App: React.FC = () => {
   };
 
   useEffect(() => {
-    if (phase !== 'TAVERN' || inspectingCard || inspectingBoardMinion || inspectingHero || showCodex) return;
+    if (phase !== 'TAVERN' || inspectingCard || inspectingBoardMinion || inspectingHero || showCodex || showTutorial || showGameMenu) return;
 
     const interval = setInterval(() => {
       setTimeLeft(prev => {
@@ -67,12 +69,16 @@ export const App: React.FC = () => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [phase, currentTurn, inspectingCard, inspectingBoardMinion, inspectingHero, showCodex, showGameMenu]);
+  }, [phase, currentTurn, inspectingCard, inspectingBoardMinion, inspectingHero, showCodex, showTutorial, showGameMenu]);
 
   // Global ESC Key Handler (Closes submodals first, then toggles Game Menu)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        if (showTutorial) {
+          setShowTutorial(false);
+          return;
+        }
         if (showCodex) {
           setShowCodex(false);
           return;
@@ -94,7 +100,7 @@ export const App: React.FC = () => {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [phase, showCodex, inspectingCard, inspectingBoardMinion, inspectingHero]);
+  }, [phase, showCodex, showTutorial, inspectingCard, inspectingBoardMinion, inspectingHero]);
 
   const handleLogin = (name: string, _title: string) => {
     setPlayerCallsign(name);
@@ -106,6 +112,9 @@ export const App: React.FC = () => {
     setTimeLeft(70);
     game.initGame(hero, playerCallsign || 'Commander Player');
     syncState();
+    if (typeof window !== 'undefined' && !localStorage.getItem(TUTORIAL_STORAGE_KEY)) {
+      setShowTutorial(true);
+    }
   };
 
   const handleBuyMinion = (index: number) => {
@@ -387,6 +396,7 @@ export const App: React.FC = () => {
           onConcede={handleConcede}
           onExitToLogin={handleExitToLogin}
           onOpenCodex={() => setShowCodex(true)}
+          onOpenTutorial={() => setShowTutorial(true)}
           predictedPlacement={gameRef.current.getPredictedPlacement(human || undefined)}
           playerName={human?.name}
           heroName={human?.hero.name}
@@ -396,6 +406,12 @@ export const App: React.FC = () => {
           currentPhase="TAVERN"
         />
       )}
+
+      {/* Guided First-Match Tutorial Overlay */}
+      <TutorialOverlay
+        isOpen={showTutorial}
+        onClose={() => setShowTutorial(false)}
+      />
 
       <HeaderHUD
         player={human}

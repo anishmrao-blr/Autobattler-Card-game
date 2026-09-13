@@ -22,6 +22,7 @@ export interface MinionCard {
   goldenDescription?: string;
   icon: string;
   artUrl?: string;
+  videoUrl?: string;
   flavor: string;
   // Trigger effects identifiers
   onDeploy?: (ctx: DeployContext) => void;
@@ -48,6 +49,7 @@ export interface BoardMinion {
   rewindAvailable: boolean;
   icon: string;
   artUrl?: string;
+  videoUrl?: string;
   tempAttackBuff: number;
   tempHealthBuff: number;
 }

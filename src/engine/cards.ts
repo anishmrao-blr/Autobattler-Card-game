@@ -28,6 +28,7 @@ export function createBoardMinion(card: MinionCard, isGolden = false): BoardMini
     rewindAvailable: card.keywords.includes('RE_WIND'),
     icon: card.icon,
     artUrl: card.artUrl || TRIBE_ART_MAP[card.tribe],
+    videoUrl: card.videoUrl,
     tempAttackBuff: 0,
     tempHealthBuff: 0,
   };
@@ -46,6 +47,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Aegis Bastion. Aether Barrier.',
     goldenDescription: 'Aegis Bastion. Aether Barrier. Whenever attacked, gain +2 Attack.',
     icon: '⚙️',
+    artUrl: '/assets/art/card_auto_scrapper.jpg',
     flavor: 'Forged from scrap brass and imbued with a tiny aether shield.'
   },
   {
@@ -59,6 +61,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Fracture Core: Summon a 1/1 Void Tendril.',
     goldenDescription: 'Fracture Core: Summon two 2/2 Void Tendrils.',
     icon: '🐙',
+    artUrl: '/assets/art/card_void_larva.jpg',
     flavor: 'Small enough to fit in a pocket watch, hungry enough to devour hours.'
   },
   {
@@ -72,6 +75,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Deploy Surge: Infuse a friendly minion with +1/+1.',
     goldenDescription: 'Deploy Surge: Infuse a friendly minion with +2/+2.',
     icon: '🧪',
+    artUrl: '/assets/art/card_alch_brewer.jpg',
     flavor: 'The smoke smells of ozone, peppermint, and transmutational doom.'
   },
   {
@@ -85,6 +89,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Catalyst Aura: Whenever you recruit a Celestial, gain +1 Attack permanently.',
     goldenDescription: 'Catalyst Aura: Whenever you recruit a Celestial, gain +2 Attack permanently.',
     icon: '✨',
+    artUrl: '/assets/art/card_celest_spark.jpg',
     flavor: 'A piece of a fallen constellation that never stopped burning.'
   },
   {
@@ -98,6 +103,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Fracture Core: Deal 1 damage to a random enemy construct.',
     goldenDescription: 'Fracture Core: Deal 2 damage to a random enemy construct twice.',
     icon: '🦇',
+    artUrl: '/assets/art/card_beast_ripper.jpg',
     flavor: 'Echo-locates blood in pitch-black steam ducts.'
   },
   {
@@ -111,6 +117,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Deploy Surge: Selling this minion grants 2 Cog-Coins instead of 1.',
     goldenDescription: 'Deploy Surge: Selling this minion grants 4 Cog-Coins instead of 1.',
     icon: '⚓',
+    artUrl: '/assets/art/card_pirate_swab.jpg',
     flavor: 'Always has a pouch of smuggled aether coins sewn into his cuff.'
   },
 

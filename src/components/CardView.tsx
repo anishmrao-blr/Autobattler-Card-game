@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { MinionCard, BoardMinion, Tribe, Keyword } from '../types';
 import { TRIBE_ART_MAP } from '../engine/cards';
+import { CardHoverPreview } from './CardHoverPreview';
+import { CardMediaArt } from './CardMediaArt';
 import { sound } from '../audio/sound';
 
 interface CardViewProps {
@@ -85,6 +87,34 @@ export const CardView: React.FC<CardViewProps> = ({
   const artUrl = boardMinion?.artUrl || card?.artUrl || TRIBE_ART_MAP[tribe] || '/assets/art/hero_chronos.jpg';
   const tribeInfo = TRIBE_COLORS[tribe];
 
+  const cardRef = useRef<HTMLDivElement | null>(null);
+  const hoverTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [hoverPosition, setHoverPosition] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+
+  const handleMouseEnter = () => {
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    hoverTimerRef.current = setTimeout(() => {
+      if (cardRef.current) {
+        const rect = cardRef.current.getBoundingClientRect();
+        setHoverPosition({ x: rect.left, y: rect.top, width: rect.width, height: rect.height });
+      }
+    }, 350);
+  };
+
+  const handleMouseLeave = () => {
+    if (hoverTimerRef.current) {
+      clearTimeout(hoverTimerRef.current);
+      hoverTimerRef.current = null;
+    }
+    setHoverPosition(null);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    };
+  }, []);
+
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     sound.playCardSnap();
@@ -96,28 +126,32 @@ export const CardView: React.FC<CardViewProps> = ({
   };
 
   const sizeDimensions = {
-    sm: 'w-28 h-44 text-[10px]',
-    md: 'w-40 h-64 text-xs',
-    lg: 'w-52 h-80 text-sm',
+    sm: 'w-[140px] h-[220px] text-xs',
+    md: 'w-44 h-[272px] text-xs',
+    lg: 'w-56 h-[330px] text-sm',
   }[size];
 
   return (
-    <div
-      onClick={!disabled ? onClick : undefined}
-      onContextMenu={handleContextMenu}
-      className={`
-        relative select-none flex flex-col justify-between rounded-2xl p-1.5 transition-all duration-200 cursor-pointer overflow-hidden group/card
-        ${sizeDimensions}
-        ${isGolden ? 'golden-steel-card shimmer-foil' : 'dark-steel-card'}
-        ${isFrozen ? 'frost-card' : ''}
-        ${isSelected ? 'ring-4 ring-cyan-400 scale-105 shadow-[0_0_25px_rgba(0,240,255,0.7)]' : 'hover:scale-105 hover:shadow-[0_15px_30px_rgba(0,0,0,0.9)]'}
-        ${isAttacking ? 'scale-110 -translate-y-4 ring-4 ring-yellow-400 z-30 transition-transform duration-150' : ''}
-        ${isHit ? 'animate-wiggle ring-4 ring-red-500 scale-95 duration-100' : ''}
-        ${hasBastion ? 'ring-2 ring-blue-500/80 rounded-2xl' : ''}
-        ${isMiasmic ? 'shadow-[inset_0_0_15px_rgba(0,230,118,0.4)]' : ''}
-        ${disabled ? 'opacity-50 cursor-not-allowed grayscale' : ''}
-      `}
-    >
+    <>
+      <div
+        ref={cardRef}
+        onClick={!disabled ? onClick : undefined}
+        onContextMenu={handleContextMenu}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className={`
+          relative select-none flex flex-col justify-between rounded-2xl p-1.5 transition-transform duration-200 ease-out cursor-pointer overflow-hidden group/card
+          ${sizeDimensions}
+          ${isGolden ? 'golden-steel-card shimmer-foil' : 'dark-steel-card'}
+          ${isFrozen ? 'frost-card' : ''}
+          ${isSelected ? 'ring-4 ring-cyan-400 scale-105 shadow-[0_0_25px_rgba(0,240,255,0.7)]' : 'hover:scale-105 hover:shadow-[0_15px_30px_rgba(0,0,0,0.9)]'}
+          ${isAttacking ? 'scale-110 -translate-y-4 ring-4 ring-yellow-400 z-30' : ''}
+          ${isHit ? 'animate-wiggle ring-4 ring-red-500 scale-95 duration-100' : ''}
+          ${hasBastion ? 'ring-2 ring-blue-500/80 rounded-2xl' : ''}
+          ${isMiasmic ? 'shadow-[inset_0_0_15px_rgba(0,230,118,0.4)]' : ''}
+          ${disabled ? 'opacity-50 cursor-not-allowed grayscale' : ''}
+        `}
+      >
       {/* Hexagonal Forcefield Barrier Overlay */}
       {hasBarrier && (
         <div className="absolute inset-0 rounded-2xl border-2 border-cyan-400/90 bg-cyan-400/20 hex-barrier pointer-events-none z-30 flex items-center justify-center overflow-hidden">
@@ -175,10 +209,10 @@ export const CardView: React.FC<CardViewProps> = ({
 
         {/* Steel Name Plate */}
         <div className="flex-1 steel-name-plate py-0.5 px-2 rounded-md flex items-center justify-between overflow-hidden">
-          <span className={`text-[11px] font-bold truncate leading-tight font-cinzel tracking-wide ${isGolden ? 'text-yellow-300 drop-shadow-[0_0_6px_rgba(255,215,0,0.8)]' : 'text-slate-100'}`}>
+          <span className={`text-sm font-bold truncate leading-tight font-cinzel tracking-wide ${isGolden ? 'text-yellow-300 drop-shadow-[0_0_6px_rgba(255,215,0,0.8)]' : 'text-slate-100'}`}>
             {name.replace('★ ', '')}
           </span>
-          <span className="text-[9px] text-yellow-400 font-bold ml-1 font-mono">
+          <span className="text-xs text-yellow-400 font-bold ml-1 font-mono">
             {'★'.repeat(tier)}
           </span>
         </div>
@@ -186,23 +220,23 @@ export const CardView: React.FC<CardViewProps> = ({
 
       {/* Illustrated Painterly Portrait Viewport */}
       <div className="relative w-full flex-1 rounded-lg overflow-hidden border border-[#5a4d7a] shadow-inner group bg-black/80 min-h-[90px]">
-        <img
-          src={artUrl}
+        <CardMediaArt
+          artUrl={artUrl}
+          videoUrl={boardMinion?.videoUrl || card?.videoUrl}
           alt={name}
-          className="w-full h-full object-cover object-center transform transition-transform duration-300 group-hover:scale-110"
-          loading="lazy"
+          hoverZoom={true}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/30 pointer-events-none" />
 
         {/* Flanking Tribe Ribbon Badge on Art */}
-        <div className={`absolute bottom-1 right-1 text-[8px] font-bold px-2 py-0.5 rounded-full border shadow-md backdrop-blur-md ${tribeInfo.bg} ${tribeInfo.text} ${tribeInfo.border}`}>
+        <div className={`absolute bottom-1 right-1 text-xs font-bold px-2 py-0.5 rounded-full border shadow-md backdrop-blur-md ${tribeInfo.bg} ${tribeInfo.text} ${tribeInfo.border}`}>
           {tribe}
         </div>
       </div>
 
       {/* Description Slate Plaque */}
       <div className="relative steel-text-plaque p-1.5 rounded-lg my-1 flex flex-col justify-between min-h-[46px] z-10">
-        <div className="text-[10px] text-slate-300 line-clamp-2 leading-snug font-sans">
+        <div className="text-[13px] text-slate-200 line-clamp-2 leading-snug font-sans">
           {description ? (
             <span>
               {keywords.map(kw => (
@@ -218,7 +252,7 @@ export const CardView: React.FC<CardViewProps> = ({
         </div>
 
         {/* 5-Diamond Tier Pips */}
-        <div className="flex items-center justify-center gap-1 mt-0.5 text-[8px]">
+        <div className="flex items-center justify-center gap-1 mt-0.5 text-[9px]">
           {[1, 2, 3, 4, 5, 6].map(t => (
             <span key={t} className={t <= tier ? (isGolden ? 'text-yellow-400' : 'text-purple-400') : 'text-slate-700'}>
               ◆
@@ -230,21 +264,25 @@ export const CardView: React.FC<CardViewProps> = ({
       {/* Bottom Footer: Attack Medallion, Price Coin, Health Medallion */}
       <div className="flex items-center justify-between mt-auto pt-0.5 z-20">
         {/* Attack Stat Medallion */}
-        <div className="stat-medallion-atk flex items-center justify-center w-8 h-8 rounded-full font-black text-white font-cinzel text-sm">
+        <div className="stat-medallion-atk flex items-center justify-center w-8 h-8 rounded-full font-black text-white font-mono text-sm">
           {attack}
         </div>
 
         {showPrice && (
-          <div className="flex items-center gap-1 bg-yellow-950/90 border border-yellow-400 text-yellow-300 font-bold text-[10px] px-2 py-0.5 rounded-full shadow-md">
+          <div className="flex items-center gap-1 bg-yellow-950/90 border border-yellow-400 text-yellow-300 font-mono font-bold text-xs px-2 py-0.5 rounded-full shadow-md">
             <span>🪙</span> {price}
           </div>
         )}
 
         {/* Health Stat Medallion */}
-        <div className={`stat-medallion-hp flex items-center justify-center w-8 h-8 rounded-full font-black text-white font-cinzel text-sm ${health < maxHealth ? 'animate-pulse text-red-200' : ''}`}>
+        <div className={`stat-medallion-hp flex items-center justify-center w-8 h-8 rounded-full font-black text-white font-mono text-sm ${health < maxHealth ? 'animate-pulse text-red-200' : ''}`}>
           {health}
         </div>
       </div>
     </div>
+    {hoverPosition && (
+      <CardHoverPreview card={card} boardMinion={boardMinion} position={hoverPosition} />
+    )}
+  </>
   );
 };
