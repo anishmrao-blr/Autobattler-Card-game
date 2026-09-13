@@ -10,6 +10,7 @@ interface HeaderHUDProps {
   onOpenCodex?: () => void;
   isMuted: boolean;
   onToggleMute: () => void;
+  onOpenMenu?: () => void;
 }
 
 export const HeaderHUD: React.FC<HeaderHUDProps> = ({
@@ -20,6 +21,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({
   onOpenCodex,
   isMuted,
   onToggleMute,
+  onOpenMenu,
 }) => {
   return (
     <header className="w-full bg-[#0d071d]/90 border-b border-[#3b2a59] px-6 py-2.5 flex items-center justify-between shadow-xl backdrop-blur-md z-30 select-none">
@@ -108,11 +110,25 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({
         {/* Mute Button */}
         <button
           onClick={onToggleMute}
-          className="p-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl text-sm text-slate-300 hover:text-white transition-colors"
+          className="p-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl text-sm text-slate-300 hover:text-white transition-colors cursor-pointer"
           title={isMuted ? 'Unmute Sound' : 'Mute Sound'}
         >
           {isMuted ? '🔇' : '🔊'}
         </button>
+
+        {/* Game Menu / Settings Cog */}
+        {onOpenMenu && (
+          <button
+            onClick={() => {
+              sound.playCardSnap();
+              onOpenMenu();
+            }}
+            className="flex items-center gap-1 p-2 bg-[#120a26] hover:bg-yellow-500 hover:text-black border border-yellow-500/50 rounded-xl text-sm text-yellow-300 transition-all shadow-sm cursor-pointer"
+            title="Game Menu / Concede / Exit (Esc)"
+          >
+            <span>⚙️</span>
+          </button>
+        )}
       </div>
     </header>
   );

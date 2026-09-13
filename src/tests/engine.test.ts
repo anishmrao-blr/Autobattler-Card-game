@@ -233,4 +233,20 @@ describe('Aetherium Engine - Full 8-Player Game Simulation', () => {
     const leaderboard = game.getLeaderboard();
     expect(leaderboard.length).toBe(8);
   });
+
+  it('allows human player to concede, correctly assigns placement, and finishes game', () => {
+    const game = new GameCoordinator();
+    game.initGame(HERO_DATABASE[0], 'Conceding Commander');
+    const human = game.getHumanPlayer();
+
+    expect(game.matchPhase).toBe('TAVERN');
+    expect(game.getPredictedPlacement(human)).toBe(8);
+
+    game.concedeGame(human);
+
+    expect(human.hp).toBe(0);
+    expect(human.isEliminated).toBe(true);
+    expect(human.placement).toBe(8);
+    expect(game.matchPhase).toBe('GAME_OVER');
+  });
 });

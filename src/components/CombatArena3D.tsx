@@ -12,6 +12,7 @@ interface CombatArena3DProps {
   combatResult: CombatSimulationResult;
   turnNumber?: number;
   onFinishCombat: () => void;
+  onOpenMenu?: () => void;
 }
 
 export const CombatArena3D: React.FC<CombatArena3DProps> = ({
@@ -19,6 +20,7 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
   combatResult,
   turnNumber = 1,
   onFinishCombat,
+  onOpenMenu,
 }) => {
   // Determine sides
   const isPlayerSide1 = combatResult.p1.id === player.id;
@@ -428,7 +430,7 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
           </div>
         </div>
 
-        {/* Combat Speed & Playback Controls */}
+        {/* Combat Speed, Playback & Menu Controls */}
         <div className="flex items-center gap-2">
           <button
             onClick={() => setSpeed(s => (s === 1 ? 1.5 : s === 1.5 ? 2.5 : 1))}
@@ -442,6 +444,19 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
           >
             {isPlaying ? '⏸ PAUSE' : '▶ RESUME'}
           </button>
+          {onOpenMenu && (
+            <button
+              onClick={() => {
+                sound.playCardSnap();
+                setIsPlaying(false);
+                onOpenMenu();
+              }}
+              className="p-1 px-2.5 bg-[#120a26] hover:bg-yellow-500 hover:text-black border border-yellow-500/50 rounded-xl text-xs text-yellow-300 transition-all shadow-sm cursor-pointer"
+              title="Game Menu / Concede / Exit (Esc)"
+            >
+              <span>⚙️</span>
+            </button>
+          )}
         </div>
       </div>
 

@@ -13,6 +13,7 @@ import { TavernShop } from './components/TavernShop';
 import { Board } from './components/Board';
 import { HandTray } from './components/HandTray';
 import { CombatArena3D } from './components/CombatArena3D';
+import { GameMenuModal } from './components/GameMenuModal';
 import { sound } from './audio/sound';
 import confetti from 'canvas-confetti';
 
@@ -32,6 +33,7 @@ export const App: React.FC = () => {
   const [inspectingBoardMinion, setInspectingBoardMinion] = useState<BoardMinion | undefined>(undefined);
   const [inspectingHero, setInspectingHero] = useState<Hero | null>(null);
   const [showCodex, setShowCodex] = useState<boolean>(false);
+  const [showGameMenu, setShowGameMenu] = useState<boolean>(false);
   const [playerCallsign, setPlayerCallsign] = useState<string>('Commander Thorne');
 
   const syncState = () => {
@@ -65,7 +67,34 @@ export const App: React.FC = () => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [phase, currentTurn, inspectingCard, inspectingBoardMinion, inspectingHero, showCodex]);
+  }, [phase, currentTurn, inspectingCard, inspectingBoardMinion, inspectingHero, showCodex, showGameMenu]);
+
+  // Global ESC Key Handler (Closes submodals first, then toggles Game Menu)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (showCodex) {
+          setShowCodex(false);
+          return;
+        }
+        if (inspectingCard || inspectingBoardMinion) {
+          setInspectingCard(undefined);
+          setInspectingBoardMinion(undefined);
+          return;
+        }
+        if (inspectingHero) {
+          setInspectingHero(null);
+          return;
+        }
+        if (phase === 'TAVERN' || phase === 'COMBAT') {
+          sound.playCardSnap();
+          setShowGameMenu(prev => !prev);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [phase, showCodex, inspectingCard, inspectingBoardMinion, inspectingHero]);
 
   const handleLogin = (name: string, _title: string) => {
     setPlayerCallsign(name);
@@ -185,6 +214,19 @@ export const App: React.FC = () => {
     }
   };
 
+  const handleConcede = () => {
+    setShowGameMenu(false);
+    const game = gameRef.current;
+    const p = game.getHumanPlayer();
+    game.concedeGame(p);
+    syncState();
+  };
+
+  const handleExitToLogin = () => {
+    setShowGameMenu(false);
+    handleRestartGame();
+  };
+
   const handleRestartGame = () => {
     gameRef.current = new GameCoordinator();
     setPhase('HOME');
@@ -215,7 +257,7 @@ export const App: React.FC = () => {
     return (
       <>
         {showCodex && <AstralCodexModal onClose={() => setShowCodex(false)} />}
-        <HeroSelectModal onSelectHero={handleSelectHero} />
+        <HeroSelectModal onSelectHero={handleSelectHero} onBackToLogin={handleRestartGame} />
       </>
     );
   }
@@ -255,9 +297,15 @@ export const App: React.FC = () => {
 
           <button
             onClick={handleRestartGame}
-            className="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-black font-cinzel font-bold text-sm rounded-xl shadow-brass transition-all hover:scale-105"
+            className="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-black font-cinzel font-bold text-sm rounded-xl shadow-brass transition-all hover:scale-105 cursor-pointer"
           >
             PLAY AGAIN ➔
+          </button>
+          <button
+            onClick={handleRestartGame}
+            className="w-full mt-2 py-2.5 bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white font-cinzel font-bold text-xs rounded-xl transition-all cursor-pointer"
+          >
+            🚪 EXIT TO LOGIN SCREEN
           </button>
         </div>
       </div>
@@ -267,13 +315,32 @@ export const App: React.FC = () => {
   // 3D COMBAT VIEW PHASE
   if (phase === 'COMBAT' && gameRef.current.lastHumanCombatResult) {
     return (
-      <CombatArena3D
-        key={`combat-${currentTurn}`}
-        player={human}
-        combatResult={gameRef.current.lastHumanCombatResult}
-        turnNumber={currentTurn}
-        onFinishCombat={handleFinishCombat}
-      />
+      <>
+        <CombatArena3D
+          key={`combat-${currentTurn}`}
+          player={human}
+          combatResult={gameRef.current.lastHumanCombatResult}
+          turnNumber={currentTurn}
+          onFinishCombat={handleFinishCombat}
+          onOpenMenu={() => setShowGameMenu(true)}
+        />
+        {showGameMenu && (
+          <GameMenuModal
+            onClose={() => setShowGameMenu(false)}
+            onConcede={handleConcede}
+            onExitToLogin={handleExitToLogin}
+            onOpenCodex={() => setShowCodex(true)}
+            predictedPlacement={gameRef.current.getPredictedPlacement(human || undefined)}
+            playerName={human?.name}
+            heroName={human?.hero.name}
+            avatar={human?.avatar}
+            isMuted={isMuted}
+            onToggleMute={handleToggleMute}
+            currentPhase="COMBAT"
+          />
+        )}
+        {showCodex && <AstralCodexModal onClose={() => setShowCodex(false)} />}
+      </>
     );
   }
 
@@ -313,6 +380,23 @@ export const App: React.FC = () => {
         />
       )}
 
+      {/* AAA Game Menu / Settings Modal */}
+      {showGameMenu && (
+        <GameMenuModal
+          onClose={() => setShowGameMenu(false)}
+          onConcede={handleConcede}
+          onExitToLogin={handleExitToLogin}
+          onOpenCodex={() => setShowCodex(true)}
+          predictedPlacement={gameRef.current.getPredictedPlacement(human || undefined)}
+          playerName={human?.name}
+          heroName={human?.hero.name}
+          avatar={human?.avatar}
+          isMuted={isMuted}
+          onToggleMute={handleToggleMute}
+          currentPhase="TAVERN"
+        />
+      )}
+
       <HeaderHUD
         player={human}
         currentTurn={currentTurn}
@@ -321,6 +405,7 @@ export const App: React.FC = () => {
         onOpenCodex={() => setShowCodex(true)}
         isMuted={isMuted}
         onToggleMute={handleToggleMute}
+        onOpenMenu={() => setShowGameMenu(true)}
       />
 
       <div className="flex-1 flex overflow-hidden">

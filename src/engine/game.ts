@@ -200,6 +200,23 @@ export class GameCoordinator {
     });
   }
 
+  public concedeGame(player?: PlayerState): void {
+    const target = player || this.getHumanPlayer();
+    if (!target || target.isEliminated) return;
+
+    target.hp = 0;
+    this.updateEliminationsAndRankings();
+    this.matchPhase = 'GAME_OVER';
+  }
+
+  public getPredictedPlacement(player?: PlayerState): number {
+    const target = player || this.getHumanPlayer();
+    if (!target) return 8;
+    if (target.placement) return target.placement;
+    const currentlyDeadCount = this.players.filter(p => p.isEliminated).length;
+    return Math.max(1, 8 - currentlyDeadCount);
+  }
+
   private updateEliminationsAndRankings(): void {
     const deadPlayers = this.players.filter(p => p.hp <= 0 && !p.isEliminated);
     const currentlyDeadCount = this.players.filter(p => p.isEliminated).length;

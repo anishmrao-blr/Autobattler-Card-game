@@ -6,9 +6,10 @@ import { sound } from '../audio/sound';
 
 interface HeroSelectModalProps {
   onSelectHero: (hero: Hero) => void;
+  onBackToLogin?: () => void;
 }
 
-export const HeroSelectModal: React.FC<HeroSelectModalProps> = ({ onSelectHero }) => {
+export const HeroSelectModal: React.FC<HeroSelectModalProps> = ({ onSelectHero, onBackToLogin }) => {
   const [heroes] = useState<Hero[]>(() => {
     return [...HERO_DATABASE].sort(() => 0.5 - Math.random()).slice(0, 4);
   });
@@ -132,6 +133,20 @@ export const HeroSelectModal: React.FC<HeroSelectModalProps> = ({ onSelectHero }
           </div>
         ))}
       </div>
+
+      {/* Back to Login Callsign Option */}
+      {onBackToLogin && (
+        <button
+          onClick={() => {
+            sound.playCardSnap();
+            onBackToLogin();
+          }}
+          className="mt-6 px-5 py-2.5 bg-slate-900/90 hover:bg-slate-800 border border-slate-700 hover:border-yellow-500/50 text-slate-300 hover:text-white font-cinzel font-bold text-xs rounded-xl shadow transition-all flex items-center gap-2 cursor-pointer hover:scale-105 active:scale-95"
+        >
+          <span>←</span>
+          <span>BACK TO LOGIN CALLSIGN</span>
+        </button>
+      )}
     </div>
   );
 };
