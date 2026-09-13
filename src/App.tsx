@@ -281,12 +281,13 @@ export const App: React.FC = () => {
 
     return (
       <div className="fixed inset-0 bg-[#05030b] flex flex-col items-center justify-center p-6 text-center z-50 overflow-hidden">
-        {/* Ambient Victory / Defeat Background Video */}
+        {/* Ambient Victory / Defeat Background Video with Static Poster Fallback */}
         <video
           autoPlay
           loop
           muted
           playsInline
+          poster={isWinner ? '/assets/art/astral_portal.jpg' : '/assets/art/void_devourer.jpg'}
           className="absolute inset-0 w-full h-full object-cover opacity-25 pointer-events-none filter blur-sm"
           src={isWinner ? '/assets/video/reward_chest.mp4' : '/assets/video/defeat_monster.mp4'}
         />
@@ -300,6 +301,7 @@ export const App: React.FC = () => {
               loop
               muted
               playsInline
+              poster={isWinner ? '/assets/art/hero_chronos.jpg' : '/assets/art/void_devourer.jpg'}
               className="w-full h-full object-cover"
               src={isWinner ? '/assets/video/elemental_burst.mp4' : '/assets/video/defeat_monster.mp4'}
             />
