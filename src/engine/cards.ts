@@ -133,6 +133,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Aegis Bastion. Whenever this takes damage, gain +1 Attack.',
     goldenDescription: 'Aegis Bastion. Whenever this takes damage, gain +2 Attack.',
     icon: '🛡️',
+    artUrl: '/assets/art/cards/auto_sentry.jpg',
     flavor: 'Heats up as it takes punishment, venting pressurized steam.'
   },
   {
@@ -146,6 +147,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Temporal Re-wind: Resurrects once upon death with 1 Health.',
     goldenDescription: 'Temporal Re-wind: Resurrects once upon death with full Health and +2 Attack.',
     icon: '👁️',
+    artUrl: '/assets/art/cards/void_stalker.jpg',
     flavor: 'You cannot slay what already exists outside linear time.'
   },
   {
@@ -159,6 +161,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Aegis Bastion. Deploy Surge: Deal 2 damage to your Commander.',
     goldenDescription: 'Aegis Bastion. Deploy Surge: Deal 2 damage to your Commander.',
     icon: '⚗️',
+    artUrl: '/assets/art/cards/alch_homunculus.jpg',
     flavor: 'Brewed with high-pressure quicksilver. Highly unstable.'
   },
   {
@@ -172,6 +175,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Catalyst Aura: At the end of your turn, grant another friendly Celestial +1/+2.',
     goldenDescription: 'Catalyst Aura: At the end of your turn, grant another friendly Celestial +2/+4.',
     icon: '📜',
+    artUrl: '/assets/art/cards/celest_scribe.jpg',
     flavor: 'Calculates the orbital intersections of victory.'
   },
   {
@@ -185,6 +189,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Arc Sweep: Strikes also hit units adjacent to the primary target.',
     goldenDescription: 'Arc Sweep: Strikes also hit units adjacent to the primary target with +2 bonus damage.',
     icon: '🦂',
+    artUrl: '/assets/art/cards/beast_scuttler.jpg',
     flavor: 'Its twin pincer sweeps leave nothing standing in the trench.'
   },
   {
@@ -198,6 +203,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Rally Cry: Whenever a friendly Pirate attacks, grant it +1 Attack.',
     goldenDescription: 'Rally Cry: Whenever a friendly Pirate attacks, grant it +2 Attack.',
     icon: '🧭',
+    artUrl: '/assets/art/cards/pirate_smuggler.jpg',
     flavor: 'Stealing seconds between the swings of a blade.'
   },
 
@@ -213,6 +219,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Catalyst Aura: Whenever another Automata is played, grant it +2/+2.',
     goldenDescription: 'Catalyst Aura: Whenever another Automata is played, grant it +4/+4.',
     icon: '🦾',
+    artUrl: '/assets/art/cards/auto_assembler.jpg',
     flavor: 'Bolts extra iron plating onto fresh reinforcements.'
   },
   {
@@ -226,6 +233,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Catalyst Aura: Whenever a friendly Voidborn dies, gain +2/+1 permanently.',
     goldenDescription: 'Catalyst Aura: Whenever a friendly Voidborn dies, gain +4/+2 permanently.',
     icon: '🌑',
+    artUrl: '/assets/art/cards/void_devourer.jpg',
     flavor: 'Feeds on the passing echoes of its fallen brood.'
   },
   {
@@ -239,6 +247,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Miasmic Venom: Any damage dealt destroys the target construct.',
     goldenDescription: 'Miasmic Venom & Aether Barrier. Any damage dealt destroys the target.',
     icon: '☣️',
+    artUrl: '/assets/art/cards/alch_toxic.jpg',
     flavor: 'One scratch dissolves even reinforced chronosteel.'
   },
   {
@@ -252,6 +261,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Aether Barrier. Deploy Surge: Grant a friendly minion Aether Barrier.',
     goldenDescription: 'Aether Barrier. Deploy Surge: Grant 2 friendly minions Aether Barrier.',
     icon: '🌟',
+    artUrl: '/assets/art/cards/celest_envoy.jpg',
     flavor: 'A messenger cloaked in the pure luminescence of the first suns.'
   },
   {
@@ -265,6 +275,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Arc Sweep. Whenever this takes damage, gain +2 Attack.',
     goldenDescription: 'Arc Sweep. Whenever this takes damage, gain +4 Attack.',
     icon: '🐉',
+    artUrl: '/assets/art/cards/beast_frenzy.jpg',
     flavor: 'Cut off one steam valve, three more erupt with scalding fury.'
   },
   {
@@ -278,6 +289,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Kinetic Overclock: Attacks twice per combat round.',
     goldenDescription: 'Kinetic Overclock: Attacks twice per combat round with +2 Attack on second strike.',
     icon: '💣',
+    artUrl: '/assets/art/cards/pirate_cannoneer.jpg',
     flavor: 'Twin broadside cannons tuned for rapid steam-driven firing.'
   },
 
@@ -293,6 +305,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Aegis Bastion. Aether Barrier. Whenever an allied Barrier breaks, gain +2 Attack.',
     goldenDescription: 'Aegis Bastion. Aether Barrier. Whenever an allied Barrier breaks, gain +4 Attack.',
     icon: '🤖',
+    artUrl: '/assets/art/cards/auto_juggernaut.jpg',
     flavor: 'The peak of clockwork defense, impenetrable and punishing.'
   },
   {
@@ -306,6 +319,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Fracture Core: Summon two 3/3 Eldritch Spawn with Aegis Bastion.',
     goldenDescription: 'Fracture Core: Summon two 6/6 Eldritch Spawn with Aegis Bastion.',
     icon: '🕸️',
+    artUrl: '/assets/art/cards/void_fleshweaver.jpg',
     flavor: 'Weaves dark matter into protective horrors upon death.'
   },
   {
@@ -319,6 +333,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Catalyst Aura: At the end of your turn, grant your leftmost minion +3/+3.',
     goldenDescription: 'Catalyst Aura: At the end of your turn, grant your 2 leftmost minions +6/+6.',
     icon: '🔮',
+    artUrl: '/assets/art/cards/alch_transmuter.jpg',
     flavor: 'Turns lead to gold, and flesh to unbreakable living iron.'
   },
   {
@@ -332,6 +347,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Deploy Surge: Grant your entire warband +1/+1 for each Celestial on your board.',
     goldenDescription: 'Deploy Surge: Grant your entire warband +2/+2 for each Celestial on your board.',
     icon: '☀️',
+    artUrl: '/assets/art/cards/celest_archon.jpg',
     flavor: 'Channels the radiant birth of supernovas into allied formations.'
   },
   {
@@ -345,6 +361,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Rally Cry: Whenever a friendly Beast dies in combat, grant adjacent allies +2/+2.',
     goldenDescription: 'Rally Cry: Whenever a friendly Beast dies in combat, grant adjacent allies +4/+4.',
     icon: '🐺',
+    artUrl: '/assets/art/cards/beast_alpha.jpg',
     flavor: 'A howl that commands the pack to rend and tear without mercy.'
   },
   {
@@ -358,6 +375,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Deploy Surge: Gain 3 bonus Cog-Coins immediately.',
     goldenDescription: 'Deploy Surge: Gain 6 bonus Cog-Coins immediately.',
     icon: '🏴‍☠️',
+    artUrl: '/assets/art/cards/pirate_captain.jpg',
     flavor: 'Never sails without a strongbox of plundered aether gold.'
   },
 
@@ -373,6 +391,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Catalyst Aura: At the end of your turn, grant all friendly Automata +2/+2.',
     goldenDescription: 'Catalyst Aura: At the end of your turn, grant all friendly Automata +4/+4.',
     icon: '👑',
+    artUrl: '/assets/art/cards/auto_overlord.jpg',
     flavor: 'Synchronizes every cog in the warband into unified kinetic slaughter.'
   },
   {
@@ -386,6 +405,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Aegis Bastion. Whenever another friendly minion dies, absorb its Attack permanently.',
     goldenDescription: 'Aegis Bastion. Whenever another friendly minion dies, absorb 2x its Attack permanently.',
     icon: '🐙',
+    artUrl: '/assets/art/cards/void_abomination.jpg',
     flavor: 'Grows exponentially larger as its brethren return to the void.'
   },
   {
@@ -399,6 +419,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Deploy Surge: Transform a random tavern minion into a minion of 1 Tier higher.',
     goldenDescription: 'Deploy Surge: Transform 2 random tavern minions into minions of 1 Tier higher.',
     icon: '💎',
+    artUrl: '/assets/art/cards/alch_philosopher.jpg',
     flavor: 'The ultimate formula for matter transmutation, perfected at last.'
   },
   {
@@ -412,6 +433,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Fracture Core: Grant all friendly minions Aether Barrier and +2/+2.',
     goldenDescription: 'Fracture Core: Grant all friendly minions Aether Barrier and +4/+4.',
     icon: '🌌',
+    artUrl: '/assets/art/cards/celest_constellation.jpg',
     flavor: 'Weaves starlight tapestry into an impenetrable shield upon passing.'
   },
   {
@@ -425,6 +447,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Arc Sweep. Fracture Core: Summon three 3/3 Hydra Heads.',
     goldenDescription: 'Arc Sweep. Fracture Core: Summon three 6/6 Hydra Heads.',
     icon: '🐍',
+    artUrl: '/assets/art/cards/beast_hydra_colossus.jpg',
     flavor: 'Severing its spine only births a swarm of ravenous offspring.'
   },
   {
@@ -438,6 +461,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Rally Cry: Whenever another friendly Pirate attacks, grant all friendly minions +2/+1.',
     goldenDescription: 'Rally Cry: Whenever another friendly Pirate attacks, grant all friendly minions +4/+2.',
     icon: '⚔️',
+    artUrl: '/assets/art/cards/pirate_admiral.jpg',
     flavor: 'Commands the entire fleet to fire broadside after broadside.'
   },
 
@@ -453,6 +477,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Aegis Bastion. Aether Barrier. Arc Sweep. Temporal Re-wind.',
     goldenDescription: 'Aegis Bastion. Aether Barrier. Arc Sweep. Temporal Re-wind (Doubles stats on Re-wind).',
     icon: '🪐',
+    artUrl: '/assets/art/cards/auto_omega_titan.jpg',
     flavor: 'The pinnacle of clockwork engineering, built to survive the heat death of stars.'
   },
   {
@@ -466,6 +491,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Fracture Core: Destroy the enemy minion with the highest Health. Summon a 5/5 Void Horror.',
     goldenDescription: 'Fracture Core: Destroy the 2 enemy minions with the highest Health. Summon two 10/10 Void Horrors.',
     icon: '🕳️',
+    artUrl: '/assets/art/cards/void_singularity_lord.jpg',
     flavor: 'An avatar of the black hole at the center of the Astral Fracture.'
   },
   {
@@ -479,6 +505,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Catalyst Aura: At the end of your turn, double the Attack and Health of your leftmost minion.',
     goldenDescription: 'Catalyst Aura: At the end of your turn, double the Attack and Health of your 2 leftmost minions.',
     icon: '🧪',
+    artUrl: '/assets/art/cards/alch_elixir_master.jpg',
     flavor: 'Unlocks the secret of perpetual cellular and mechanical replication.'
   },
   {
@@ -492,6 +519,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Catalyst Aura: Whenever an allied Barrier breaks, deal 4 radiant damage back to the attacker.',
     goldenDescription: 'Catalyst Aura: Whenever an allied Barrier breaks, deal 8 radiant damage back to the attacker.',
     icon: '🌠',
+    artUrl: '/assets/art/cards/celest_galaxy_weaver.jpg',
     flavor: 'Radiates with the primal energy of newborn galaxies.'
   },
   {
@@ -505,6 +533,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Aegis Bastion. Kinetic Overclock. Whenever any unit dies, gain +2/+2 permanently.',
     goldenDescription: 'Aegis Bastion. Kinetic Overclock. Whenever any unit dies, gain +4/+4 permanently.',
     icon: '🦖',
+    artUrl: '/assets/art/cards/beast_god_behemoth.jpg',
     flavor: 'The ancient primordial predator that slumbers beneath the asteroid crusts.'
   },
   {
@@ -518,6 +547,7 @@ export const MINION_DATABASE: MinionCard[] = [
     description: 'Kinetic Overclock. Arc Sweep. After this attacks, refresh 2 Cog-Coins for next turn.',
     goldenDescription: 'Kinetic Overclock. Arc Sweep. After this attacks, refresh 4 Cog-Coins for next turn.',
     icon: '⛵',
+    artUrl: '/assets/art/cards/pirate_dread_leviathan.jpg',
     flavor: 'Plunders the time streams of defeated fleets, banking extra turns.'
   }
 ];
@@ -533,6 +563,7 @@ export const TOKEN_MINIONS: Record<string, MinionCard> = {
     description: 'A writhing tendril formed from residual dark matter.',
     goldenDescription: 'A colossal tendril formed from concentrated dark matter.',
     icon: '🐙',
+    artUrl: '/assets/art/cards/token_void_tendril.jpg',
     flavor: 'Emerged from the collapsing boundary of reality.'
   },
   eldritch_spawn: {
@@ -546,6 +577,7 @@ export const TOKEN_MINIONS: Record<string, MinionCard> = {
     description: 'Aegis Bastion.',
     goldenDescription: 'Aegis Bastion.',
     icon: '🕸️',
+    artUrl: '/assets/art/cards/token_eldritch_spawn.jpg',
     flavor: 'Woven from dense void matter to shield its master.'
   },
   hydra_head: {
@@ -559,6 +591,7 @@ export const TOKEN_MINIONS: Record<string, MinionCard> = {
     description: 'A severed head that strikes with savage fury.',
     goldenDescription: 'An armored head that strikes with savage fury.',
     icon: '🐍',
+    artUrl: '/assets/art/cards/token_hydra_head.jpg',
     flavor: 'Severing one only unleashes two more.'
   },
   void_horror: {
@@ -572,6 +605,7 @@ export const TOKEN_MINIONS: Record<string, MinionCard> = {
     description: 'Aegis Bastion.',
     goldenDescription: 'Aegis Bastion.',
     icon: '🕳️',
+    artUrl: '/assets/art/cards/token_void_horror.jpg',
     flavor: 'A towering manifestation of the abyss.'
   },
 };
