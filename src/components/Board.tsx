@@ -44,7 +44,7 @@ export const Board: React.FC<BoardProps> = ({
         </div>
 
         {!isCombatPhase && (
-          <div className="text-[11px] text-purple-300 font-sans italic">
+          <div className="hidden sm:block text-[11px] text-purple-300 font-sans italic">
             Tip: Drag cards to position attack order (leftmost strikes first)
           </div>
         )}

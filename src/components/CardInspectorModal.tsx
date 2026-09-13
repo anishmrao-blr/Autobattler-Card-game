@@ -67,16 +67,17 @@ export const CardInspectorModal: React.FC<CardInspectorModalProps> = ({
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 bg-black/90 backdrop-blur-xl z-50 flex items-center justify-center p-4 sm:p-8 animate-fadeIn"
+      className="fixed inset-0 bg-black/90 backdrop-blur-xl z-50 flex flex-col items-center justify-start sm:justify-center p-3 sm:p-8 overflow-y-auto animate-fadeIn"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative max-w-4xl w-full bg-[#0d071d]/95 border-2 border-yellow-500/60 rounded-3xl p-6 shadow-[0_20px_60px_rgba(0,0,0,0.95)] flex flex-col md:flex-row items-center gap-8"
+        className="relative max-w-4xl w-full bg-[#0d071d]/95 border-2 border-yellow-500/60 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-[0_20px_60px_rgba(0,0,0,0.95)] flex flex-col md:flex-row items-center md:items-start gap-5 sm:gap-8 my-auto"
       >
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-white bg-black/60 border border-slate-700 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm z-30 transition-colors"
+          className="absolute top-3 right-3 sm:top-4 sm:right-4 text-slate-400 hover:text-white bg-black/60 border border-slate-700 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm z-30 transition-colors"
+          title="Close (Esc)"
         >
           ✕
         </button>
@@ -90,7 +91,7 @@ export const CardInspectorModal: React.FC<CardInspectorModalProps> = ({
         >
           <div
             className={`
-              relative w-72 h-[440px] rounded-3xl p-3 flex flex-col justify-between transition-transform duration-150 select-none
+              relative w-64 sm:w-72 h-[390px] sm:h-[440px] rounded-2xl sm:rounded-3xl p-3 flex flex-col justify-between transition-transform duration-150 select-none
               ${showGolden ? 'golden-steel-card shimmer-foil' : 'dark-steel-card'}
             `}
             style={{
@@ -109,7 +110,7 @@ export const CardInspectorModal: React.FC<CardInspectorModalProps> = ({
             </div>
 
             {/* Giant Illustrated Artwork Window */}
-            <div className="relative my-2 w-full flex-1 rounded-xl overflow-hidden border-2 border-[#5a4d7a] shadow-inner group bg-black/90 min-h-[190px]">
+            <div className="relative my-2 w-full flex-1 rounded-xl overflow-hidden border-2 border-[#5a4d7a] shadow-inner group bg-black/90 min-h-[170px] sm:min-h-[190px]">
               <CardMediaArt
                 artUrl={artUrl}
                 videoUrl={boardMinion?.videoUrl || card?.videoUrl}
@@ -124,7 +125,7 @@ export const CardInspectorModal: React.FC<CardInspectorModalProps> = ({
             </div>
 
             {/* Slate Description Plaque */}
-            <div className="steel-text-plaque p-2 rounded-xl my-1 text-xs text-slate-200 leading-snug font-sans min-h-[60px] flex flex-col justify-between">
+            <div className="steel-text-plaque p-2 rounded-xl my-1 text-xs text-slate-200 leading-snug font-sans min-h-[56px] sm:min-h-[60px] flex flex-col justify-between">
               <div>
                 {showGolden ? goldenDesc : description || (
                   <span className="italic text-slate-400">Standard combatant.</span>
@@ -141,13 +142,13 @@ export const CardInspectorModal: React.FC<CardInspectorModalProps> = ({
 
             {/* Stat Medallions */}
             <div className="flex items-center justify-between mt-auto pt-1 z-20">
-              <div className="stat-medallion-atk flex items-center justify-center w-11 h-11 rounded-full font-black text-white font-cinzel text-lg">
+              <div className="stat-medallion-atk flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full font-black text-white font-cinzel text-base sm:text-lg">
                 {attack}
               </div>
-              <div className="text-[11px] font-cinzel font-bold text-slate-400">
+              <div className="text-[10px] sm:text-[11px] font-cinzel font-bold text-slate-400">
                 {showGolden ? '★ ASTRAL FORGED' : 'STANDARD'}
               </div>
-              <div className="stat-medallion-hp flex items-center justify-center w-11 h-11 rounded-full font-black text-white font-cinzel text-lg">
+              <div className="stat-medallion-hp flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full font-black text-white font-cinzel text-base sm:text-lg">
                 {health}
               </div>
             </div>
@@ -155,10 +156,10 @@ export const CardInspectorModal: React.FC<CardInspectorModalProps> = ({
         </div>
 
         {/* Right: Full Lore, Keywords & Synergy Inspection */}
-        <div className="flex-1 flex flex-col justify-between h-full space-y-4">
+        <div className="w-full flex-1 flex flex-col justify-between h-full space-y-3 sm:space-y-4">
           <div>
-            <div className="flex items-center justify-between mb-1">
-              <h2 className="font-cinzel text-2xl font-black text-yellow-300">
+            <div className="flex items-center justify-between mb-1 gap-2">
+              <h2 className="font-cinzel text-xl sm:text-2xl font-black text-yellow-300 truncate">
                 {name.replace('★ ', '')}
               </h2>
               <button

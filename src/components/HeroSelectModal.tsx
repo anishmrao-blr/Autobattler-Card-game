@@ -18,7 +18,7 @@ export const HeroSelectModal: React.FC<HeroSelectModalProps> = ({ onSelectHero, 
   const [inspectingHero, setInspectingHero] = useState<Hero | null>(null);
 
   return (
-    <div className="fixed inset-0 bg-[#05030b]/95 backdrop-blur-lg flex flex-col items-center justify-center z-50 p-4 sm:p-6">
+    <div className="fixed inset-0 bg-[#05030b]/95 backdrop-blur-lg flex flex-col items-center justify-start sm:justify-center z-50 p-3 sm:p-6 overflow-y-auto">
       {inspectingHero && (
         <HeroProfileModal
           hero={inspectingHero}
@@ -32,22 +32,23 @@ export const HeroSelectModal: React.FC<HeroSelectModalProps> = ({ onSelectHero, 
         />
       )}
 
-      {/* Title & Banner */}
-      <div className="text-center mb-6">
-        <div className="flex items-center justify-center gap-3 mb-2">
-          <span className="text-3xl text-amber-400">⚡</span>
-          <h1 className="font-cinzel text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-200 to-amber-500 tracking-widest drop-shadow-[0_0_15px_rgba(200,155,60,0.6)]">
-            AETHERIUM: ASTRAL BATTLEGROUNDS
-          </h1>
-          <span className="text-3xl text-amber-400">⚡</span>
+      <div className="w-full max-w-6xl my-auto flex flex-col items-center py-4">
+        {/* Title & Banner */}
+        <div className="text-center mb-4 sm:mb-6 max-w-full px-2">
+          <div className="flex items-center justify-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+            <span className="text-xl sm:text-3xl text-amber-400">⚡</span>
+            <h1 className="font-cinzel text-xl sm:text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-200 to-amber-500 tracking-wider sm:tracking-widest drop-shadow-[0_0_15px_rgba(200,155,60,0.6)]">
+              AETHERIUM: ASTRAL BATTLEGROUNDS
+            </h1>
+            <span className="text-xl sm:text-3xl text-amber-400">⚡</span>
+          </div>
+          <p className="text-[11px] sm:text-sm text-purple-300 font-sans tracking-wide">
+            Select your Commander to lead your Astral Warband into the Dark Steel Arena
+          </p>
         </div>
-        <p className="text-xs sm:text-sm text-purple-300 font-sans tracking-wide">
-          Select your Commander to lead your Astral Warband into the Dark Steel Arena
-        </p>
-      </div>
 
-      {/* Hero Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl w-full">
+        {/* Hero Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 w-full">
         {heroes.map((hero) => (
           <div
             key={hero.id}
@@ -136,19 +137,20 @@ export const HeroSelectModal: React.FC<HeroSelectModalProps> = ({ onSelectHero, 
         ))}
       </div>
 
-      {/* Back to Login Callsign Option */}
-      {onBackToLogin && (
-        <button
-          onClick={() => {
-            sound.playCardSnap();
-            onBackToLogin();
-          }}
-          className="mt-6 px-5 py-2.5 bg-slate-900/90 hover:bg-slate-800 border border-slate-700 hover:border-yellow-500/50 text-slate-300 hover:text-white font-cinzel font-bold text-xs rounded-xl shadow transition-colors duration-150 flex items-center gap-2 cursor-pointer active:scale-95"
-        >
-          <span>←</span>
-          <span>BACK TO LOGIN CALLSIGN</span>
-        </button>
-      )}
+        {/* Back to Login Callsign Option */}
+        {onBackToLogin && (
+          <button
+            onClick={() => {
+              sound.playCardSnap();
+              onBackToLogin();
+            }}
+            className="mt-4 sm:mt-6 px-5 py-2.5 bg-slate-900/90 hover:bg-slate-800 border border-slate-700 hover:border-yellow-500/50 text-slate-300 hover:text-white font-cinzel font-bold text-xs rounded-xl shadow transition-colors duration-150 flex items-center gap-2 cursor-pointer active:scale-95"
+          >
+            <span>←</span>
+            <span>BACK TO LOGIN CALLSIGN</span>
+          </button>
+        )}
+      </div>
     </div>
   );
 };

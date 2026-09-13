@@ -19,28 +19,38 @@ export const AstralCodexModal: React.FC<AstralCodexModalProps> = ({ onClose }) =
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[60] flex items-center justify-center p-4 sm:p-8 animate-fadeIn select-none"
+      className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[60] flex items-center justify-center p-2 sm:p-8 animate-fadeIn select-none overflow-y-auto"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative max-w-5xl w-full h-[85vh] bg-[#0c071d]/95 border-2 border-yellow-500/70 rounded-3xl p-6 shadow-[0_20px_60px_rgba(0,0,0,0.95)] flex flex-col justify-between overflow-hidden"
+        className="relative max-w-5xl w-full h-[92vh] sm:h-[85vh] bg-[#0c071d]/95 border-2 border-yellow-500/70 rounded-2xl sm:rounded-3xl p-3 sm:p-6 shadow-[0_20px_60px_rgba(0,0,0,0.95)] flex flex-col justify-between overflow-hidden"
       >
         {/* Header Bar */}
-        <div className="flex items-center justify-between pb-3 border-b border-[#3e345e] z-10">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl text-yellow-400">📖</span>
-            <div>
-              <h2 className="font-cinzel text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-200 to-amber-500 tracking-wider">
-                THE ASTRAL CODEX
-              </h2>
-              <span className="text-[11px] text-purple-300 font-sans tracking-wide">
-                Chronicles of the Aetherium & Battleground Realities
-              </span>
+        <div className="flex flex-col gap-2.5 pb-2.5 sm:pb-3 border-b border-[#3e345e] z-10 flex-shrink-0">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <span className="text-xl sm:text-2xl text-yellow-400 flex-shrink-0">📖</span>
+              <div className="min-w-0">
+                <h2 className="font-cinzel text-base sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-200 to-amber-500 tracking-wider truncate">
+                  THE ASTRAL CODEX
+                </h2>
+                <span className="hidden sm:block text-[11px] text-purple-300 font-sans tracking-wide">
+                  Chronicles of the Aetherium & Battleground Realities
+                </span>
+              </div>
             </div>
+
+            <button
+              onClick={onClose}
+              className="text-slate-400 hover:text-white bg-black/60 border border-slate-700 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-colors flex-shrink-0 ml-2"
+              title="Close Codex (Esc)"
+            >
+              ✕
+            </button>
           </div>
 
-          {/* Tab Navigation Buttons */}
-          <div className="flex items-center gap-1.5 bg-black/60 p-1 rounded-xl border border-purple-900/60">
+          {/* Tab Navigation Buttons - Horizontally Scrollable on Mobile */}
+          <div className="flex items-center gap-1.5 bg-black/60 p-1 rounded-xl border border-purple-900/60 overflow-x-auto no-scrollbar">
             {(['REALMS', 'FACTIONS', 'TIMELINE', 'RELICS'] as CodexTab[]).map((tab) => (
               <button
                 key={tab}
@@ -48,7 +58,7 @@ export const AstralCodexModal: React.FC<AstralCodexModalProps> = ({ onClose }) =
                   sound.playCardSnap();
                   setActiveTab(tab);
                 }}
-                className={`px-3 py-1.5 rounded-lg font-cinzel text-xs font-bold transition-all ${
+                className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-cinzel text-[11px] sm:text-xs font-bold transition-all whitespace-nowrap flex-shrink-0 ${
                   activeTab === tab
                     ? 'bg-yellow-500 text-black shadow-brass font-black'
                     : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
@@ -61,20 +71,13 @@ export const AstralCodexModal: React.FC<AstralCodexModalProps> = ({ onClose }) =
               </button>
             ))}
           </div>
-
-          <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-white bg-black/60 border border-slate-700 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-colors"
-          >
-            ✕
-          </button>
         </div>
 
         {/* TAB 1: REALMS & BATTLEGROUNDS */}
         {activeTab === 'REALMS' && (
-          <div className="flex-1 flex flex-col md:flex-row gap-6 my-4 overflow-hidden">
+          <div className="flex-1 flex flex-col md:flex-row gap-3 sm:gap-6 my-2 sm:my-4 overflow-hidden min-h-0">
             {/* Realms List Sidebar */}
-            <div className="w-full md:w-64 space-y-2 overflow-y-auto pr-1">
+            <div className="w-full md:w-64 max-h-36 md:max-h-none flex-shrink-0 space-y-1.5 sm:space-y-2 overflow-y-auto pr-1">
               {REALMS_LORE.map((r) => (
                 <div
                   key={r.id}
@@ -82,13 +85,13 @@ export const AstralCodexModal: React.FC<AstralCodexModalProps> = ({ onClose }) =
                     sound.playCardSnap();
                     setSelectedRealm(r);
                   }}
-                  className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center gap-3 ${
+                  className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl border transition-all cursor-pointer flex items-center gap-2.5 sm:gap-3 ${
                     selectedRealm.id === r.id
                       ? 'border-yellow-400 bg-yellow-950/40 shadow-[0_0_15px_rgba(234,179,8,0.25)]'
                       : 'border-[#3b2a59] bg-[#120a26]/70 hover:border-purple-500/50'
                   }`}
                 >
-                  <div className="w-12 h-12 rounded-xl overflow-hidden border border-yellow-500/40 flex-shrink-0">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl overflow-hidden border border-yellow-500/40 flex-shrink-0">
                     <img src={r.image} alt={r.name} className="w-full h-full object-cover" />
                   </div>
                   <div className="min-w-0">
@@ -104,16 +107,16 @@ export const AstralCodexModal: React.FC<AstralCodexModalProps> = ({ onClose }) =
             </div>
 
             {/* Selected Realm Spotlight Card */}
-            <div ref={scrollRef} className="flex-1 dark-steel-card rounded-3xl p-5 flex flex-col justify-between overflow-y-auto border-2 border-yellow-500/50">
-              <div className="relative w-full h-48 rounded-2xl overflow-hidden border-2 border-[#5a4d7a] shadow-inner mb-4 flex-shrink-0">
+            <div ref={scrollRef} className="flex-1 dark-steel-card rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 flex flex-col justify-between overflow-y-auto border-2 border-yellow-500/50 min-h-0">
+              <div className="relative w-full h-36 sm:h-48 rounded-xl sm:rounded-2xl overflow-hidden border-2 border-[#5a4d7a] shadow-inner mb-3 sm:mb-4 flex-shrink-0">
                 <img
                   src={selectedRealm.image}
                   alt={selectedRealm.name}
                   className="w-full h-full object-cover object-center"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/30 pointer-events-none" />
-                <div className="absolute bottom-3 left-4">
-                  <h3 className="font-cinzel text-2xl font-black text-yellow-300 drop-shadow">
+                <div className="absolute bottom-2 sm:bottom-3 left-3 sm:left-4">
+                  <h3 className="font-cinzel text-xl sm:text-2xl font-black text-yellow-300 drop-shadow">
                     {selectedRealm.name}
                   </h3>
                   <span className="text-xs font-bold text-cyan-300 font-cinzel tracking-wider">
@@ -156,9 +159,9 @@ export const AstralCodexModal: React.FC<AstralCodexModalProps> = ({ onClose }) =
 
         {/* TAB 2: FACTIONS & TRIBES */}
         {activeTab === 'FACTIONS' && (
-          <div className="flex-1 flex flex-col md:flex-row gap-6 my-4 overflow-hidden">
+          <div className="flex-1 flex flex-col md:flex-row gap-3 sm:gap-6 my-2 sm:my-4 overflow-hidden min-h-0">
             {/* Factions Sidebar */}
-            <div className="w-full md:w-64 space-y-2 overflow-y-auto pr-1">
+            <div className="w-full md:w-64 max-h-36 md:max-h-none flex-shrink-0 space-y-1.5 sm:space-y-2 overflow-y-auto pr-1">
               {FACTIONS_LORE.map((f) => (
                 <div
                   key={f.id}
@@ -166,13 +169,13 @@ export const AstralCodexModal: React.FC<AstralCodexModalProps> = ({ onClose }) =
                     sound.playCardSnap();
                     setSelectedFaction(f);
                   }}
-                  className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center gap-3 ${
+                  className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl border transition-all cursor-pointer flex items-center gap-2.5 sm:gap-3 ${
                     selectedFaction.id === f.id
                       ? 'border-yellow-400 bg-yellow-950/40 shadow-[0_0_15px_rgba(234,179,8,0.25)]'
                       : 'border-[#3b2a59] bg-[#120a26]/70 hover:border-purple-500/50'
                   }`}
                 >
-                  <div className="w-12 h-12 rounded-xl overflow-hidden border border-yellow-500/40 flex-shrink-0">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl overflow-hidden border border-yellow-500/40 flex-shrink-0">
                     <img src={f.image} alt={f.name} className="w-full h-full object-cover" />
                   </div>
                   <div className="min-w-0">
@@ -188,13 +191,13 @@ export const AstralCodexModal: React.FC<AstralCodexModalProps> = ({ onClose }) =
             </div>
 
             {/* Selected Faction Spotlight */}
-            <div ref={scrollRef} className="flex-1 dark-steel-card rounded-3xl p-5 flex flex-col justify-between overflow-y-auto border-2 border-yellow-500/50">
-              <div className="flex items-center gap-4 mb-3 pb-3 border-b border-purple-950">
-                <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-yellow-500/70 shadow-lg flex-shrink-0">
+            <div ref={scrollRef} className="flex-1 dark-steel-card rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 flex flex-col justify-between overflow-y-auto border-2 border-yellow-500/50 min-h-0">
+              <div className="flex items-center gap-3 sm:gap-4 mb-3 pb-3 border-b border-purple-950">
+                <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl sm:rounded-2xl overflow-hidden border-2 border-yellow-500/70 shadow-lg flex-shrink-0">
                   <img src={selectedFaction.image} alt={selectedFaction.name} className="w-full h-full object-cover" />
                 </div>
                 <div>
-                  <h3 className="font-cinzel text-2xl font-black text-yellow-300">
+                  <h3 className="font-cinzel text-xl sm:text-2xl font-black text-yellow-300">
                     {selectedFaction.name}
                   </h3>
                   <div className="text-xs font-cinzel font-bold text-purple-300 italic">
@@ -317,11 +320,11 @@ export const AstralCodexModal: React.FC<AstralCodexModalProps> = ({ onClose }) =
         )}
 
         {/* Footer */}
-        <div className="pt-3 border-t border-[#3e345e] flex items-center justify-between text-[11px] text-slate-400 font-sans">
-          <span>Aetherium World Compendium • Compiled from the Astral Atrium Archives</span>
+        <div className="pt-2 sm:pt-3 border-t border-[#3e345e] flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] sm:text-[11px] text-slate-400 font-sans flex-shrink-0">
+          <span className="hidden sm:inline">Aetherium World Compendium • Compiled from the Astral Atrium Archives</span>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 bg-yellow-500 hover:bg-yellow-400 text-black font-cinzel font-bold text-xs rounded-xl shadow-brass transition-all"
+            className="w-full sm:w-auto px-4 py-2 sm:py-1.5 bg-yellow-500 hover:bg-yellow-400 text-black font-cinzel font-bold text-xs rounded-xl shadow-brass transition-all text-center cursor-pointer"
           >
             RETURN TO BATTLEGROUNDS ➔
           </button>

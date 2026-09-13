@@ -393,7 +393,7 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
   const effectiveWinStreak = playerWon ? player.winStreak + 1 : 0;
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-[#06030e] flex flex-col justify-between p-4">
+    <div className="relative w-full h-screen overflow-hidden bg-[#06030e] flex flex-col justify-between p-2 sm:p-4">
       {/* Dynamic Battleground Atmospheric Loop */}
       <video
         autoPlay
@@ -424,34 +424,34 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
       )}
 
       {/* Top HUD: Opponent Hero Portrait & Controls */}
-      <div className="flex items-center justify-between z-30 bg-[#100724]/90 border border-purple-900/50 p-2.5 rounded-2xl shadow-xl backdrop-blur-md">
-        <div ref={opponentHeroRef} className="flex items-center gap-3">
-          <div className="relative w-12 h-12 rounded-full bg-black/80 border-2 border-red-500/80 flex items-center justify-center text-2xl shadow-brass">
+      <div className="flex items-center justify-between z-30 bg-[#100724]/90 border border-purple-900/50 p-2 sm:p-2.5 rounded-xl sm:rounded-2xl shadow-xl backdrop-blur-md gap-2">
+        <div ref={opponentHeroRef} className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="relative w-9 h-9 sm:w-12 sm:h-12 rounded-full bg-black/80 border-2 border-red-500/80 flex items-center justify-center text-lg sm:text-2xl shadow-brass flex-shrink-0">
             {opponent.avatar}
           </div>
-          <div>
-            <h3 className="font-cinzel font-bold text-sm text-red-300">
+          <div className="min-w-0">
+            <h3 className="font-cinzel font-bold text-xs sm:text-sm text-red-300 truncate max-w-[95px] sm:max-w-none">
               {opponent.hero.name} ({opponent.name})
             </h3>
-            <span className="text-xs font-bold text-red-400">
+            <span className="text-[10px] sm:text-xs font-bold text-red-400">
               ❤️ {opponentHp} / {opponent.maxHp} HP
             </span>
           </div>
         </div>
 
         {/* Combat Speed, Playback & Menu Controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
           <button
             onClick={() => setSpeed(s => (s === 1 ? 1.5 : s === 1.5 ? 2.5 : 1))}
-            className="px-3 py-1 bg-purple-950 hover:bg-purple-900 border border-purple-700 text-yellow-300 font-cinzel font-bold text-xs rounded-xl shadow transition-colors cursor-pointer"
+            className="px-2 sm:px-3 py-1 bg-purple-950 hover:bg-purple-900 border border-purple-700 text-yellow-300 font-cinzel font-bold text-[10px] sm:text-xs rounded-lg sm:rounded-xl shadow transition-colors cursor-pointer"
           >
-            ⚡ {speed}x SPEED
+            ⚡ {speed}x
           </button>
           <button
             onClick={() => setIsPlaying(!isPlaying)}
-            className="px-3 py-1 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-cinzel font-bold text-xs rounded-xl shadow transition-colors cursor-pointer"
+            className="px-2 sm:px-3 py-1 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-cinzel font-bold text-[10px] sm:text-xs rounded-lg sm:rounded-xl shadow transition-colors cursor-pointer"
           >
-            {isPlaying ? '⏸ PAUSE' : '▶ RESUME'}
+            {isPlaying ? '⏸' : '▶'}
           </button>
           {onOpenMenu && (
             <button
@@ -460,7 +460,7 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
                 setIsPlaying(false);
                 onOpenMenu();
               }}
-              className="p-1 px-2.5 bg-[#120a26] hover:bg-yellow-500 hover:text-black border border-yellow-500/50 rounded-xl text-xs text-yellow-300 transition-all shadow-sm cursor-pointer"
+              className="p-1 px-2 sm:px-2.5 bg-[#120a26] hover:bg-yellow-500 hover:text-black border border-yellow-500/50 rounded-lg sm:rounded-xl text-xs text-yellow-300 transition-all shadow-sm cursor-pointer"
               title="Game Menu / Concede / Exit (Esc)"
             >
               <span>⚙️</span>
@@ -471,7 +471,7 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
 
       {/* 3D Battle Arena Viewport */}
       <div
-        className="relative flex-1 flex flex-col justify-around items-center my-2"
+        className="relative flex-1 flex flex-col justify-around items-center my-1 sm:my-2 overflow-hidden w-full"
         style={{ perspective: '1400px' }}
       >
         {/* Arena Floor Runes Texture with Perspective */}
@@ -485,7 +485,7 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
         />
 
         {/* Top Board: Opponent Formation */}
-        <div className="flex items-center justify-center gap-3 z-10 w-full min-h-[140px]">
+        <div className="flex items-center justify-start sm:justify-center gap-2 sm:gap-3 z-10 w-full min-h-[140px] overflow-x-auto no-scrollbar scrollbar-thin px-2 py-1">
           {board2.length > 0 ? (
             board2.map(minion => {
               const isTargeted = targetedDefenderId === minion.instanceId;
@@ -497,7 +497,7 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
                   ref={el => {
                     if (el) cardElements.current.set(minion.instanceId, el);
                   }}
-                  className={`${isTargeted ? 'animate-target-lock' : ''} ${isDying ? 'animate-card-dissolve' : ''}`}
+                  className={`flex-shrink-0 scale-90 sm:scale-100 origin-center ${isTargeted ? 'animate-target-lock' : ''} ${isDying ? 'animate-card-dissolve' : ''}`}
                   style={{
                     transformStyle: 'preserve-3d',
                     zIndex: 10,
@@ -505,7 +505,7 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
                 >
                   <CardView
                     boardMinion={minion}
-                    size="md"
+                    size="sm"
                     damageReceived={damageMap[minion.instanceId]}
                     barrierBroken={brokenBarrierId === minion.instanceId}
                   />
@@ -513,27 +513,27 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
               );
             })
           ) : (
-            <div className="text-slate-500 font-cinzel text-xs py-8">
+            <div className="text-slate-500 font-cinzel text-xs py-8 w-full text-center">
               Enemy formation shattered.
             </div>
           )}
         </div>
 
         {/* Middle Clash Zone & Tactical Combat Ticker */}
-        <div className="z-20 text-center pointer-events-none py-1">
+        <div className="z-20 text-center pointer-events-none py-1 max-w-full px-2">
           {logMessages.length > 0 ? (
-            <div className="inline-block bg-black/80 border border-yellow-500/50 px-4 py-1.5 rounded-full text-xs font-cinzel text-yellow-300 shadow-brass animate-fadeIn">
+            <div className="inline-block bg-black/80 border border-yellow-500/50 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-cinzel text-yellow-300 shadow-brass animate-fadeIn truncate max-w-full">
               {logMessages[0]}
             </div>
           ) : (
-            <div className="text-[11px] font-cinzel text-slate-500">
+            <div className="text-[10px] sm:text-[11px] font-cinzel text-slate-500">
               ⚡ ASTRAL CLASH IN PROGRESS
             </div>
           )}
         </div>
 
         {/* Bottom Board: Player Formation */}
-        <div className="flex items-center justify-center gap-3 z-10 w-full min-h-[140px]">
+        <div className="flex items-center justify-start sm:justify-center gap-2 sm:gap-3 z-10 w-full min-h-[140px] overflow-x-auto no-scrollbar scrollbar-thin px-2 py-1">
           {board1.length > 0 ? (
             board1.map(minion => {
               const isTargeted = targetedDefenderId === minion.instanceId;
@@ -545,7 +545,7 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
                   ref={el => {
                     if (el) cardElements.current.set(minion.instanceId, el);
                   }}
-                  className={`${isTargeted ? 'animate-target-lock' : ''} ${isDying ? 'animate-card-dissolve' : ''}`}
+                  className={`flex-shrink-0 scale-90 sm:scale-100 origin-center ${isTargeted ? 'animate-target-lock' : ''} ${isDying ? 'animate-card-dissolve' : ''}`}
                   style={{
                     transformStyle: 'preserve-3d',
                     zIndex: 10,
@@ -553,7 +553,7 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
                 >
                   <CardView
                     boardMinion={minion}
-                    size="md"
+                    size="sm"
                     damageReceived={damageMap[minion.instanceId]}
                     barrierBroken={brokenBarrierId === minion.instanceId}
                   />
@@ -561,7 +561,7 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
               );
             })
           ) : (
-            <div className="text-slate-500 font-cinzel text-xs py-8">
+            <div className="text-slate-500 font-cinzel text-xs py-8 w-full text-center">
               Your front line has fallen.
             </div>
           )}
@@ -569,30 +569,30 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
       </div>
 
       {/* Bottom HUD: Player Hero Portrait */}
-      <div className="flex items-center justify-between z-30 bg-[#100724]/90 border border-yellow-600/30 p-2.5 rounded-2xl shadow-2xl backdrop-blur-md">
-        <div ref={playerHeroRef} className="flex items-center gap-3">
-          <div className="relative w-12 h-12 rounded-full bg-black/80 border-2 border-yellow-500 flex items-center justify-center text-2xl shadow-brass">
+      <div className="flex items-center justify-between z-30 bg-[#100724]/90 border border-yellow-600/30 p-2 sm:p-2.5 rounded-xl sm:rounded-2xl shadow-2xl backdrop-blur-md gap-2">
+        <div ref={playerHeroRef} className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="relative w-9 h-9 sm:w-12 sm:h-12 rounded-full bg-black/80 border-2 border-yellow-500 flex items-center justify-center text-lg sm:text-2xl shadow-brass flex-shrink-0">
             {player.avatar}
           </div>
-          <div>
-            <h3 className="font-cinzel font-bold text-sm text-yellow-300">
+          <div className="min-w-0">
+            <h3 className="font-cinzel font-bold text-xs sm:text-sm text-yellow-300 truncate max-w-[120px] sm:max-w-none">
               {player.hero.name} (You)
             </h3>
-            <span className="text-xs font-bold text-emerald-400">
+            <span className="text-[10px] sm:text-xs font-bold text-emerald-400">
               ❤️ {playerHp} / {player.maxHp} HP
             </span>
           </div>
         </div>
 
-        <div className="text-xs font-cinzel text-purple-300 font-bold">
-          ★ Tavern Tier {player.tavernTier} Formation
+        <div className="text-[10px] sm:text-xs font-cinzel text-purple-300 font-bold flex-shrink-0">
+          ★ Tier {player.tavernTier}
         </div>
       </div>
 
       {/* Hero-Themed Streak-Scaled Victory / Defeat Modal */}
       {combatFinished && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex flex-col items-center justify-center z-50 animate-fadeIn p-6">
-          <div className={`max-w-md w-full bg-[#140b2b]/95 border-2 rounded-3xl p-6 text-center flex flex-col items-center shadow-2xl ${
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex flex-col items-center justify-start sm:justify-center z-50 animate-fadeIn p-4 sm:p-6 overflow-y-auto">
+          <div className={`max-w-md w-full my-auto bg-[#140b2b]/95 border-2 rounded-2xl sm:rounded-3xl p-4 sm:p-6 text-center flex flex-col items-center shadow-2xl ${
             playerWon
               ? effectiveWinStreak >= 3
                 ? 'border-yellow-400 shadow-[0_0_50px_rgba(234,179,8,0.7)] animate-pulse'
