@@ -16,6 +16,7 @@ export class GameCoordinator {
   public currentTurn = 0;
   public matchPhase: 'HERO_SELECT' | 'TAVERN' | 'COMBAT' | 'GAME_OVER' = 'HERO_SELECT';
   public lastHumanCombatResult?: CombatSimulationResult;
+  public scheduledPairs: [PlayerState, PlayerState][] = [];
 
   constructor() {
     this.pool = new SharedCardPool();
@@ -92,26 +93,9 @@ export class GameCoordinator {
     this.startNewTurn();
   }
 
-  public startNewTurn(): void {
-    this.currentTurn += 1;
-    this.matchPhase = 'TAVERN';
-
-    for (const p of this.getLivingPlayers()) {
-      this.tavern.startPlayerTurn(p, this.currentTurn);
-
-      if (!p.isHuman) {
-        this.ai.executeBotTurn(p, this.currentTurn);
-      }
-    }
-  }
-
-  public resolveCombatPhase(): { humanMatch: CombatSimulationResult; allResults: CombatSimulationResult[] } {
-    this.matchPhase = 'COMBAT';
+  public schedulePairings(): void {
     const living = this.getLivingPlayers();
     const shuffled = [...living].sort(() => 0.5 - Math.random());
-
-    const allResults: CombatSimulationResult[] = [];
-    let humanMatchResult: CombatSimulationResult | undefined;
 
     const pairs: [PlayerState, PlayerState][] = [];
     while (shuffled.length >= 2) {
@@ -130,6 +114,47 @@ export class GameCoordinator {
       };
       pairs.push([oddPlayer, ghostCopy]);
     }
+
+    this.scheduledPairs = pairs;
+  }
+
+  public getNextOpponent(player: PlayerState): PlayerState | undefined {
+    if (this.scheduledPairs.length === 0) {
+      this.schedulePairings();
+    }
+    for (const [p1, p2] of this.scheduledPairs) {
+      if (p1.id === player.id) return p2;
+      if (p2.id === player.id) return p1;
+    }
+    const living = this.getLivingPlayers().filter(p => p.id !== player.id);
+    return living[0];
+  }
+
+  public startNewTurn(): void {
+    this.currentTurn += 1;
+    this.matchPhase = 'TAVERN';
+
+    for (const p of this.getLivingPlayers()) {
+      this.tavern.startPlayerTurn(p, this.currentTurn);
+
+      if (!p.isHuman) {
+        this.ai.executeBotTurn(p, this.currentTurn);
+      }
+    }
+
+    this.schedulePairings();
+  }
+
+  public resolveCombatPhase(): { humanMatch: CombatSimulationResult; allResults: CombatSimulationResult[] } {
+    this.matchPhase = 'COMBAT';
+    if (this.scheduledPairs.length === 0) {
+      this.schedulePairings();
+    }
+    const pairs = [...this.scheduledPairs];
+    this.scheduledPairs = [];
+
+    const allResults: CombatSimulationResult[] = [];
+    let humanMatchResult: CombatSimulationResult | undefined;
 
     for (const [p1, p2] of pairs) {
       const result = this.combat.simulate1v1(p1, p2);

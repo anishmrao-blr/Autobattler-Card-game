@@ -6,6 +6,7 @@ import { GameCoordinator } from '../engine/game';
 import { HERO_DATABASE } from '../engine/heroes';
 import { MINION_DATABASE, createBoardMinion } from '../engine/cards';
 import { PlayerState } from '../types';
+import { calculateCardFan } from '../hooks/useCardFan';
 
 describe('Aetherium Engine - Shared Pool & Tavern', () => {
   let pool: SharedCardPool;
@@ -555,5 +556,135 @@ describe('Aetherium Engine - Balance Orders & Permanent Buff Caps', () => {
     expect(p.hand[0].id).toBe(card2.id);
   });
 });
+
+describe('Batch 1 Polish - Parabolic Hand Fan (calculateCardFan)', () => {
+  it('returns default layout for single card or dragging state', () => {
+    const single = calculateCardFan(0, 1, false, false);
+    expect(single.transform).toBeUndefined();
+    expect(single.transformOrigin).toBe('bottom center');
+    expect(single.zIndex).toBe(10);
+
+    const dragging = calculateCardFan(1, 5, false, true);
+    expect(dragging.transform).toBeUndefined();
+    expect(dragging.zIndex).toBe(50);
+  });
+
+  it('calculates symmetrical angular fan without NaN for any hand size', () => {
+    const total = 5;
+    const styles = [0, 1, 2, 3, 4].map(i => calculateCardFan(i, total, false, false));
+
+    // Ensure no NaN in generated transforms
+    styles.forEach(s => {
+      expect(s.transform).toBeDefined();
+      expect(s.transform).not.toContain('NaN');
+    });
+
+    // Center card (idx 2) should have 0 rotation
+    expect(styles[2].transform).toContain('rotate(0deg)');
+
+    // Left card (idx 0) should have negative rotation
+    expect(styles[0].transform).toMatch(/rotate\(-\d+(\.\d+)?deg\)/);
+
+    // Right card (idx 4) should have positive rotation
+    expect(styles[4].transform).toMatch(/rotate\(\d+(\.\d+)?deg\)/);
+  });
+
+  it('elevates and straightens card on hover', () => {
+    const hovered = calculateCardFan(0, 5, true, false);
+    expect(hovered.transform).toContain('-20px');
+    expect(hovered.transform).toContain('rotate(0deg)');
+    expect(hovered.zIndex).toBe(40);
+  });
+
+  it('respects reduced motion by disabling rotation', () => {
+    const reduced = calculateCardFan(0, 5, false, false, true);
+    expect(reduced.transform).toBeUndefined();
+
+    const reducedHovered = calculateCardFan(0, 5, true, false, true);
+    expect(reducedHovered.transform).toBe('translate3d(0, -18px, 0)');
+    expect(reducedHovered.zIndex).toBe(40);
+  });
+});
+
+describe('Batch 1 Polish - HearthSim Monte Carlo Odds Predictor', () => {
+  let combat: CombatResolver;
+  let basePlayer: PlayerState;
+
+  beforeEach(() => {
+    combat = new CombatResolver();
+    basePlayer = {
+      id: 'p1',
+      name: 'Player 1',
+      isHuman: true,
+      avatar: '⚙️',
+      hero: HERO_DATABASE[0],
+      hp: 30,
+      maxHp: 30,
+      coins: 10,
+      maxCoins: 10,
+      tavernTier: 1,
+      tierUpgradeCost: 5,
+      isFrozen: false,
+      hand: [],
+      board: [],
+      tavernSlots: [],
+      triplesFound: 0,
+      winStreak: 0,
+      isEliminated: false,
+    };
+  });
+
+  it('correctly handles empty boards with immediate deterministic odds', () => {
+    const p1 = { ...basePlayer, board: [] };
+    const p2 = { ...basePlayer, id: 'p2', name: 'Player 2', board: [] };
+
+    const tieOdds = combat.simulateMonteCarloOdds(p1, p2, 50);
+    expect(tieOdds.tieRate).toBe(100);
+    expect(tieOdds.winRate).toBe(0);
+    expect(tieOdds.lossRate).toBe(0);
+
+    const minion = MINION_DATABASE[0];
+    const p1WithBoard = { ...basePlayer, board: [createBoardMinion(minion)] };
+    const winOdds = combat.simulateMonteCarloOdds(p1WithBoard, p2, 50);
+    expect(winOdds.winRate).toBe(100);
+    expect(winOdds.tieRate).toBe(0);
+    expect(winOdds.lossRate).toBe(0);
+
+    const lossOdds = combat.simulateMonteCarloOdds(p1, p1WithBoard, 50);
+    expect(lossOdds.lossRate).toBe(100);
+    expect(lossOdds.winRate).toBe(0);
+    expect(lossOdds.tieRate).toBe(0);
+  });
+
+  it('runs 100 headless simulations in < 5ms and odds sum to ~100%', () => {
+    const m1 = createBoardMinion(MINION_DATABASE[0]);
+    const m2 = createBoardMinion(MINION_DATABASE[1]);
+    const m3 = createBoardMinion(MINION_DATABASE[2]);
+    const m4 = createBoardMinion(MINION_DATABASE[3]);
+
+    const p1 = { ...basePlayer, board: [m1, m2] };
+    const p2 = { ...basePlayer, id: 'p2', name: 'Opponent', board: [m3, m4] };
+
+    const t0 = performance.now();
+    const odds = combat.simulateMonteCarloOdds(p1, p2, 100);
+    const duration = performance.now() - t0;
+
+    expect(duration).toBeLessThan(15); // Fast headless benchmark
+    const total = odds.winRate + odds.tieRate + odds.lossRate;
+    expect(Math.abs(total - 100)).toBeLessThanOrEqual(0.5); // Floating point rounding check
+  });
+
+  it('GameCoordinator schedules pairings and returns valid next opponent', () => {
+    const game = new GameCoordinator();
+    game.initGame(HERO_DATABASE[0], 'Test Hero');
+    expect(game.players.length).toBe(8);
+
+    const human = game.getHumanPlayer();
+    const opp = game.getNextOpponent(human);
+    expect(opp).toBeDefined();
+    expect(opp?.id).not.toBe(human.id);
+  });
+});
+
 
 

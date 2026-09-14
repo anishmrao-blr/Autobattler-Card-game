@@ -4,6 +4,7 @@ import { CardView } from './CardView';
 import { CommanderHeroStation } from './CommanderHeroStation';
 import { sound } from '../audio/sound';
 import { useCardReorder } from '../hooks/useCardReorder';
+import { useCardFan } from '../hooks/useCardFan';
 
 interface HandTrayProps {
   player: PlayerState;
@@ -42,6 +43,8 @@ export const HandTray: React.FC<HandTrayProps> = ({
     disabled: false,
   });
 
+  const { setHoveredIndex, getCardFanStyle } = useCardFan(hand.length);
+
   return (
     <div className="w-full bg-[#0a0618]/95 border-t-2 border-[#3b2a59] px-2 sm:px-4 py-1.5 sm:py-2 flex items-center justify-between gap-2 sm:gap-4 shadow-2xl backdrop-blur-md z-30">
       {/* 1. Bottom-Left Prominent Commander Hero Station */}
@@ -72,9 +75,9 @@ export const HandTray: React.FC<HandTrayProps> = ({
           </div>
         </div>
 
-        {/* Hand Cards Horizontal Scroll */}
+        {/* Hand Cards Horizontal Scroll with Tabletop Fan Arc Headroom */}
         <div
-          className="flex items-center gap-2 overflow-x-auto snap-x snap-mandatory scroll-smooth py-1 px-2"
+          className="flex items-end gap-1 sm:gap-2 overflow-x-auto snap-x snap-mandatory scroll-smooth pt-7 pb-2 px-2 min-h-[200px]"
           style={{
             WebkitMaskImage: 'linear-gradient(to right, transparent 0, black 16px, black calc(100% - 16px), transparent 100%)',
             maskImage: 'linear-gradient(to right, transparent 0, black 16px, black calc(100% - 16px), transparent 100%)',
@@ -84,6 +87,7 @@ export const HandTray: React.FC<HandTrayProps> = ({
             hand.map((card, idx) => {
               const isSelfDragging = draggingIndex === idx;
               const shiftX = getNeighborShiftX(idx);
+              const fanStyle = getCardFanStyle(idx, isSelfDragging);
 
               const itemStyle: React.CSSProperties = isSelfDragging
                 ? {
@@ -92,7 +96,9 @@ export const HandTray: React.FC<HandTrayProps> = ({
                     touchAction: 'none',
                   }
                 : {
-                    transform: shiftX ? `translate3d(${shiftX}px, 0, 0)` : undefined,
+                    transform: shiftX ? `translate3d(${shiftX}px, 0, 0)` : fanStyle.transform,
+                    transformOrigin: fanStyle.transformOrigin,
+                    zIndex: fanStyle.zIndex,
                     transition: 'transform 200ms cubic-bezier(0.2, 0, 0.2, 1)',
                     touchAction: 'none',
                   };
@@ -101,14 +107,16 @@ export const HandTray: React.FC<HandTrayProps> = ({
                 <div
                   key={`${card.id}-${idx}`}
                   data-testid="hand-card"
-                  ref={(el) => registerCardRef(idx, el)}
+                  ref={(el) => { registerCardRef(idx, el); }}
                   onPointerDown={(e) => handlePointerDown(e, idx)}
+                  onMouseEnter={() => !isDragging && setHoveredIndex(idx)}
+                  onMouseLeave={() => setHoveredIndex(null)}
                   onDragStart={(e) => e.preventDefault()}
                   style={itemStyle}
                   className={`flex-shrink-0 snap-center select-none relative ${
                     isSelfDragging
                       ? 'ring-4 ring-yellow-400 rounded-2xl shadow-[0_24px_50px_rgba(0,0,0,0.9),0_0_30px_rgba(234,179,8,0.6)] cursor-grabbing z-50'
-                      : 'cursor-grab hover:-translate-y-3 transition-[transform] duration-150'
+                      : 'cursor-grab'
                   }`}
                 >
                   <CardView

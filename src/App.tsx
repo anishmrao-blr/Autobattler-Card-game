@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { GameCoordinator } from './engine/game';
 import { Hero, PlayerState, MinionCard, BoardMinion } from './types';
 import { HomePageModal } from './components/HomePageModal';
@@ -54,6 +54,16 @@ export const App: React.FC = () => {
       setDiscoverOptions(null);
     }
   };
+
+  const nextOpponent = useMemo(() => {
+    if (phase !== 'TAVERN' || !human) return undefined;
+    return gameRef.current.getNextOpponent(human);
+  }, [phase, currentTurn, human?.id]);
+
+  const combatOdds = useMemo(() => {
+    if (phase !== 'TAVERN' || !human || !nextOpponent) return undefined;
+    return gameRef.current.combat.simulateMonteCarloOdds(human, nextOpponent, 100);
+  }, [phase, currentTurn, human?.board, nextOpponent]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -506,6 +516,8 @@ export const App: React.FC = () => {
         <main className="w-full flex-1 flex flex-col justify-start p-2 sm:p-4 overflow-y-auto gap-2 sm:gap-3">
           <TavernShop
             player={human}
+            forecastOdds={combatOdds}
+            opponentName={nextOpponent?.name}
             onBuyMinion={handleBuyMinion}
             onReroll={handleReroll}
             onToggleFreeze={handleToggleFreeze}

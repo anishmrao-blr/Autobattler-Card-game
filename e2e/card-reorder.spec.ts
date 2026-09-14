@@ -128,25 +128,48 @@ test.describe('Tactile TCG Card Reorder', () => {
       await remainingShopCards.first().tap();
       await page.waitForTimeout(300);
 
+      // Dismiss discover modal if a triple was formed
+      const chooseBtn = page.getByRole('button', { name: /^CHOOSE$/i });
+      if (await chooseBtn.first().isVisible().catch(() => false)) {
+        await chooseBtn.first().tap();
+        await page.waitForTimeout(300);
+      }
+
       // Reroll to ensure second card available
       const rerollButton = page.getByRole('button', { name: /REROLL/i });
-      await rerollButton.click();
-      await page.waitForTimeout(300);
+      await rerollButton.tap();
+      await page.waitForTimeout(400);
 
       await remainingShopCards.first().tap();
       await expect(page.getByText('TAP AGAIN TO BUY')).toBeVisible({ timeout: 5_000 });
       await remainingShopCards.first().tap();
       await page.waitForTimeout(400);
+
+      if (await chooseBtn.first().isVisible().catch(() => false)) {
+        await chooseBtn.first().tap();
+        await page.waitForTimeout(300);
+      }
     } else {
       await remainingShopCards.first().click();
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(400);
+
+      const chooseBtn = page.getByRole('button', { name: /^CHOOSE$/i });
+      if (await chooseBtn.first().isVisible().catch(() => false)) {
+        await chooseBtn.first().click();
+        await page.waitForTimeout(300);
+      }
 
       const rerollButton = page.getByRole('button', { name: /REROLL/i });
       await rerollButton.click();
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(600);
 
       await remainingShopCards.first().click();
-      await page.waitForTimeout(400);
+      await page.waitForTimeout(500);
+
+      if (await chooseBtn.first().isVisible().catch(() => false)) {
+        await chooseBtn.first().click();
+        await page.waitForTimeout(300);
+      }
     }
 
     // Check hand cards count
@@ -192,4 +215,79 @@ test.describe('Tactile TCG Card Reorder', () => {
       expect(swappedHand0).toBe(initialHand1);
     }
   });
+
+  test('renders parabolic hand fan and HearthSim live combat forecast odds', async ({ page, isMobile }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: /ENTER THE AETHERIUM/i }).click();
+    await expect(page.getByText(/Select your Commander/i)).toBeVisible({ timeout: 10_000 });
+    await page.getByRole('button', { name: /CHOOSE COMMANDER/i }).first().click();
+
+    // Skip tutorial
+    await expect(page.getByText('WELCOME TO THE AETHERIUM')).toBeVisible({ timeout: 10_000 });
+    await page.getByRole('button', { name: /SKIP TUTORIAL/i }).click();
+
+    // 1. Verify HearthSim Combat Forecast Badge is visible in Tavern Shop header
+    const forecastBadge = page.locator('[data-testid="combat-forecast-badge"]');
+    await expect(forecastBadge).toBeVisible({ timeout: 5000 });
+    const badgeText = await forecastBadge.textContent();
+    expect(badgeText).toMatch(/Forecast|Odds/);
+    expect(badgeText).toContain('% W');
+    expect(badgeText).toContain('% T');
+    expect(badgeText).toContain('% L');
+
+    // Grant test coins to buy cards
+    await page.evaluate(() => {
+      (window as any).__testHarness?.addCoins(20);
+    });
+    await page.waitForTimeout(200);
+
+    // Buy 3 cards into hand
+    const shopCards = page.locator('[data-testid="shop-card"]');
+    for (let i = 0; i < 3; i++) {
+      if (isMobile) {
+        await shopCards.first().tap();
+        await expect(page.getByText('TAP AGAIN TO BUY')).toBeVisible({ timeout: 5000 });
+        await shopCards.first().tap();
+      } else {
+        await shopCards.first().click();
+      }
+      await page.waitForTimeout(300);
+      // Reroll to restock if needed
+      if (i < 2) {
+        await page.getByRole('button', { name: /REROLL/i }).click();
+        await page.waitForTimeout(300);
+      }
+    }
+
+    // 2. Verify Hand cards have parabolic fan transforms applied
+    const handCards = page.locator('[data-testid="hand-card"]');
+    await expect(handCards).toHaveCount(3, { timeout: 5000 });
+
+    const firstCardTransform = await handCards.nth(0).evaluate((el) => el.style.transform);
+    const middleCardTransform = await handCards.nth(1).evaluate((el) => el.style.transform);
+    const lastCardTransform = await handCards.nth(2).evaluate((el) => el.style.transform);
+
+    // Left card should have negative rotation
+    expect(firstCardTransform).toMatch(/rotate\(-\d+/);
+    // Center card should have 0deg rotation
+    expect(middleCardTransform).toContain('rotate(0deg)');
+    // Right card should have positive rotation
+    expect(lastCardTransform).toMatch(/rotate\(\d+/);
+
+    // 3. Hovering first card should lift and zero out rotation on desktop
+    if (!isMobile) {
+      await handCards.nth(0).hover();
+      await page.waitForTimeout(200);
+      const hoveredTransform = await handCards.nth(0).evaluate((el) => el.style.transform);
+      expect(hoveredTransform).toContain('rotate(0deg)');
+      expect(hoveredTransform).toContain('-20px');
+    }
+
+    // Capture screenshot of parabolic fan and live forecast badge
+    const screenshotName = isMobile ? 'batch1_hand_fan_odds_mobile.png' : 'batch1_hand_fan_odds_desktop.png';
+    await page.screenshot({
+      path: path.join(ARTIFACT_DIR, screenshotName),
+    });
+  });
 });
+

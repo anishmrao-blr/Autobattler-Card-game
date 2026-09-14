@@ -15,6 +15,12 @@ export interface CombatSimulationResult {
   initialBoard2: BoardMinion[];
 }
 
+export interface CombatOdds {
+  winRate: number;
+  tieRate: number;
+  lossRate: number;
+}
+
 export class CombatResolver {
   private activeP1?: PlayerState;
   private activeP2?: PlayerState;
@@ -167,6 +173,52 @@ export class CombatResolver {
       p2,
       initialBoard1,
       initialBoard2,
+    };
+  }
+
+  /**
+   * HearthSim Monte Carlo Combat Odds Predictor.
+   * Executes N headless combat iterations to compute win/tie/loss probabilities.
+   */
+  public simulateMonteCarloOdds(
+    p1: PlayerState,
+    p2: PlayerState,
+    iterations = 100
+  ): CombatOdds {
+    if (iterations <= 0) {
+      return { winRate: 0, tieRate: 0, lossRate: 0 };
+    }
+
+    // Edge cases for empty boards
+    if (p1.board.length === 0 && p2.board.length === 0) {
+      return { winRate: 0, tieRate: 100, lossRate: 0 };
+    }
+    if (p1.board.length === 0 && p2.board.length > 0) {
+      return { winRate: 0, tieRate: 0, lossRate: 100 };
+    }
+    if (p1.board.length > 0 && p2.board.length === 0) {
+      return { winRate: 100, tieRate: 0, lossRate: 0 };
+    }
+
+    let p1Wins = 0;
+    let p2Wins = 0;
+    let ties = 0;
+
+    for (let i = 0; i < iterations; i++) {
+      const result = this.simulate1v1(p1, p2);
+      if (result.winnerSide === 1) {
+        p1Wins++;
+      } else if (result.winnerSide === 2) {
+        p2Wins++;
+      } else {
+        ties++;
+      }
+    }
+
+    return {
+      winRate: Math.round((p1Wins / iterations) * 1000) / 10,
+      tieRate: Math.round((ties / iterations) * 1000) / 10,
+      lossRate: Math.round((p2Wins / iterations) * 1000) / 10,
     };
   }
 

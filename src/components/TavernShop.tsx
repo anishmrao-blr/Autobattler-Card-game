@@ -2,9 +2,12 @@ import React, { useState } from 'react';
 import { MinionCard, BoardMinion, PlayerState } from '../types';
 import { CardView } from './CardView';
 import { sound } from '../audio/sound';
+import { CombatOdds } from '../engine/combat';
 
 interface TavernShopProps {
   player: PlayerState;
+  forecastOdds?: CombatOdds;
+  opponentName?: string;
   onBuyMinion: (index: number) => void;
   onReroll: () => void;
   onToggleFreeze: () => void;
@@ -14,6 +17,8 @@ interface TavernShopProps {
 
 export const TavernShop: React.FC<TavernShopProps> = ({
   player,
+  forecastOdds,
+  opponentName,
   onBuyMinion,
   onReroll,
   onToggleFreeze,
@@ -77,12 +82,31 @@ export const TavernShop: React.FC<TavernShopProps> = ({
           )}
         </div>
 
-        {/* Center Title */}
-        <div className="text-center hidden md:block">
-          <h2 className="text-xs tracking-widest font-cinzel font-bold text-purple-300">
-            THE ASTRAL ATRIUM
-          </h2>
-        </div>
+        {/* HearthSim Combat Odds Predictor */}
+        {forecastOdds ? (
+          <div
+            data-testid="combat-forecast-badge"
+            className="flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 rounded-xl bg-slate-950/80 border border-purple-500/40 text-[11px] sm:text-xs font-cinzel shadow-inner backdrop-blur-sm"
+            title={opponentName ? `Headless Monte Carlo forecast (100 simulations) vs ${opponentName}` : 'Headless Monte Carlo forecast'}
+          >
+            <span className="text-purple-400 font-bold flex items-center gap-1">
+              <span>🔮</span>
+              <span className="hidden sm:inline">Forecast{opponentName ? ` vs ${opponentName}` : ''}:</span>
+              <span className="sm:hidden">{opponentName ? `${opponentName.split(' ')[0]}:` : 'Odds:'}</span>
+            </span>
+            <span className="font-bold text-emerald-400" title="Win Rate">{forecastOdds.winRate}% W</span>
+            <span className="text-slate-600">•</span>
+            <span className="font-bold text-amber-300" title="Tie Rate">{forecastOdds.tieRate}% T</span>
+            <span className="text-slate-600">•</span>
+            <span className="font-bold text-rose-400" title="Loss Rate">{forecastOdds.lossRate}% L</span>
+          </div>
+        ) : (
+          <div className="text-center hidden md:block">
+            <h2 className="text-xs tracking-widest font-cinzel font-bold text-purple-300">
+              THE ASTRAL ATRIUM
+            </h2>
+          </div>
+        )}
 
         {/* Freeze & Reroll Controls */}
         <div className="flex items-center gap-1.5 sm:gap-2">
