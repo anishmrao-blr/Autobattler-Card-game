@@ -75,8 +75,19 @@ export const DiscoverModal: React.FC<DiscoverModalProps> = ({ options, tier, onC
         ref={modalRef}
         className="relative max-w-3xl w-full my-auto bg-gradient-to-b from-[#1c1236] via-[#100a21] to-[#080412] border-2 border-yellow-400 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-golden flex flex-col items-center text-center overflow-hidden"
       >
-        {/* Placeholder Radial Glow Slot for Flow Video (discover_reveal_burst.mp4) */}
+        {/* Flow Video Artifact & Radial Glow Slot (discover_reveal_burst.mp4) */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl sm:rounded-3xl z-0">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover object-center opacity-35 filter blur-[1px]"
+            src="/assets/video/discover_reveal_burst.mp4"
+            onError={(e) => {
+              (e.currentTarget as HTMLElement).style.display = 'none';
+            }}
+          />
           <div className="absolute -inset-10 bg-[radial-gradient(circle_at_center,rgba(234,179,8,0.22)_0%,rgba(168,85,247,0.12)_50%,transparent_72%)] animate-pulse" />
         </div>
 

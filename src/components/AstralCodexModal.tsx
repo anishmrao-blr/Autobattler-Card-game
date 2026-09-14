@@ -41,8 +41,19 @@ export const AstralCodexModal: React.FC<AstralCodexModalProps> = ({ onClose }) =
         onClick={(e) => e.stopPropagation()}
         className="relative max-w-5xl w-full h-[92vh] sm:h-[85vh] bg-[#0c071d]/95 border-2 border-yellow-500/70 rounded-2xl sm:rounded-3xl p-3 sm:p-6 shadow-[0_20px_60px_rgba(0,0,0,0.95)] flex flex-col justify-between overflow-hidden"
       >
-        {/* Ambient background slot for Flow video artifact */}
-        <div className="absolute inset-0 pointer-events-none opacity-25 overflow-hidden z-0">
+        {/* Ambient background slot with Flow video artifact */}
+        <div className="absolute inset-0 pointer-events-none opacity-30 overflow-hidden z-0">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover object-center filter blur-[1px]"
+            src="/assets/video/codex_ambient_loop.mp4"
+            onError={(e) => {
+              (e.currentTarget as HTMLElement).style.display = 'none';
+            }}
+          />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(168,85,247,0.18)_0%,transparent_75%)]" />
         </div>
         {/* Header Bar */}
