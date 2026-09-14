@@ -8,6 +8,7 @@ import { MINION_DATABASE, createBoardMinion } from '../engine/cards';
 import { PlayerState } from '../types';
 import { calculateCardFan } from '../hooks/useCardFan';
 import { getFactionForHero } from '../engine/lore';
+import { resolveTargetIndex } from '../hooks/useCardReorder';
 
 describe('Aetherium Engine - Shared Pool & Tavern', () => {
   let pool: SharedCardPool;
@@ -832,6 +833,55 @@ describe('Faction Lore Resolver (getFactionForHero)', () => {
     expect(getFactionForHero(null)).toBeUndefined();
     expect(getFactionForHero(undefined)).toBeUndefined();
     expect(getFactionForHero({ name: 'Unknown Wandering Nomad' })).toBeUndefined();
+  });
+});
+
+describe('useCardReorder - resolveTargetIndex Threshold & Clamping', () => {
+  const SLOT_PITCH = 188;
+  const ITEM_COUNT = 4;
+
+  it('verifies 188px pitch distance sweep with commitFraction = 0.38 (commits at ~71.4px)', () => {
+    // 40px: below 0.38 threshold (71.44px) -> reverts to 0
+    expect(resolveTargetIndex(40, 0, ITEM_COUNT, SLOT_PITCH)).toBe(0);
+
+    // 70px: just below threshold -> reverts to 0
+    expect(resolveTargetIndex(70, 0, ITEM_COUNT, SLOT_PITCH)).toBe(0);
+
+    // 72px: exceeds 0.38 threshold (71.44px) -> commits to index 1!
+    expect(resolveTargetIndex(72, 0, ITEM_COUNT, SLOT_PITCH)).toBe(1);
+
+    // 90px, 94px (old nearest-center boundary), 100px, 120px, 150px, 188px: all commit to index 1
+    expect(resolveTargetIndex(90, 0, ITEM_COUNT, SLOT_PITCH)).toBe(1);
+    expect(resolveTargetIndex(94, 0, ITEM_COUNT, SLOT_PITCH)).toBe(1);
+    expect(resolveTargetIndex(100, 0, ITEM_COUNT, SLOT_PITCH)).toBe(1);
+    expect(resolveTargetIndex(120, 0, ITEM_COUNT, SLOT_PITCH)).toBe(1);
+    expect(resolveTargetIndex(150, 0, ITEM_COUNT, SLOT_PITCH)).toBe(1);
+    expect(resolveTargetIndex(188, 0, ITEM_COUNT, SLOT_PITCH)).toBe(1);
+
+    // 260px: exceeds 188 + 71.44 = 259.44px -> commits 2 slots to index 2!
+    expect(resolveTargetIndex(260, 0, ITEM_COUNT, SLOT_PITCH)).toBe(2);
+  });
+
+  it('correctly handles leftward drags (negative deltaX)', () => {
+    // Dragging left from index 2
+    expect(resolveTargetIndex(-40, 2, ITEM_COUNT, SLOT_PITCH)).toBe(2);
+    expect(resolveTargetIndex(-70, 2, ITEM_COUNT, SLOT_PITCH)).toBe(2);
+    expect(resolveTargetIndex(-72, 2, ITEM_COUNT, SLOT_PITCH)).toBe(1);
+    expect(resolveTargetIndex(-94, 2, ITEM_COUNT, SLOT_PITCH)).toBe(1);
+    expect(resolveTargetIndex(-260, 2, ITEM_COUNT, SLOT_PITCH)).toBe(0);
+  });
+
+  it('clamps to valid array boundaries', () => {
+    // Extreme right drag clamped to itemCount - 1
+    expect(resolveTargetIndex(1000, 0, ITEM_COUNT, SLOT_PITCH)).toBe(3);
+
+    // Extreme left drag clamped to 0
+    expect(resolveTargetIndex(-1000, 2, ITEM_COUNT, SLOT_PITCH)).toBe(0);
+  });
+
+  it('safely handles edge cases like 0 slotPitch or 0 itemCount', () => {
+    expect(resolveTargetIndex(100, 1, 0, SLOT_PITCH)).toBe(1);
+    expect(resolveTargetIndex(100, 1, ITEM_COUNT, 0)).toBe(1);
   });
 });
 

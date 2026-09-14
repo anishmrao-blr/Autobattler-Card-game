@@ -136,8 +136,8 @@ test.describe('Tactile TCG Card Reorder', () => {
       }
 
       // Reroll to ensure second card available
-      const rerollButton = page.getByRole('button', { name: /REROLL/i });
-      await rerollButton.tap();
+      const rerollButtonMobile = page.locator('[data-testid="reroll-button"]');
+      await rerollButtonMobile.tap();
       await page.waitForTimeout(400);
 
       await remainingShopCards.first().tap();
@@ -159,8 +159,8 @@ test.describe('Tactile TCG Card Reorder', () => {
         await page.waitForTimeout(300);
       }
 
-      const rerollButton = page.getByRole('button', { name: /REROLL/i });
-      await rerollButton.click();
+      const rerollButtonDesktop = page.locator('[data-testid="reroll-button"]');
+      await rerollButtonDesktop.click();
       await page.waitForTimeout(600);
 
       await remainingShopCards.first().click();
@@ -254,7 +254,12 @@ test.describe('Tactile TCG Card Reorder', () => {
       await page.waitForTimeout(300);
       // Reroll to restock if needed
       if (i < 2) {
-        await page.getByRole('button', { name: /REROLL/i }).click();
+        const rerollBtn = page.locator('[data-testid="reroll-button"]');
+        if (isMobile) {
+          await rerollBtn.tap();
+        } else {
+          await rerollBtn.click();
+        }
         await page.waitForTimeout(300);
       }
     }
@@ -330,6 +335,108 @@ test.describe('Tactile TCG Card Reorder', () => {
     await page.screenshot({
       path: path.join(ARTIFACT_DIR, screenshotName),
     });
+  });
+
+  test('commits single-slot reorder at sub-94px distance and handles rapid consecutive drags', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'Pointer drag-to-reorder distance verification optimized for desktop pointer testing');
+
+    await page.goto('/');
+    await page.getByRole('button', { name: /ENTER THE AETHERIUM/i }).click();
+    await expect(page.getByText(/Select your Commander/i)).toBeVisible({ timeout: 10_000 });
+    await page.getByRole('button', { name: /CHOOSE COMMANDER/i }).first().click();
+
+    // Skip tutorial
+    await expect(page.getByText('WELCOME TO THE AETHERIUM')).toBeVisible({ timeout: 10_000 });
+    await page.getByRole('button', { name: /SKIP TUTORIAL/i }).click();
+
+    await expect(page.getByText('WARBAND FORMATION')).toBeVisible({ timeout: 10_000 });
+
+    // Setup 4 distinct test board minions directly via harness
+    await page.evaluate(() => {
+      (window as any).__testHarness?.setupTestBoard(4);
+    });
+
+    const boardCards = page.locator('[data-testid="board-card"]');
+    await expect(boardCards).toHaveCount(4, { timeout: 5000 });
+    await boardCards.first().scrollIntoViewIfNeeded();
+    await page.waitForTimeout(200);
+
+    // Initial order: [Cogwork Scrapper, Abyssal Larva, Alchemist's Apprentice, Star-Pup]
+    const card0 = await boardCards.nth(0).locator('[data-testid="card-title"]').textContent();
+    const card1 = await boardCards.nth(1).locator('[data-testid="card-title"]').textContent();
+    const card2 = await boardCards.nth(2).locator('[data-testid="card-title"]').textContent();
+    const card3 = await boardCards.nth(3).locator('[data-testid="card-title"]').textContent();
+
+    expect(card0).toContain('Cogwork Scrapper');
+    expect(card1).toContain('Abyssal Larva');
+    expect(card2).toContain('Elixir Apprentice');
+    expect(card3).toContain('Star Shard');
+
+    // 1. Verify sub-94px commit threshold (~78px drag)
+    const box0 = await boardCards.nth(0).boundingBox();
+    expect(box0).not.toBeNull();
+    if (box0) {
+      const startX = box0.x + box0.width / 2;
+      const startY = box0.y + 40;
+
+      // Drag 78px to the right:
+      // Under old nearest-center (50% pitch / 94px), 78px reverted to index 0.
+      // Under directional step (0.38 pitch / ~71px), 78px commits to index 1!
+      await page.mouse.move(startX, startY);
+      await page.mouse.down();
+      await page.mouse.move(startX + 78, startY, { steps: 5 });
+      await page.waitForTimeout(50);
+      await page.mouse.up();
+      await page.waitForTimeout(300);
+
+      // Verify card 0 committed to index 1
+      const newCard0 = await boardCards.nth(0).locator('[data-testid="card-title"]').textContent();
+      const newCard1 = await boardCards.nth(1).locator('[data-testid="card-title"]').textContent();
+      expect(newCard0).toContain('Abyssal Larva');
+      expect(newCard1).toContain('Cogwork Scrapper');
+    }
+
+    // 2. Test Rapid Consecutive Drags without delay
+    // Current board order: [Abyssal Larva (0), Cogwork Scrapper (1), Elixir Apprentice (2), Star Shard (3)]
+    // Drag Star Shard from index 3 to index 0:
+    const box3 = await boardCards.nth(3).boundingBox();
+    const boxCurrent0 = await boardCards.nth(0).boundingBox();
+    expect(box3).not.toBeNull();
+    expect(boxCurrent0).not.toBeNull();
+
+    if (box3 && boxCurrent0) {
+      // First drag: move index 3 to index 0
+      await page.mouse.move(box3.x + box3.width / 2, box3.y + 40);
+      await page.mouse.down();
+      await page.mouse.move(boxCurrent0.x + boxCurrent0.width / 2, boxCurrent0.y + 40, { steps: 6 });
+      await page.mouse.up();
+
+      // Immediately (zero delay), drag the card currently at index 1 to index 2
+      // After Star Shard moved to 0: array is [Star Shard, Abyssal Larva, Cogwork Scrapper, Elixir Apprentice]
+      // At index 1 is Abyssal Larva.
+      const boxCurrent1 = await boardCards.nth(1).boundingBox();
+      const boxCurrent2 = await boardCards.nth(2).boundingBox();
+      if (boxCurrent1 && boxCurrent2) {
+        await page.mouse.move(boxCurrent1.x + boxCurrent1.width / 2, boxCurrent1.y + 40);
+        await page.mouse.down();
+        await page.mouse.move(boxCurrent2.x + boxCurrent2.width / 2, boxCurrent2.y + 40, { steps: 6 });
+        await page.mouse.up();
+      }
+
+      await page.waitForTimeout(400);
+
+      // Verify final board layout matches [Delta, Bravo, Alpha, Charlie]:
+      // Star Shard at 0, Abyssal Larva at 1, Cogwork Scrapper at 2, Elixir Apprentice at 3
+      const final0 = await boardCards.nth(0).locator('[data-testid="card-title"]').textContent();
+      const final1 = await boardCards.nth(1).locator('[data-testid="card-title"]').textContent();
+      const final2 = await boardCards.nth(2).locator('[data-testid="card-title"]').textContent();
+      const final3 = await boardCards.nth(3).locator('[data-testid="card-title"]').textContent();
+
+      expect(final0).toContain('Star Shard');
+      expect(final1).toContain('Abyssal Larva');
+      expect(final2).toContain('Cogwork Scrapper');
+      expect(final3).toContain('Elixir Apprentice');
+    }
   });
 });
 

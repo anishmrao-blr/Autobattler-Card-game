@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useCallback } from 'react';
 import { BoardMinion, MinionCard } from '../types';
 import { CardView } from './CardView';
 import { useCardReorder } from '../hooks/useCardReorder';
@@ -20,6 +20,24 @@ export const Board: React.FC<BoardProps> = ({
   onInspect,
   isCombatPhase = false,
 }) => {
+  const minionsRef = useRef(minions);
+  minionsRef.current = minions;
+
+  const handleInternalReorder = useCallback(
+    (fromIndex: number, toIndex: number) => {
+      const updated = [...minionsRef.current];
+      const [moved] = updated.splice(fromIndex, 1);
+      updated.splice(toIndex, 0, moved);
+      minionsRef.current = updated;
+      onReorder?.(fromIndex, toIndex);
+    },
+    [onReorder]
+  );
+
+  const resolveCurrentIndex = useCallback((id: string | number) => {
+    return minionsRef.current.findIndex((m: BoardMinion) => m.instanceId === id);
+  }, []);
+
   const {
     registerCardRef,
     handlePointerDown,
@@ -30,8 +48,9 @@ export const Board: React.FC<BoardProps> = ({
     isDragging,
   } = useCardReorder({
     itemCount: minions.length,
-    onReorder,
+    onReorder: handleInternalReorder,
     disabled: isCombatPhase,
+    resolveCurrentIndex,
   });
 
   return (
@@ -85,7 +104,7 @@ export const Board: React.FC<BoardProps> = ({
                 key={minion.instanceId}
                 data-testid="board-card"
                 ref={(el) => registerCardRef(idx, el)}
-                onPointerDown={(e) => handlePointerDown(e, idx)}
+                onPointerDown={(e) => handlePointerDown(e, idx, minion.instanceId)}
                 onDragStart={(e) => e.preventDefault()}
                 style={itemStyle}
                 className={`relative group snap-center select-none ${

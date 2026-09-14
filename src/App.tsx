@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { GameCoordinator } from './engine/game';
 import { Hero, PlayerState, MinionCard, BoardMinion } from './types';
 import { getFactionForHero } from './engine/lore';
+import { MINION_DATABASE, createBoardMinion } from './engine/cards';
 import { HomePageModal } from './components/HomePageModal';
 import { HeroSelectModal } from './components/HeroSelectModal';
 import { HeroProfileModal } from './components/HeroProfileModal';
@@ -72,6 +73,16 @@ export const App: React.FC = () => {
         addCoins: (amount: number) => {
           const p = gameRef.current.getHumanPlayer();
           p.coins += amount;
+          syncState();
+        },
+        setupTestBoard: (count = 4) => {
+          const p = gameRef.current.getHumanPlayer();
+          p.board = MINION_DATABASE.slice(0, count).map(card => createBoardMinion(card));
+          syncState();
+        },
+        setupTestHand: (count = 3) => {
+          const p = gameRef.current.getHumanPlayer();
+          p.hand = MINION_DATABASE.slice(0, count).map(card => ({ ...card }));
           syncState();
         },
         gameCoordinator: gameRef.current,

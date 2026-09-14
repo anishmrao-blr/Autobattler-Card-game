@@ -93,6 +93,8 @@ export const TavernShop: React.FC<TavernShopProps> = ({
           {/* Mechanical Freeze Padlock Button */}
           <button
             onClick={handleToggleFreeze}
+            aria-label={player.isFrozen ? 'Unfreeze Tavern Shop' : 'Freeze Tavern Shop'}
+            data-testid="freeze-button"
             className={`
               flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl font-bold text-[11px] sm:text-xs font-cinzel transition-[transform,colors] duration-150 ease-out border
               ${player.isFrozen
@@ -109,6 +111,8 @@ export const TavernShop: React.FC<TavernShopProps> = ({
           <button
             onClick={handleReroll}
             disabled={!canAffordReroll}
+            aria-label="Reroll Tavern Shop (1 Coin)"
+            data-testid="reroll-button"
             className={`
               relative overflow-hidden flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-xl font-bold text-[11px] sm:text-xs font-cinzel transition-[transform,colors] duration-150 ease-out border
               ${canAffordReroll

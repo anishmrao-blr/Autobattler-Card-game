@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useCallback } from 'react';
 import { MinionCard, PlayerState } from '../types';
 import { CardView } from './CardView';
 import { CommanderHeroStation } from './CommanderHeroStation';
@@ -17,6 +17,18 @@ interface HandTrayProps {
   onInspect?: (card?: MinionCard) => void;
 }
 
+let handCardIdCounter = 0;
+const cardInstanceIdMap = new WeakMap<MinionCard, string>();
+
+export function getHandCardInstanceId(card: MinionCard): string {
+  let id = cardInstanceIdMap.get(card);
+  if (!id) {
+    id = `${card.id}_hand_${++handCardIdCounter}`;
+    cardInstanceIdMap.set(card, id);
+  }
+  return id;
+}
+
 export const HandTray: React.FC<HandTrayProps> = ({
   player,
   hand,
@@ -29,6 +41,24 @@ export const HandTray: React.FC<HandTrayProps> = ({
 }) => {
   const isBoardFull = boardCount >= 7;
 
+  const handRef = useRef(hand);
+  handRef.current = hand;
+
+  const handleInternalReorder = useCallback(
+    (fromIndex: number, toIndex: number) => {
+      const updated = [...handRef.current];
+      const [moved] = updated.splice(fromIndex, 1);
+      updated.splice(toIndex, 0, moved);
+      handRef.current = updated;
+      onReorderHand?.(fromIndex, toIndex);
+    },
+    [onReorderHand]
+  );
+
+  const resolveCurrentIndex = useCallback((id: string | number) => {
+    return handRef.current.findIndex((c: MinionCard) => getHandCardInstanceId(c) === id);
+  }, []);
+
   const {
     registerCardRef,
     handlePointerDown,
@@ -39,8 +69,9 @@ export const HandTray: React.FC<HandTrayProps> = ({
     isDragging,
   } = useCardReorder({
     itemCount: hand.length,
-    onReorder: onReorderHand,
+    onReorder: handleInternalReorder,
     disabled: false,
+    resolveCurrentIndex,
   });
 
   const { setHoveredIndex, getCardFanStyle } = useCardFan(hand.length);
@@ -88,6 +119,7 @@ export const HandTray: React.FC<HandTrayProps> = ({
               const isSelfDragging = draggingIndex === idx;
               const shiftX = getNeighborShiftX(idx);
               const fanStyle = getCardFanStyle(idx, isSelfDragging);
+              const stableId = getHandCardInstanceId(card);
 
               const itemStyle: React.CSSProperties = isSelfDragging
                 ? {
@@ -105,10 +137,10 @@ export const HandTray: React.FC<HandTrayProps> = ({
 
               return (
                 <div
-                  key={`${card.id}-${idx}`}
+                  key={stableId}
                   data-testid="hand-card"
                   ref={(el) => { registerCardRef(idx, el); }}
-                  onPointerDown={(e) => handlePointerDown(e, idx)}
+                  onPointerDown={(e) => handlePointerDown(e, idx, stableId)}
                   onMouseEnter={() => !isDragging && setHoveredIndex(idx)}
                   onMouseLeave={() => setHoveredIndex(null)}
                   onDragStart={(e) => e.preventDefault()}

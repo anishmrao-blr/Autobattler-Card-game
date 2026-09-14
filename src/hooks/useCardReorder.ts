@@ -7,6 +7,7 @@ export interface UseCardReorderOptions {
   onReorder?: (fromIndex: number, toIndex: number) => void;
   onTap?: (index: number) => void;
   disabled?: boolean;
+  resolveCurrentIndex?: (id: string | number) => number;
 }
 
 export interface DragPosition {
@@ -14,11 +15,31 @@ export interface DragPosition {
   y: number;
 }
 
+/**
+ * Calculates drop target index using directional steps based on commit fraction of slot pitch.
+ * commitFraction = 0.38 means an adjacent slot commits at ~38% of pitch distance (~71px for 188px pitch),
+ * significantly earlier than nearest-center (50% / 94px).
+ */
+export function resolveTargetIndex(
+  pointerDeltaX: number,
+  originIndex: number,
+  itemCount: number,
+  slotPitch: number,
+  commitFraction = 0.38
+): number {
+  if (slotPitch <= 0 || itemCount <= 0) return originIndex;
+  const rawSteps = pointerDeltaX / slotPitch;
+  const steps = Math.sign(rawSteps) * Math.floor(Math.abs(rawSteps) + (1 - commitFraction));
+  const target = originIndex + steps;
+  return Math.max(0, Math.min(itemCount - 1, target));
+}
+
 export function useCardReorder({
   itemCount,
   onReorder,
   onTap,
   disabled = false,
+  resolveCurrentIndex,
 }: UseCardReorderOptions) {
   const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
@@ -27,6 +48,7 @@ export function useCardReorder({
   const [tilt, setTilt] = useState(0);
 
   // Ref mirrors for window event listener closures
+  const draggingIdRef = useRef<string | number | null>(null);
   const draggingIndexRef = useRef<number | null>(null);
   const dropTargetIndexRef = useRef<number | null>(null);
   const startPointerPos = useRef<DragPosition>({ x: 0, y: 0 });
@@ -66,39 +88,26 @@ export function useCardReorder({
     return rects;
   }, [itemCount]);
 
-  const findClosestTargetIndex = useCallback(
-    (pointerX: number, activeIndex: number) => {
-      const centers = slotCentersRef.current;
-      if (!centers || centers.length === 0) return activeIndex;
-
-      let closest = activeIndex;
-      let minDistance = Infinity;
-
-      for (let i = 0; i < centers.length; i++) {
-        const dist = Math.abs(pointerX - centers[i]);
-        if (dist < minDistance) {
-          minDistance = dist;
-          closest = i;
-        }
-      }
-
-      return closest;
-    },
-    []
-  );
-
   const handlePointerDown = useCallback(
-    (e: React.PointerEvent, index: number) => {
+    (e: React.PointerEvent, index: number, stableId?: string | number) => {
       if (disabled || e.button > 0 || itemCount <= 1) return;
+
+      const resolvedStart =
+        stableId !== undefined && resolveCurrentIndex
+          ? resolveCurrentIndex(stableId)
+          : -1;
+      const startIndex = resolvedStart !== -1 ? resolvedStart : index;
 
       const originX = e.clientX;
       const originY = e.clientY;
       startPointerPos.current = { x: originX, y: originY };
       hasTriggeredDrag.current = false;
+      draggingIdRef.current = stableId !== undefined ? stableId : index;
+      draggingIndexRef.current = startIndex;
 
       const targetEl = e.currentTarget as HTMLElement | null;
 
-      const cardEl = cardRefs.current.get(index);
+      const cardEl = cardRefs.current.get(startIndex);
       if (cardEl) {
         cardOriginRect.current = cardEl.getBoundingClientRect();
       }
@@ -115,10 +124,17 @@ export function useCardReorder({
         if (!hasTriggeredDrag.current) {
           if (distance < DRAG_THRESHOLD_PX) return;
           hasTriggeredDrag.current = true;
-          draggingIndexRef.current = index;
-          dropTargetIndexRef.current = index;
-          setDraggingIndex(index);
-          setDropTargetIndex(index);
+
+          const currentOrigin =
+            draggingIdRef.current !== null && resolveCurrentIndex
+              ? resolveCurrentIndex(draggingIdRef.current)
+              : draggingIndexRef.current;
+          const origin = currentOrigin !== -1 ? currentOrigin : startIndex;
+
+          draggingIndexRef.current = origin;
+          dropTargetIndexRef.current = origin;
+          setDraggingIndex(origin);
+          setDropTargetIndex(origin);
           sound.playCardSnap();
 
           if (targetEl && typeof targetEl.setPointerCapture === 'function') {
@@ -141,8 +157,16 @@ export function useCardReorder({
         }
         lastClientX = ev.clientX;
 
-        // Calculate slot parting target index
-        const target = findClosestTargetIndex(ev.clientX, index);
+        // Calculate slot parting target index using resolveTargetIndex
+        const origin = draggingIndexRef.current ?? startIndex;
+        const target = resolveTargetIndex(
+          deltaX,
+          origin,
+          itemCount,
+          slotWidthRef.current,
+          0.38
+        );
+
         if (target !== dropTargetIndexRef.current) {
           dropTargetIndexRef.current = target;
           setDropTargetIndex(target);
@@ -162,7 +186,14 @@ export function useCardReorder({
           }
         }
 
-        const from = draggingIndexRef.current;
+        // Resolve fresh origin index by stable id if available
+        let from = draggingIndexRef.current;
+        if (draggingIdRef.current !== null && resolveCurrentIndex) {
+          const freshFrom = resolveCurrentIndex(draggingIdRef.current);
+          if (freshFrom !== -1) {
+            from = freshFrom;
+          }
+        }
         const to = dropTargetIndexRef.current;
 
         if (hasTriggeredDrag.current && from !== null && to !== null) {
@@ -172,9 +203,11 @@ export function useCardReorder({
           }
         } else if (!hasTriggeredDrag.current) {
           // If moved less than threshold, trigger normal tap / click
-          onTap?.(index);
+          const tapIdx = from !== null ? from : startIndex;
+          onTap?.(tapIdx);
         }
 
+        draggingIdRef.current = null;
         draggingIndexRef.current = null;
         dropTargetIndexRef.current = null;
         setDraggingIndex(null);
@@ -188,7 +221,7 @@ export function useCardReorder({
       window.addEventListener('pointerup', onPointerUp);
       window.addEventListener('pointercancel', onPointerUp);
     },
-    [disabled, itemCount, calculateSlotMetrics, findClosestTargetIndex, onReorder, onTap]
+    [disabled, itemCount, calculateSlotMetrics, resolveCurrentIndex, onReorder, onTap]
   );
 
   /**
