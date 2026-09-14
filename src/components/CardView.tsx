@@ -197,6 +197,7 @@ export const CardView: React.FC<CardViewProps> = ({
         onContextMenu={handleContextMenu}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        onDragStart={(e) => e.preventDefault()}
         className={`
           relative select-none flex flex-col justify-between rounded-2xl p-1.5 transition-transform duration-200 ease-out cursor-pointer overflow-hidden group/card
           ${sizeDimensions}
@@ -273,7 +274,7 @@ export const CardView: React.FC<CardViewProps> = ({
 
         {/* Steel Name Plate */}
         <div className="flex-1 steel-name-plate py-0.5 px-2 rounded-md flex items-center justify-between overflow-hidden">
-          <span className={`text-sm font-bold truncate leading-tight font-cinzel tracking-wide ${isGolden ? 'text-yellow-300 drop-shadow-[0_0_6px_rgba(255,215,0,0.8)]' : 'text-slate-100'}`}>
+          <span data-testid="card-title" className={`text-sm font-bold truncate leading-tight font-cinzel tracking-wide ${isGolden ? 'text-yellow-300 drop-shadow-[0_0_6px_rgba(255,215,0,0.8)]' : 'text-slate-100'}`}>
             {name.replace('★ ', '')}
           </span>
           <span className="text-xs text-yellow-400 font-bold ml-1 font-mono">

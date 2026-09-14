@@ -83,8 +83,10 @@ export const Board: React.FC<BoardProps> = ({
             return (
               <div
                 key={minion.instanceId}
+                data-testid="board-card"
                 ref={(el) => registerCardRef(idx, el)}
                 onPointerDown={(e) => handlePointerDown(e, idx)}
+                onDragStart={(e) => e.preventDefault()}
                 style={itemStyle}
                 className={`relative group snap-center select-none ${
                   isSelfDragging

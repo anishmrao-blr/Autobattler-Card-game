@@ -56,6 +56,20 @@ export const App: React.FC = () => {
   };
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).__testHarness = {
+        addCoins: (amount: number) => {
+          const p = gameRef.current.getHumanPlayer();
+          p.coins += amount;
+          syncState();
+        },
+        gameCoordinator: gameRef.current,
+        syncState,
+      };
+    }
+  }, []);
+
+  useEffect(() => {
     if (phase !== 'TAVERN' || inspectingCard || inspectingBoardMinion || inspectingHero || showCodex || showTutorial || showGameMenu) return;
 
     const interval = setInterval(() => {

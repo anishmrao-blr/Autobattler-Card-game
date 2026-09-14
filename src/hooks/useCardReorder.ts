@@ -31,6 +31,7 @@ export function useCardReorder({
   const dropTargetIndexRef = useRef<number | null>(null);
   const startPointerPos = useRef<DragPosition>({ x: 0, y: 0 });
   const cardOriginRect = useRef<DOMRect | null>(null);
+  const slotCentersRef = useRef<number[]>([]);
   const slotWidthRef = useRef<number>(150);
   const hasTriggeredDrag = useRef<boolean>(false);
 
@@ -46,12 +47,16 @@ export function useCardReorder({
 
   const calculateSlotMetrics = useCallback(() => {
     const rects: DOMRect[] = [];
+    const centers: number[] = [];
     for (let i = 0; i < itemCount; i++) {
       const el = cardRefs.current.get(i);
       if (el) {
-        rects.push(el.getBoundingClientRect());
+        const r = el.getBoundingClientRect();
+        rects.push(r);
+        centers.push(r.left + r.width / 2);
       }
     }
+    slotCentersRef.current = centers;
     if (rects.length > 1) {
       // Distance between adjacent card centers/lefts
       slotWidthRef.current = Math.abs(rects[1].left - rects[0].left);
@@ -63,15 +68,14 @@ export function useCardReorder({
 
   const findClosestTargetIndex = useCallback(
     (pointerX: number, activeIndex: number) => {
+      const centers = slotCentersRef.current;
+      if (!centers || centers.length === 0) return activeIndex;
+
       let closest = activeIndex;
       let minDistance = Infinity;
 
-      for (let i = 0; i < itemCount; i++) {
-        const el = cardRefs.current.get(i);
-        if (!el) continue;
-        const rect = el.getBoundingClientRect();
-        const midX = rect.left + rect.width / 2;
-        const dist = Math.abs(pointerX - midX);
+      for (let i = 0; i < centers.length; i++) {
+        const dist = Math.abs(pointerX - centers[i]);
         if (dist < minDistance) {
           minDistance = dist;
           closest = i;
@@ -80,7 +84,7 @@ export function useCardReorder({
 
       return closest;
     },
-    [itemCount]
+    []
   );
 
   const handlePointerDown = useCallback(
@@ -91,6 +95,8 @@ export function useCardReorder({
       const originY = e.clientY;
       startPointerPos.current = { x: originX, y: originY };
       hasTriggeredDrag.current = false;
+
+      const targetEl = e.currentTarget as HTMLElement | null;
 
       const cardEl = cardRefs.current.get(index);
       if (cardEl) {
@@ -114,6 +120,14 @@ export function useCardReorder({
           setDraggingIndex(index);
           setDropTargetIndex(index);
           sound.playCardSnap();
+
+          if (targetEl && typeof targetEl.setPointerCapture === 'function') {
+            try {
+              targetEl.setPointerCapture(ev.pointerId);
+            } catch {
+              // Ignore
+            }
+          }
         }
 
         // Active dragging state
@@ -135,10 +149,18 @@ export function useCardReorder({
         }
       };
 
-      const onPointerUp = () => {
+      const onPointerUp = (ev: PointerEvent) => {
         window.removeEventListener('pointermove', onPointerMove);
         window.removeEventListener('pointerup', onPointerUp);
         window.removeEventListener('pointercancel', onPointerUp);
+
+        if (hasTriggeredDrag.current && targetEl && typeof targetEl.releasePointerCapture === 'function') {
+          try {
+            targetEl.releasePointerCapture(ev.pointerId);
+          } catch {
+            // Ignore
+          }
+        }
 
         const from = draggingIndexRef.current;
         const to = dropTargetIndexRef.current;

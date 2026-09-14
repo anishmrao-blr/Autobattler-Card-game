@@ -100,8 +100,10 @@ export const HandTray: React.FC<HandTrayProps> = ({
               return (
                 <div
                   key={`${card.id}-${idx}`}
+                  data-testid="hand-card"
                   ref={(el) => registerCardRef(idx, el)}
                   onPointerDown={(e) => handlePointerDown(e, idx)}
+                  onDragStart={(e) => e.preventDefault()}
                   style={itemStyle}
                   className={`flex-shrink-0 snap-center select-none relative ${
                     isSelfDragging

@@ -141,7 +141,7 @@ export const TavernShop: React.FC<TavernShopProps> = ({
             const cost = (player.hero.id === 'hero_chronos' && minion.tribe === 'AUTOMATA') ? 2 : 3;
             const canAfford = player.coins >= cost && player.hand.length < 10;
             return (
-              <div key={idx} className="relative group snap-center">
+              <div key={idx} data-testid="shop-card" className="relative group snap-center">
                 <CardView
                   card={minion}
                   showPrice={true}
