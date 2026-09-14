@@ -25,9 +25,22 @@ export const Board: React.FC<BoardProps> = ({
   isCombatPhase = false,
 }) => {
   const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
-  const dragOrigin = useRef<{ index: number; x: number; y: number } | null>(null);
-  const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
-  const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null);
+  // Refs mirror the drag state for the imperative window listeners below
+  // (whose closures would otherwise see stale values), while the state
+  // setters drive the actual re-render.
+  const draggingIndexRef = useRef<number | null>(null);
+  const dropTargetIndexRef = useRef<number | null>(null);
+  const [draggingIndex, setDraggingIndexState] = useState<number | null>(null);
+  const [dropTargetIndex, setDropTargetIndexState] = useState<number | null>(null);
+
+  const setDraggingIndex = (v: number | null) => {
+    draggingIndexRef.current = v;
+    setDraggingIndexState(v);
+  };
+  const setDropTargetIndex = (v: number | null) => {
+    dropTargetIndexRef.current = v;
+    setDropTargetIndexState(v);
+  };
 
   const findIndexAtPoint = (x: number, y: number): number | null => {
     for (const [index, el] of cardRefs.current) {
@@ -39,40 +52,42 @@ export const Board: React.FC<BoardProps> = ({
     return null;
   };
 
+  // Listens on window rather than the card/container elements: relying on
+  // setPointerCapture's target (an arbitrary nested node inside the card,
+  // e.g. the art image) to still be mounted and correctly release capture
+  // for the whole gesture proved fragile. Window listeners keep tracking
+  // the drag regardless of what's under the pointer or whether the
+  // original element re-renders mid-drag.
   const handlePointerDown = (e: React.PointerEvent, index: number) => {
     if (isCombatPhase || e.button > 0) return;
-    dragOrigin.current = { index, x: e.clientX, y: e.clientY };
-  };
+    const originX = e.clientX;
+    const originY = e.clientY;
 
-  const handlePointerMove = (e: React.PointerEvent) => {
-    if (!dragOrigin.current) return;
-    const { index, x, y } = dragOrigin.current;
+    const onMove = (ev: PointerEvent) => {
+      if (draggingIndexRef.current === null) {
+        const movedPx = Math.hypot(ev.clientX - originX, ev.clientY - originY);
+        if (movedPx < DRAG_THRESHOLD_PX) return;
+        setDraggingIndex(index);
+      }
+      setDropTargetIndex(findIndexAtPoint(ev.clientX, ev.clientY));
+    };
 
-    if (draggingIndex === null) {
-      const movedPx = Math.hypot(e.clientX - x, e.clientY - y);
-      if (movedPx < DRAG_THRESHOLD_PX) return;
-      setDraggingIndex(index);
-      (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
-    }
+    const onUp = () => {
+      const from = draggingIndexRef.current;
+      const to = dropTargetIndexRef.current;
+      if (from !== null && to !== null && to !== from) {
+        onReorder?.(from, to);
+      }
+      setDraggingIndex(null);
+      setDropTargetIndex(null);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+    };
 
-    // Pointer capture keeps events targeted at the origin card, so hit-test
-    // sibling positions manually rather than relying on pointerenter.
-    const overIndex = findIndexAtPoint(e.clientX, e.clientY);
-    setDropTargetIndex(overIndex);
-  };
-
-  const endDrag = () => {
-    if (draggingIndex !== null && dropTargetIndex !== null && dropTargetIndex !== draggingIndex) {
-      onReorder?.(draggingIndex, dropTargetIndex);
-    }
-    dragOrigin.current = null;
-    setDraggingIndex(null);
-    setDropTargetIndex(null);
-  };
-
-  const handlePointerUp = (e: React.PointerEvent) => {
-    (e.target as HTMLElement).releasePointerCapture?.(e.pointerId);
-    endDrag();
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
   };
 
   return (
@@ -103,9 +118,6 @@ export const Board: React.FC<BoardProps> = ({
           WebkitMaskImage: 'linear-gradient(to right, transparent 0, black 20px, black calc(100% - 20px), transparent 100%)',
           maskImage: 'linear-gradient(to right, transparent 0, black 20px, black calc(100% - 20px), transparent 100%)',
         }}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
       >
         {minions.length > 0 ? (
           minions.map((minion, idx) => (

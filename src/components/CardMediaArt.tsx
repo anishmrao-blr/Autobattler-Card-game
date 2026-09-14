@@ -39,6 +39,7 @@ export const CardMediaArt: React.FC<CardMediaArtProps> = ({
           loop
           muted
           playsInline
+          draggable={false}
           onError={() => setVideoFailed(true)}
           className={`${className} ${zoomClass} transition-opacity duration-300 ${
             isLoaded ? 'opacity-100' : 'opacity-90'
@@ -50,6 +51,7 @@ export const CardMediaArt: React.FC<CardMediaArtProps> = ({
           src={artUrl}
           alt={alt}
           loading="lazy"
+          draggable={false}
           className={`${className} ${zoomClass}`}
           onError={(e) => {
             // Absolute emergency fallback if a specific card art path fails
