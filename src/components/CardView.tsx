@@ -337,9 +337,26 @@ export const CardView: React.FC<CardViewProps> = ({
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/30 pointer-events-none" />
 
-        {/* Flanking Tribe Ribbon Badge on Art */}
-        <div className={`absolute bottom-1 right-1 text-xs font-bold px-2 py-0.5 rounded-full border shadow-md backdrop-blur-md ${tribeInfo.bg} ${tribeInfo.text} ${tribeInfo.border}`}>
+        {/* Price Coin Badge (Top-Left of Art Viewport) */}
+        {showPrice && (
+          <div className="absolute top-1.5 left-1.5 z-20 flex items-center gap-1 bg-yellow-950/90 border border-yellow-400 text-yellow-300 font-mono font-bold text-xs px-2 py-0.5 rounded-full shadow-md backdrop-blur-sm">
+            <span>🪙</span> {price}
+          </div>
+        )}
+
+        {/* Flanking Tribe Ribbon Badge on Art (Centered between medallions) */}
+        <div className={`absolute bottom-1.5 left-1/2 -translate-x-1/2 z-10 text-[10px] font-bold px-2 py-0.5 rounded-full border shadow-md backdrop-blur-md ${tribeInfo.bg} ${tribeInfo.text} ${tribeInfo.border}`}>
           {tribe}
+        </div>
+
+        {/* Attack Stat Medallion (Bottom-Left of Art Viewport) */}
+        <div className="stat-medallion-atk absolute bottom-1.5 left-1.5 z-20 flex items-center justify-center w-8 h-8 rounded-full font-black text-white font-mono text-sm shadow-md drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+          {attack}
+        </div>
+
+        {/* Health Stat Medallion (Bottom-Right of Art Viewport) */}
+        <div className={`stat-medallion-hp absolute bottom-1.5 right-1.5 z-20 flex items-center justify-center w-8 h-8 rounded-full font-black text-white font-mono text-sm shadow-md drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] ${health < maxHealth ? 'animate-pulse text-red-200' : ''}`}>
+          {health}
         </div>
       </div>
 
@@ -360,25 +377,6 @@ export const CardView: React.FC<CardViewProps> = ({
           ) : (
             <span className="text-slate-400 italic">No additional combat triggers.</span>
           )}
-        </div>
-      </div>
-
-      {/* Bottom Footer: Attack Medallion, Price Coin, Health Medallion */}
-      <div className="flex items-center justify-between mt-auto pt-0.5 z-20">
-        {/* Attack Stat Medallion */}
-        <div className="stat-medallion-atk flex items-center justify-center w-8 h-8 rounded-full font-black text-white font-mono text-sm">
-          {attack}
-        </div>
-
-        {showPrice && (
-          <div className="flex items-center gap-1 bg-yellow-950/90 border border-yellow-400 text-yellow-300 font-mono font-bold text-xs px-2 py-0.5 rounded-full shadow-md">
-            <span>🪙</span> {price}
-          </div>
-        )}
-
-        {/* Health Stat Medallion */}
-        <div className={`stat-medallion-hp flex items-center justify-center w-8 h-8 rounded-full font-black text-white font-mono text-sm ${health < maxHealth ? 'animate-pulse text-red-200' : ''}`}>
-          {health}
         </div>
       </div>
     </div>

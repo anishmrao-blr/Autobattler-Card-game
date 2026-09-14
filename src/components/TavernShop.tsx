@@ -47,9 +47,9 @@ export const TavernShop: React.FC<TavernShopProps> = ({
 
   return (
     <div className="relative w-full bg-[#120a26]/90 border border-yellow-600/40 rounded-2xl p-2 sm:p-3 shadow-2xl backdrop-blur-md">
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-2 sm:mb-3 px-1 sm:px-2">
+      <div className="flex items-center justify-between gap-2 mb-2 px-1 sm:px-2">
         {/* Tier & Upgrade */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
           <div className="flex items-center gap-1.5 bg-yellow-950/80 border border-yellow-500/50 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl shadow-inner">
             <span className="text-xs sm:text-sm font-bold text-yellow-400 font-cinzel">TIER {player.tavernTier}</span>
             <span className="text-[10px] sm:text-xs text-yellow-300">{'★'.repeat(player.tavernTier)}</span>
@@ -82,34 +82,14 @@ export const TavernShop: React.FC<TavernShopProps> = ({
           )}
         </div>
 
-        {/* HearthSim Combat Odds Predictor */}
-        {forecastOdds ? (
-          <div
-            data-testid="combat-forecast-badge"
-            className="flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 rounded-xl bg-slate-950/80 border border-purple-500/40 text-[11px] sm:text-xs font-cinzel shadow-inner backdrop-blur-sm"
-            title={opponentName ? `Headless Monte Carlo forecast (100 simulations) vs ${opponentName}` : 'Headless Monte Carlo forecast'}
-          >
-            <span className="text-purple-400 font-bold flex items-center gap-1">
-              <span>🔮</span>
-              <span className="hidden sm:inline">Forecast{opponentName ? ` vs ${opponentName}` : ''}:</span>
-              <span className="sm:hidden">{opponentName ? `${opponentName.split(' ')[0]}:` : 'Odds:'}</span>
-            </span>
-            <span className="font-bold text-emerald-400" title="Win Rate">{forecastOdds.winRate}% W</span>
-            <span className="text-slate-600">•</span>
-            <span className="font-bold text-amber-300" title="Tie Rate">{forecastOdds.tieRate}% T</span>
-            <span className="text-slate-600">•</span>
-            <span className="font-bold text-rose-400" title="Loss Rate">{forecastOdds.lossRate}% L</span>
-          </div>
-        ) : (
-          <div className="text-center hidden md:block">
-            <h2 className="text-xs tracking-widest font-cinzel font-bold text-purple-300">
-              THE ASTRAL ATRIUM
-            </h2>
-          </div>
-        )}
+        <div className="text-center hidden md:block">
+          <h2 className="text-xs tracking-widest font-cinzel font-bold text-purple-300">
+            THE ASTRAL ATRIUM
+          </h2>
+        </div>
 
         {/* Freeze & Reroll Controls */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
           {/* Mechanical Freeze Padlock Button */}
           <button
             onClick={handleToggleFreeze}
@@ -121,7 +101,7 @@ export const TavernShop: React.FC<TavernShopProps> = ({
             `}
           >
             <span className="text-sm">{player.isFrozen ? '🔒' : '🔓'}</span>
-            <span>{player.isFrozen ? 'FROZEN' : 'FREEZE'}</span>
+            <span className="hidden xs:inline">{player.isFrozen ? 'FROZEN' : 'FREEZE'}</span>
             <span className="text-[10px] text-cyan-400 font-sans hidden sm:inline">(0🪙)</span>
           </button>
 
@@ -139,7 +119,7 @@ export const TavernShop: React.FC<TavernShopProps> = ({
             <span className={`inline-block text-sm transition-transform duration-300 ${isRerolling ? 'rotate-180 scale-125' : ''}`}>
               ⚙️
             </span>
-            <span>REROLL</span>
+            <span className="hidden xs:inline">REROLL</span>
             <span className="bg-black/40 px-1 py-0.5 rounded text-yellow-300">🪙 1</span>
 
             {isRerolling && (
@@ -148,6 +128,26 @@ export const TavernShop: React.FC<TavernShopProps> = ({
           </button>
         </div>
       </div>
+
+      {/* HearthSim Combat Odds Predictor - Dedicated Slim Strip */}
+      {forecastOdds && (
+        <div
+          data-testid="combat-forecast-badge"
+          className="flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 py-0.5 mb-2 rounded-lg bg-slate-950/70 border border-purple-500/30 text-[10px] sm:text-xs font-cinzel shadow-inner backdrop-blur-sm w-full"
+          title={opponentName ? `Headless Monte Carlo forecast (100 simulations) vs ${opponentName}` : 'Headless Monte Carlo forecast'}
+        >
+          <span className="text-purple-400 font-bold flex items-center gap-1">
+            <span>🔮</span>
+            <span className="hidden sm:inline">Forecast{opponentName ? ` vs ${opponentName}` : ''}:</span>
+            <span className="sm:hidden">{opponentName ? `${opponentName.split(' ')[0]}:` : 'Odds:'}</span>
+          </span>
+          <span className="font-bold text-emerald-400" title="Win Rate">{forecastOdds.winRate}% W</span>
+          <span className="text-slate-600">•</span>
+          <span className="font-bold text-amber-300" title="Tie Rate">{forecastOdds.tieRate}% T</span>
+          <span className="text-slate-600">•</span>
+          <span className="font-bold text-rose-400" title="Loss Rate">{forecastOdds.lossRate}% L</span>
+        </div>
+      )}
 
       {/* Shop Board */}
       <div

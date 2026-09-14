@@ -56,17 +56,17 @@ export const HandTray: React.FC<HandTrayProps> = ({
 
       {/* 2. Hand Tray Cards Section */}
       <div className="flex-1 flex flex-col justify-center min-w-0">
-        <div className="flex items-center justify-between px-2 mb-1">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between px-1 sm:px-2 mb-1 gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
             <span className="font-cinzel text-xs font-bold text-yellow-400">
               🃏 HAND TRAY
             </span>
-            <span className="text-xs bg-slate-900 px-2 py-0.5 rounded border border-slate-700 text-slate-300 font-bold">
-              {hand.length} / 10
+            <span className="text-xs bg-slate-900 px-1.5 sm:px-2 py-0.5 rounded border border-slate-700 text-slate-300 font-bold">
+              {hand.length}/10
             </span>
             {isBoardFull && (
-              <span className="text-xs text-rose-400 font-bold bg-rose-950/80 px-2 py-0.5 rounded border border-rose-800 animate-pulse">
-                Battlefield Full (7/7)
+              <span className="text-[10px] sm:text-xs text-rose-400 font-bold bg-rose-950/80 px-1.5 sm:px-2 py-0.5 rounded border border-rose-800 animate-pulse">
+                Full
               </span>
             )}
           </div>

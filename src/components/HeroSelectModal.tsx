@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Hero } from '../types';
 import { HERO_DATABASE } from '../engine/heroes';
+import { getFactionForHero } from '../engine/lore';
 import { HeroProfileModal } from './HeroProfileModal';
 import { CardMediaArt } from './CardMediaArt';
 import { sound } from '../audio/sound';
@@ -49,7 +50,9 @@ export const HeroSelectModal: React.FC<HeroSelectModalProps> = ({ onSelectHero, 
 
         {/* Hero Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 w-full">
-        {heroes.map((hero) => (
+        {heroes.map((hero) => {
+          const faction = getFactionForHero(hero);
+          return (
           <div
             key={hero.id}
             className="group relative flex flex-col justify-between dark-steel-card rounded-3xl p-4 shadow-2xl transition-[transform,box-shadow,border-color] duration-200 ease-out transform hover:-translate-y-2 hover:border-yellow-400 hover:shadow-[0_15px_35px_rgba(234,179,8,0.3)] cursor-pointer"
@@ -99,6 +102,11 @@ export const HeroSelectModal: React.FC<HeroSelectModalProps> = ({ onSelectHero, 
               <div className="text-xs font-bold text-emerald-300 bg-emerald-950/90 px-3 py-0.5 rounded-full border border-emerald-500/60 mb-2 shadow-inner">
                 ❤️ {hero.hp} Health
               </div>
+              {faction?.motto && (
+                <div className="text-[10px] text-amber-300/90 italic text-center px-1 mb-2 font-serif line-clamp-1">
+                  {faction.motto}
+                </div>
+              )}
             </div>
 
             {/* Middle: Hero Power Card */}
@@ -113,28 +121,28 @@ export const HeroSelectModal: React.FC<HeroSelectModalProps> = ({ onSelectHero, 
                 <span className="font-cinzel text-xs font-bold text-cyan-300">
                   {hero.powerName}
                 </span>
-                <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-black/80 text-yellow-300 border border-yellow-600/50">
-                  {hero.powerType === 'PASSIVE' ? 'PASSIVE' : `🪙 ${hero.powerCost}`}
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-black/60 text-yellow-300 border border-yellow-500/40">
+                  {hero.powerCost === 0 ? 'FREE' : `🪙 ${hero.powerCost}`}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-300 leading-relaxed font-sans mt-1">
+              <p className="text-[11px] text-slate-300 font-sans leading-relaxed">
                 {hero.powerDescription}
               </p>
             </div>
 
-            {/* Bottom Button */}
+            {/* Bottom: Select CTA */}
             <button
-              onClick={(e) => {
-                e.stopPropagation();
+              onClick={() => {
                 sound.playTierUpgrade();
                 onSelectHero(hero);
               }}
-              className="mt-3 w-full py-2.5 bg-gradient-to-r from-amber-600 to-yellow-500 group-hover:from-amber-500 group-hover:to-yellow-400 text-black font-cinzel font-black text-xs rounded-xl shadow-brass transition-transform duration-150 group-hover:scale-105 active:scale-95"
+              className="w-full mt-3 py-2.5 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-black font-cinzel font-bold text-xs tracking-wider rounded-xl shadow-brass transition-[transform,background-color] hover:scale-105 active:scale-95 flex items-center justify-center gap-1 cursor-pointer"
             >
               CHOOSE COMMANDER ➔
             </button>
           </div>
-        ))}
+          );
+        })}
       </div>
 
         {/* Back to Login Callsign Option */}

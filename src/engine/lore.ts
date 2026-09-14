@@ -1,3 +1,5 @@
+import { Hero } from '../types';
+
 export interface RealmEntry {
   id: string;
   name: string;
@@ -207,3 +209,13 @@ export const RELICS_LORE: RelicEntry[] = [
     lore: 'An orb extracted from the dead core of a collapsed neutron star, pulsing with endless hunger.'
   }
 ];
+
+/**
+ * Resolves a Hero to their corresponding Faction lore entry based on the leader field.
+ * Handles single leaders and co-leaders (e.g. Professor Chronos & Baron Von Cog).
+ * Gracefully returns undefined if no faction matches (e.g. Archimedes Spark).
+ */
+export function getFactionForHero(hero: Hero | { name?: string } | null | undefined): FactionEntry | undefined {
+  if (!hero || !hero.name) return undefined;
+  return FACTIONS_LORE.find(faction => faction.leader.includes(hero.name!));
+}

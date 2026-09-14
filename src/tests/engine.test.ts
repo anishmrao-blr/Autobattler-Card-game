@@ -7,6 +7,7 @@ import { HERO_DATABASE } from '../engine/heroes';
 import { MINION_DATABASE, createBoardMinion } from '../engine/cards';
 import { PlayerState } from '../types';
 import { calculateCardFan } from '../hooks/useCardFan';
+import { getFactionForHero } from '../engine/lore';
 
 describe('Aetherium Engine - Shared Pool & Tavern', () => {
   let pool: SharedCardPool;
@@ -791,6 +792,46 @@ describe('Batch 2 Polish - HearthSim 0-Attack Pass Rule', () => {
     // No attacks should have occurred
     const attacks = result.events.filter(e => e.type === 'ATTACK_START');
     expect(attacks.length).toBe(0);
+  });
+});
+
+describe('Faction Lore Resolver (getFactionForHero)', () => {
+  it('correctly maps co-leaders Professor Chronos and Baron Von Cog to The Iron Consortium', () => {
+    const chronos = HERO_DATABASE.find(h => h.id === 'hero_chronos');
+    const baron = HERO_DATABASE.find(h => h.id === 'hero_baron');
+
+    expect(chronos).toBeDefined();
+    expect(baron).toBeDefined();
+
+    const chronosFaction = getFactionForHero(chronos);
+    const baronFaction = getFactionForHero(baron);
+
+    expect(chronosFaction).toBeDefined();
+    expect(chronosFaction?.id).toBe('faction_automata');
+    expect(chronosFaction?.name).toBe('The Iron Consortium');
+    expect(chronosFaction?.motto).toBe('"Precision in Steel, Perfection in Motion."');
+
+    expect(baronFaction).toBeDefined();
+    expect(baronFaction?.id).toBe('faction_automata');
+    expect(baronFaction?.name).toBe('The Iron Consortium');
+  });
+
+  it('correctly maps solo faction leaders', () => {
+    const nyx = HERO_DATABASE.find(h => h.id === 'hero_nyx');
+    const aurelius = HERO_DATABASE.find(h => h.id === 'hero_aurelius');
+    const skylar = HERO_DATABASE.find(h => h.id === 'hero_skylar');
+
+    expect(getFactionForHero(nyx)?.id).toBe('faction_voidborn');
+    expect(getFactionForHero(aurelius)?.id).toBe('faction_alchemist');
+    expect(getFactionForHero(skylar)?.id).toBe('faction_pirate');
+  });
+
+  it('gracefully returns undefined for Archimedes Spark and invalid heroes without throwing', () => {
+    const artificer = HERO_DATABASE.find(h => h.id === 'hero_artificer');
+    expect(getFactionForHero(artificer)).toBeUndefined();
+    expect(getFactionForHero(null)).toBeUndefined();
+    expect(getFactionForHero(undefined)).toBeUndefined();
+    expect(getFactionForHero({ name: 'Unknown Wandering Nomad' })).toBeUndefined();
   });
 });
 

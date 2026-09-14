@@ -29,6 +29,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({
 }) => {
   const coinContainerRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<HTMLDivElement>(null);
+  const combatBtnRef = useRef<HTMLButtonElement>(null);
   const prevCoins = useRef(player.coins);
 
   // Coin scale-punch on coin count change
@@ -39,14 +40,23 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({
     }
   }, [player.coins]);
 
-  // Timer one-shot pulse per second in final 10s
+  // Timer & Combat button one-shot pulse per second in final 10s
   useEffect(() => {
-    if (timeLeft <= 10 && timeLeft > 0 && timerRef.current && !isReducedMotion()) {
-      gsap.fromTo(
-        timerRef.current,
-        { scale: 1.25 },
-        { scale: 1, duration: 0.35, ease: 'power2.out' }
-      );
+    if (timeLeft <= 10 && timeLeft > 0 && !isReducedMotion()) {
+      if (timerRef.current) {
+        gsap.fromTo(
+          timerRef.current,
+          { scale: 1.25 },
+          { scale: 1, duration: 0.35, ease: 'power2.out' }
+        );
+      }
+      if (combatBtnRef.current) {
+        gsap.fromTo(
+          combatBtnRef.current,
+          { scale: 1.08 },
+          { scale: 1, duration: 0.35, ease: 'power2.out' }
+        );
+      }
     }
   }, [timeLeft]);
   return (
@@ -121,14 +131,15 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({
 
         {/* Engage Combat Button */}
         <button
+          ref={combatBtnRef}
           onClick={() => {
             sound.playAttackLunge();
             onReadyCombat();
           }}
-          className="flex items-center gap-1 px-2.5 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 hover:from-red-500 hover:to-amber-500 border border-red-300 text-white font-cinzel font-black text-[10px] sm:text-xs rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-[background-color,transform] duration-150"
+          className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 hover:from-red-500 hover:to-amber-500 border border-red-300 text-white font-cinzel font-black text-[10px] sm:text-xs rounded-full shadow-lg ring-1 ring-red-400/60 hover:scale-105 active:scale-95 transition-[background-color,transform] duration-150 flex-shrink-0"
         >
           <span>⚔️</span>
-          <span className="hidden sm:inline">COMBAT</span>
+          <span className="font-bold tracking-wider">COMBAT</span>
         </button>
 
         {/* Codex Button */}

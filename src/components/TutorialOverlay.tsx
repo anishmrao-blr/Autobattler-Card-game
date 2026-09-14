@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { sound } from '../audio/sound';
 import { motion, isReducedMotion } from '../utils/motion';
+import { TIMELINE_LORE } from '../engine/lore';
 import gsap from 'gsap';
 
 export const TUTORIAL_STORAGE_KEY = 'aabg_tutorial_seen';
@@ -21,7 +22,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     title: 'WELCOME TO THE AETHERIUM',
     subtitle: '8-Player Tactical Autobattler',
     description:
-      'You are an Astral Commander leading a warband into competitive combat. Compete against 7 rival commanders across alternating Tavern and Combat rounds to be the last survivor.',
+      `${TIMELINE_LORE[2].summary} You are an Astral Commander leading a warband into competitive combat across alternating Tavern and Combat rounds to be the last survivor.`,
     icon: '🌌',
     badge: 'MISSION BRIEFING',
     tip: 'Your health starts at 40. When it reaches 0, you are eliminated from the Astral Lobby.',

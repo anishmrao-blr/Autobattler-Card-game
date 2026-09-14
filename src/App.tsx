@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { GameCoordinator } from './engine/game';
 import { Hero, PlayerState, MinionCard, BoardMinion } from './types';
+import { getFactionForHero } from './engine/lore';
 import { HomePageModal } from './components/HomePageModal';
 import { HeroSelectModal } from './components/HeroSelectModal';
 import { HeroProfileModal } from './components/HeroProfileModal';
@@ -309,7 +310,8 @@ export const App: React.FC = () => {
 
   // GAME OVER SCREEN
   if (phase === 'GAME_OVER') {
-    const isWinner = human.placement === 1;
+    const isWinner = human?.placement === 1;
+    const humanFaction = human?.hero ? getFactionForHero(human.hero) : undefined;
     if (isWinner) {
       confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
     }
@@ -350,9 +352,23 @@ export const App: React.FC = () => {
           <h1 className={`font-cinzel text-3xl font-black mb-2 ${isWinner ? 'text-yellow-400' : 'text-red-500'}`}>
             {isWinner ? 'CHAMPION OF THE AETHERIUM!' : 'MATCH CONCLUDED'}
           </h1>
-          <p className="text-sm text-purple-200 mb-6 font-sans">
-            You finished in <span className="font-bold text-yellow-300">#{human.placement || 8} Place</span> out of 8 players!
+          <p className="text-sm text-purple-200 mb-4 font-sans">
+            You finished in <span className="font-bold text-yellow-300">#{human?.placement || 8} Place</span> out of 8 players!
           </p>
+
+          {/* Faction Narrative Stake */}
+          {humanFaction && (
+            <div className="w-full mb-4 px-3.5 py-2.5 rounded-xl bg-purple-950/50 border border-purple-500/40 text-center shadow-inner">
+              <div className="text-xs font-cinzel font-bold text-amber-300">
+                🛡️ {humanFaction.name}
+              </div>
+              <div className="text-[11px] text-purple-200 italic font-serif mt-0.5 leading-snug">
+                {isWinner
+                  ? `The ${humanFaction.name}'s grip on the Infinite Core tightens.`
+                  : `The ${humanFaction.name}'s grip on the Infinite Core slips into entropy.`}
+              </div>
+            </div>
+          )}
 
           <div className="w-full bg-black/60 rounded-xl p-4 border border-purple-900 mb-6 text-xs text-slate-300 space-y-2">
             <div className="flex justify-between border-b border-slate-800 pb-1">

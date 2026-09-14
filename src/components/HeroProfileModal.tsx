@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Hero } from '../types';
 import { HERO_PROFILES } from '../engine/heroes';
+import { getFactionForHero } from '../engine/lore';
 import { CardMediaArt } from './CardMediaArt';
 import { sound } from '../audio/sound';
 import { motion } from '../utils/motion';
@@ -19,6 +20,7 @@ export const HeroProfileModal: React.FC<HeroProfileModalProps> = ({
   canSelect = false,
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
+  const faction = getFactionForHero(hero);
   const profile = HERO_PROFILES[hero.id] || {
     lore: 'A revered astral commander battling across the infinite tavern timelines.',
     signatureSynergy: 'Universal warband synergies and tactical adaptability.',
@@ -108,6 +110,15 @@ export const HeroProfileModal: React.FC<HeroProfileModalProps> = ({
                 {hero.title}
               </div>
             </div>
+
+            {/* Faction Identity Banner */}
+            {faction && (
+              <div className="flex items-center gap-2 mb-2 text-xs text-amber-300 font-cinzel font-bold">
+                <span>🛡️ {faction.name}</span>
+                <span className="text-slate-500">•</span>
+                <span className="italic font-serif text-yellow-400/90 font-normal">{faction.motto}</span>
+              </div>
+            )}
 
             {/* Backstory Lore */}
             <div className="bg-black/50 border-l-2 border-cyan-400/80 p-3.5 rounded-r-2xl text-xs text-purple-200 italic font-serif mb-4 leading-relaxed">

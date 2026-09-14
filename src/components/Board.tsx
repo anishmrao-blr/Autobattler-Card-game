@@ -36,19 +36,19 @@ export const Board: React.FC<BoardProps> = ({
 
   return (
     <div className="relative w-full bg-[#100722]/90 border border-[#524775]/50 rounded-2xl p-3 shadow-2xl backdrop-blur-md">
-      <div className="flex items-center justify-between mb-2 px-2">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between mb-1 sm:mb-2 px-1 sm:px-2 gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
           <span className="font-cinzel text-xs font-bold text-yellow-400">
             WARBAND FORMATION
           </span>
           <span className="text-xs text-slate-400 font-bold">
-            ({minions.length} / 7 Units)
+            ({minions.length} / 7)
           </span>
         </div>
 
         {!isCombatPhase && minions.length > 1 && (
-          <div className="text-[11px] text-purple-300 font-sans italic">
-            Tip: Press and drag cards to reorder (leftmost strikes first)
+          <div className="text-[10px] sm:text-[11px] text-purple-300 font-sans italic truncate text-right">
+            <span className="hidden sm:inline">Tip: </span>Drag to reorder (leftmost strikes first)
           </div>
         )}
       </div>
