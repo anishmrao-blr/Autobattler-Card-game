@@ -284,13 +284,14 @@ export const App: React.FC = () => {
     }
 
     return (
-      <div className="fixed inset-0 bg-[#05030b] flex flex-col items-center justify-center p-6 text-center z-50 overflow-hidden">
+      <main className="fixed inset-0 bg-[#05030b] flex flex-col items-center justify-center p-6 text-center z-50 overflow-hidden">
         {/* Ambient Victory / Defeat Background Video with Static Poster Fallback */}
         <video
           autoPlay
           loop
           muted
           playsInline
+          aria-hidden="true"
           poster={isWinner ? '/assets/art/astral_portal.jpg' : '/assets/art/void_devourer.jpg'}
           className="absolute inset-0 w-full h-full object-cover opacity-25 pointer-events-none filter blur-sm"
           src={isWinner ? '/assets/video/reward_chest.mp4' : '/assets/video/defeat_monster.mp4'}
@@ -350,7 +351,7 @@ export const App: React.FC = () => {
             🚪 EXIT TO LOGIN SCREEN
           </button>
         </div>
-      </div>
+      </main>
     );
   }
 
@@ -460,9 +461,9 @@ export const App: React.FC = () => {
 
       <div className="flex-1 flex overflow-hidden relative">
         {/* Desktop Sidebar Leaderboard */}
-        <div className="hidden lg:block h-full flex-shrink-0">
+        <aside className="hidden lg:block h-full flex-shrink-0">
           <Leaderboard players={allPlayers} currentTurn={currentTurn} />
-        </div>
+        </aside>
 
         {/* Mobile Slide-Over Lobby Drawer */}
         {showMobileLobby && (
@@ -471,13 +472,13 @@ export const App: React.FC = () => {
               className="absolute inset-0 bg-black/80 backdrop-blur-sm"
               onClick={() => setShowMobileLobby(false)}
             />
-            <div className="relative z-10 w-72 max-w-[85vw] h-full bg-[#0a0717] border-r border-yellow-500/40 shadow-2xl">
+            <aside className="relative z-10 w-72 max-w-[85vw] h-full bg-[#0a0717] border-r border-yellow-500/40 shadow-2xl">
               <Leaderboard
                 players={allPlayers}
                 currentTurn={currentTurn}
                 onClose={() => setShowMobileLobby(false)}
               />
-            </div>
+            </aside>
           </div>
         )}
 
@@ -500,15 +501,17 @@ export const App: React.FC = () => {
         </main>
       </div>
 
-      <HandTray
-        player={human}
-        hand={human.hand}
-        boardCount={human.board.length}
-        onPlayCard={handlePlayCard}
-        onUseHeroPower={handleUseHeroPower}
-        onInspectHero={() => setInspectingHero(human.hero)}
-        onInspect={handleInspectCard}
-      />
+      <footer>
+        <HandTray
+          player={human}
+          hand={human.hand}
+          boardCount={human.board.length}
+          onPlayCard={handlePlayCard}
+          onUseHeroPower={handleUseHeroPower}
+          onInspectHero={() => setInspectingHero(human.hero)}
+          onInspect={handleInspectCard}
+        />
+      </footer>
     </div>
   );
 };

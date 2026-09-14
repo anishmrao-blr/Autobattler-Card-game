@@ -18,7 +18,7 @@ export const HeroSelectModal: React.FC<HeroSelectModalProps> = ({ onSelectHero, 
   const [inspectingHero, setInspectingHero] = useState<Hero | null>(null);
 
   return (
-    <div className="fixed inset-0 bg-[#05030b]/95 backdrop-blur-lg flex flex-col items-center justify-start sm:justify-center z-50 p-3 sm:p-6 overflow-y-auto">
+    <main className="fixed inset-0 bg-[#05030b]/95 backdrop-blur-lg flex flex-col items-center justify-start sm:justify-center z-50 p-3 sm:p-6 overflow-y-auto">
       {inspectingHero && (
         <HeroProfileModal
           hero={inspectingHero}
@@ -90,9 +90,9 @@ export const HeroSelectModal: React.FC<HeroSelectModalProps> = ({ onSelectHero, 
                 </div>
               </div>
 
-              <h3 className="font-cinzel font-bold text-base text-yellow-300 tracking-wide group-hover:text-yellow-200">
+              <h2 className="font-cinzel font-bold text-base text-yellow-300 tracking-wide group-hover:text-yellow-200">
                 {hero.name}
-              </h3>
+              </h2>
               <span className="text-[10px] text-purple-300 font-bold uppercase tracking-wider mb-2">
                 {hero.title}
               </span>
@@ -151,6 +151,6 @@ export const HeroSelectModal: React.FC<HeroSelectModalProps> = ({ onSelectHero, 
           </button>
         )}
       </div>
-    </div>
+    </main>
   );
 };

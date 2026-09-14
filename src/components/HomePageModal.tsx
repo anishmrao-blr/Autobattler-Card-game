@@ -34,7 +34,7 @@ export const HomePageModal: React.FC<HomePageModalProps> = ({ onLogin, onOpenCod
   };
 
   return (
-    <div
+    <main
       className={`fixed inset-0 z-50 flex items-center justify-center overflow-hidden transition-all duration-1000 ${
         isAuthenticating ? 'scale-125 opacity-0 filter blur-md' : 'scale-100 opacity-100'
       }`}
@@ -165,6 +165,6 @@ export const HomePageModal: React.FC<HomePageModalProps> = ({ onLogin, onOpenCod
           </button>
         </form>
       </div>
-    </div>
+    </main>
   );
 };

@@ -393,7 +393,7 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
   const effectiveWinStreak = playerWon ? player.winStreak + 1 : 0;
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-[#06030e] flex flex-col justify-between p-2 sm:p-4">
+    <main className="relative w-full h-screen overflow-hidden bg-[#06030e] flex flex-col justify-between p-2 sm:p-4">
       {/* Dynamic Battleground Atmospheric Loop */}
       <video
         autoPlay
@@ -671,6 +671,6 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
 
       {/* 2D/3D WebGL VFX Overlay (Includes real bloom, painted flame/slash/laser textures) */}
       <CombatVFXCanvas ref={vfxRef} className="z-[9999]" />
-    </div>
+    </main>
   );
 };

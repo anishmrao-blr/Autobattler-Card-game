@@ -151,6 +151,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ isOpen, onClos
         loop
         muted
         playsInline
+        aria-hidden="true"
         poster={ambientPoster}
         className="absolute inset-0 w-full h-full object-cover opacity-30 pointer-events-none filter blur-[2px] transition-opacity duration-700"
         src={ambientVideoSrc}
@@ -162,6 +163,9 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ isOpen, onClos
       {/* Tutorial Card Dialog */}
       <div
         onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tutorial-step-title"
         className="relative max-w-xl w-full dark-steel-card rounded-3xl p-6 sm:p-8 border-2 border-yellow-500/80 shadow-[0_20px_60px_rgba(0,0,0,0.95),0_0_30px_rgba(234,179,8,0.3)] z-10 flex flex-col justify-between overflow-hidden"
       >
         {/* Subtle Decorative Ambient Beam */}
@@ -193,7 +197,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ isOpen, onClos
         {/* Center Content */}
         <div className="my-6 space-y-4">
           <div>
-            <h2 className="font-cinzel text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-200 to-amber-500 tracking-wider mb-1">
+            <h2 id="tutorial-step-title" className="font-cinzel text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-200 to-amber-500 tracking-wider mb-1">
               {currentStep.title}
             </h2>
             <div className="text-xs font-cinzel font-bold text-purple-300 uppercase tracking-wider">

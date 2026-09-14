@@ -33,9 +33,9 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({
           🌌
         </div>
         <div>
-          <div className="font-cinzel text-[11px] sm:text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-200 to-amber-500 tracking-wider">
+          <h1 className="font-cinzel text-[11px] sm:text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-200 to-amber-500 tracking-wider">
             <span className="hidden sm:inline">ASTRAL ATRIUM </span>LOBBY
-          </div>
+          </h1>
           <div className="text-[9px] sm:text-[10px] text-purple-300 font-sans">
             <span className="hidden md:inline">8-Player Competitive Arena • </span>Tier ★ {player.tavernTier}
           </div>

@@ -84,7 +84,7 @@ export const HandTray: React.FC<HandTrayProps> = ({
               </div>
             ))
           ) : (
-            <div className="text-slate-500 font-cinzel text-xs py-5 px-4 text-center w-full bg-black/30 rounded-xl border border-slate-900/60">
+            <div className="text-slate-400 font-cinzel text-xs py-5 px-4 text-center w-full bg-black/30 rounded-xl border border-slate-900/60">
               Hand empty. Recruit minions from the Astral Atrium above.
             </div>
           )}
