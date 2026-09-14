@@ -21,7 +21,7 @@ async function runAxeScan(page: Page, label: string) {
 }
 
 test.describe('Full cold pass', () => {
-  test('login through first combat round', async ({ page }, testInfo) => {
+  test('login through first combat round', async ({ page, isMobile }, testInfo) => {
     const allViolations: Record<string, unknown[]> = {};
 
     // ---- Login ----
@@ -45,22 +45,30 @@ test.describe('Full cold pass', () => {
     await expect(page.getByText('WARBAND FORMATION')).toBeVisible({ timeout: 10_000 });
     allViolations.tavern = await runAxeScan(page, 'tavern');
 
-    // Tap-to-preview-then-buy: first tap previews (no purchase), second buys.
+    // Tap-to-preview-then-buy on touch/mobile; click on desktop.
     const firstShopCard = page.locator('.snap-center').first();
-    await firstShopCard.tap();
-    await expect(page.getByText('TAP AGAIN TO BUY')).toBeVisible({ timeout: 5_000 });
-    await testInfo.attach('shop-card-armed', {
-      body: await page.screenshot(),
-      contentType: 'image/png',
-    });
-    await firstShopCard.tap();
-    await expect(page.getByText('TAP AGAIN TO BUY')).not.toBeVisible({ timeout: 5_000 });
+    if (isMobile) {
+      await firstShopCard.tap();
+      await expect(page.getByText('TAP AGAIN TO BUY')).toBeVisible({ timeout: 5_000 });
+      await testInfo.attach('shop-card-armed', {
+        body: await page.screenshot(),
+        contentType: 'image/png',
+      });
+      await firstShopCard.tap();
+      await expect(page.getByText('TAP AGAIN TO BUY')).not.toBeVisible({ timeout: 5_000 });
+    } else {
+      await firstShopCard.click();
+    }
 
-    // Deploy from hand (single tap - confirmed working in manual pass).
+    // Deploy from hand.
     const handCard = page.locator('text=HAND TRAY').locator('..').locator('..').locator('.snap-center').first();
-    await handCard.tap({ timeout: 5_000 }).catch(() => {
-      // Fall back to a broader selector if the DOM structure differs.
-    });
+    if (isMobile) {
+      await handCard.tap({ timeout: 5_000 }).catch(() => {
+        // Fall back to a broader selector if the DOM structure differs.
+      });
+    } else {
+      await handCard.click({ timeout: 5_000 }).catch(() => {});
+    }
 
     await testInfo.attach('tavern-after-buy-deploy', {
       body: await page.screenshot({ fullPage: true }),
