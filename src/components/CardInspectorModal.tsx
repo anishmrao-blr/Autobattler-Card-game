@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { MinionCard, BoardMinion, Tribe, Keyword } from '../types';
 import { TRIBE_ART_MAP } from '../engine/cards';
 import { CardMediaArt } from './CardMediaArt';
 import { sound } from '../audio/sound';
+import { motion, isReducedMotion } from '../utils/motion';
+import gsap from 'gsap';
 
 interface CardInspectorModalProps {
   card?: MinionCard;
@@ -38,6 +40,30 @@ export const CardInspectorModal: React.FC<CardInspectorModalProps> = ({
 }) => {
   const [showGolden, setShowGolden] = useState(boardMinion?.isGolden || false);
   const [rotate, setRotate] = useState({ x: 0, y: 0 });
+  const modalRef = useRef<HTMLDivElement>(null);
+  const sparkleRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    motion.modalEnter(modalRef.current, 1.4);
+  }, []);
+
+  useEffect(() => {
+    if (showGolden && sparkleRef.current && !isReducedMotion()) {
+      const sparks = sparkleRef.current.children;
+      gsap.fromTo(
+        sparks,
+        { scale: 0, opacity: 1, rotation: 0 },
+        {
+          scale: 1.5,
+          opacity: 0,
+          rotation: (i) => (i % 2 === 0 ? 90 : -90),
+          duration: 0.55,
+          stagger: 0.03,
+          ease: 'power2.out',
+        }
+      );
+    }
+  }, [showGolden]);
 
   const name = boardMinion?.name || card?.name || 'Unknown';
   const tier = boardMinion?.tier || card?.tier || 1;
@@ -70,6 +96,7 @@ export const CardInspectorModal: React.FC<CardInspectorModalProps> = ({
       className="fixed inset-0 bg-black/90 backdrop-blur-xl z-50 flex flex-col items-center justify-start sm:justify-center p-3 sm:p-8 overflow-y-auto animate-fadeIn"
     >
       <div
+        ref={modalRef}
         onClick={(e) => e.stopPropagation()}
         className="relative max-w-4xl w-full bg-[#0d071d]/95 border-2 border-yellow-500/60 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-[0_20px_60px_rgba(0,0,0,0.95)] flex flex-col md:flex-row items-center md:items-start gap-5 sm:gap-8 my-auto"
       >
@@ -86,9 +113,20 @@ export const CardInspectorModal: React.FC<CardInspectorModalProps> = ({
         <div
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
-          className="perspective-1000 flex-shrink-0 cursor-grab active:cursor-grabbing"
+          className="perspective-1000 flex-shrink-0 cursor-grab active:cursor-grabbing relative"
           style={{ perspective: '1200px' }}
         >
+          {/* One-shot Golden Sparkle Burst Container */}
+          {showGolden && (
+            <div ref={sparkleRef} className="absolute inset-0 pointer-events-none flex items-center justify-center z-50">
+              <span className="absolute text-yellow-300 text-xl -top-3 -left-3">✦</span>
+              <span className="absolute text-amber-200 text-lg -bottom-3 -right-3">★</span>
+              <span className="absolute text-yellow-400 text-2xl top-1/2 -left-6">✨</span>
+              <span className="absolute text-amber-300 text-2xl top-1/2 -right-6">✨</span>
+              <span className="absolute text-yellow-200 text-xl -top-4 right-1/4">✦</span>
+              <span className="absolute text-yellow-300 text-xl -bottom-4 left-1/4">✦</span>
+            </div>
+          )}
           <div
             className={`
               relative w-64 sm:w-72 h-[390px] sm:h-[440px] rounded-2xl sm:rounded-3xl p-3 flex flex-col justify-between transition-transform duration-150 select-none
@@ -167,7 +205,7 @@ export const CardInspectorModal: React.FC<CardInspectorModalProps> = ({
                   sound.playCardSnap();
                   setShowGolden(!showGolden);
                 }}
-                className={`text-xs font-cinzel font-bold px-3 py-1.5 rounded-xl border transition-all ${
+                className={`text-xs font-cinzel font-bold px-3 py-1.5 rounded-xl border transition-[background-color,border-color,color] duration-150 active:scale-95 ${
                   showGolden
                     ? 'bg-yellow-950 border-yellow-400 text-yellow-200 shadow-[0_0_15px_rgba(234,179,8,0.5)]'
                     : 'bg-black/60 border-slate-700 text-slate-400 hover:border-yellow-500/50'

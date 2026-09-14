@@ -82,10 +82,17 @@ export class TavernManager {
     player.tavernSlots.splice(shopIndex, 1);
     player.hand.push(minion);
 
-    // On-Buy Tribal Triggers (e.g. Star Shard)
+    // On-Buy Tribal Triggers (e.g. Star Shard: +1 Attack, Golden +2, max +6/+12)
     for (const b of player.board) {
       if (b.cardId === 'celest_spark' && minion.tribe === 'CELESTIAL') {
-        b.attack += b.isGolden ? 2 : 1;
+        const cap = b.isGolden ? 12 : 6;
+        const currentGained = b.permanentBuffTriggers ?? 0;
+        const gain = b.isGolden ? 2 : 1;
+        const actualGain = Math.min(gain, Math.max(0, cap - currentGained));
+        if (actualGain > 0) {
+          b.attack += actualGain;
+          b.permanentBuffTriggers = currentGained + actualGain;
+        }
       }
     }
 
@@ -293,25 +300,30 @@ export class TavernManager {
         });
       }
 
-      // Automata Tier 5: Clockwork Overlord (Give all friendly Automata +2/+2, Golden +4/+4)
+      // Automata Tier 5: Clockwork Overlord (Give all friendly Automata +1/+1, Golden +2/+2, max 5 triggers)
       if (b.cardId === 'auto_overlord') {
-        const buff = b.isGolden ? 4 : 2;
-        player.board.forEach(m => {
-          if (m.tribe === 'AUTOMATA') {
-            m.attack += buff;
-            m.health += buff;
-            m.maxHealth += buff;
-          }
-        });
+        const triggers = b.permanentBuffTriggers ?? 0;
+        if (triggers < 5) {
+          const buff = b.isGolden ? 2 : 1;
+          player.board.forEach(m => {
+            if (m.tribe === 'AUTOMATA') {
+              m.attack += buff;
+              m.health += buff;
+              m.maxHealth += buff;
+            }
+          });
+          b.permanentBuffTriggers = triggers + 1;
+        }
       }
 
-      // Alchemist Tier 6: Arch-Alchemist Aurelius (Double stats of leftmost minion, Golden: 2 leftmost minions)
+      // Alchemist Tier 6: Arch-Alchemist Aurelius (+5/+5 to leftmost minion, Golden: +10/+10 to 2 leftmost minions)
       if (b.cardId === 'alch_elixir_master' && player.board.length > 0) {
         const count = b.isGolden ? 2 : 1;
+        const buff = b.isGolden ? 10 : 5;
         player.board.slice(0, count).forEach(target => {
-          target.attack *= 2;
-          target.health *= 2;
-          target.maxHealth *= 2;
+          target.attack += buff;
+          target.health += buff;
+          target.maxHealth += buff;
         });
       }
     }

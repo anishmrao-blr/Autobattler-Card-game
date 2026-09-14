@@ -6,6 +6,7 @@ import { CardView } from './CardView';
 import { CombatVFXCanvas, VFXHandle } from './CombatVFXCanvas';
 import { VictoryCelebrationVFX } from './VictoryCelebrationVFX';
 import { sound } from '../audio/sound';
+import { motion } from '../utils/motion';
 
 interface CombatArena3DProps {
   player: PlayerState;
@@ -443,12 +444,18 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
         <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
           <button
             onClick={() => setSpeed(s => (s === 1 ? 1.5 : s === 1.5 ? 2.5 : 1))}
+            onMouseEnter={(e) => motion.hoverLift(e.currentTarget, 1.05, -1)}
+            onMouseLeave={(e) => motion.hoverReset(e.currentTarget)}
+            onMouseDown={(e) => motion.pressSettle(e.currentTarget)}
             className="px-2 sm:px-3 py-1 bg-purple-950 hover:bg-purple-900 border border-purple-700 text-yellow-300 font-cinzel font-bold text-[10px] sm:text-xs rounded-lg sm:rounded-xl shadow transition-colors cursor-pointer"
           >
             ⚡ {speed}x
           </button>
           <button
             onClick={() => setIsPlaying(!isPlaying)}
+            onMouseEnter={(e) => motion.hoverLift(e.currentTarget, 1.05, -1)}
+            onMouseLeave={(e) => motion.hoverReset(e.currentTarget)}
+            onMouseDown={(e) => motion.pressSettle(e.currentTarget)}
             className="px-2 sm:px-3 py-1 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-cinzel font-bold text-[10px] sm:text-xs rounded-lg sm:rounded-xl shadow transition-colors cursor-pointer"
           >
             {isPlaying ? '⏸' : '▶'}
@@ -460,7 +467,10 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
                 setIsPlaying(false);
                 onOpenMenu();
               }}
-              className="p-1 px-2 sm:px-2.5 bg-[#120a26] hover:bg-yellow-500 hover:text-black border border-yellow-500/50 rounded-lg sm:rounded-xl text-xs text-yellow-300 transition-all shadow-sm cursor-pointer"
+              onMouseEnter={(e) => motion.hoverLift(e.currentTarget, 1.05, -1)}
+              onMouseLeave={(e) => motion.hoverReset(e.currentTarget)}
+              onMouseDown={(e) => motion.pressSettle(e.currentTarget)}
+              className="p-1 px-2 sm:px-2.5 bg-[#120a26] hover:bg-yellow-500 hover:text-black border border-yellow-500/50 rounded-lg sm:rounded-xl text-xs text-yellow-300 transition-[background-color,color] duration-150 shadow-sm cursor-pointer"
               title="Game Menu / Concede / Exit (Esc)"
             >
               <span>⚙️</span>
@@ -661,7 +671,7 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
 
             <button
               onClick={onFinishCombat}
-              className="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-black font-cinzel font-black text-sm rounded-xl shadow-brass transition-all hover:scale-105 active:scale-95 cursor-pointer"
+              className="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-black font-cinzel font-black text-sm rounded-xl shadow-brass transition-[background-color,transform] duration-150 hover:scale-105 active:scale-95 cursor-pointer"
             >
               CONTINUE TO TAVERN (NEXT ROUND) ➔
             </button>

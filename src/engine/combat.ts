@@ -16,7 +16,12 @@ export interface CombatSimulationResult {
 }
 
 export class CombatResolver {
+  private activeP1?: PlayerState;
+  private activeP2?: PlayerState;
+
   public simulate1v1(p1: PlayerState, p2: PlayerState): CombatSimulationResult {
+    this.activeP1 = p1;
+    this.activeP2 = p2;
     const events: CombatEvent[] = [];
 
     // Capture initial boards before combat
@@ -146,6 +151,9 @@ export class CombatResolver {
       damageDealt,
       survivingMinionTiers: (winnerSide === 1 ? p1Alive : p2Alive).map(m => m.tier),
     });
+
+    this.activeP1 = undefined;
+    this.activeP2 = undefined;
 
     return {
       winnerSide,
@@ -357,18 +365,42 @@ export class CombatResolver {
 
         // Death Passives for Allies
         for (const ally of board) {
-          // Voidborn Tier 3: Star Devourer (+2/+1, Golden +4/+2)
+          const originalPlayer = side === 1 ? this.activeP1 : this.activeP2;
+          const originalMinion = originalPlayer?.board.find(m => m.instanceId === ally.instanceId);
+
+          // Voidborn Tier 3: Star Devourer (+2/+1, Golden +4/+2, max 4 times)
           if (ally.cardId === 'void_devourer' && minion.tribe === 'VOIDBORN') {
-            const atk = ally.isGolden ? 4 : 2;
-            const hp = ally.isGolden ? 2 : 1;
-            ally.attack += atk;
-            ally.health += hp;
+            const triggers = ally.permanentBuffTriggers ?? 0;
+            if (triggers < 4) {
+              const atk = ally.isGolden ? 4 : 2;
+              const hp = ally.isGolden ? 2 : 1;
+              ally.attack += atk;
+              ally.health += hp;
+              ally.permanentBuffTriggers = triggers + 1;
+              if (originalMinion) {
+                originalMinion.attack += atk;
+                originalMinion.health += hp;
+                originalMinion.maxHealth += hp;
+                originalMinion.permanentBuffTriggers = triggers + 1;
+              }
+            }
           }
 
-          // Voidborn Tier 5: Cosmic Abomination (absorbs Attack, Golden 2x Attack)
-          if (ally.cardId === 'void_abomination') {
-            const gain = minion.attack * (ally.isGolden ? 2 : 1);
-            ally.attack += gain;
+          // Voidborn Tier 5: Cosmic Abomination (absorbs Attack of friendly Voidborn, max +15 total, Golden 2x Attack, max +30 total)
+          if (ally.cardId === 'void_abomination' && minion.tribe === 'VOIDBORN') {
+            const cap = ally.isGolden ? 30 : 15;
+            const currentAbsorbed = ally.permanentBuffTriggers ?? 0;
+            const remainingCap = Math.max(0, cap - currentAbsorbed);
+            if (remainingCap > 0 && minion.attack > 0) {
+              const potentialGain = minion.attack * (ally.isGolden ? 2 : 1);
+              const actualGain = Math.min(potentialGain, remainingCap);
+              ally.attack += actualGain;
+              ally.permanentBuffTriggers = currentAbsorbed + actualGain;
+              if (originalMinion) {
+                originalMinion.attack += actualGain;
+                originalMinion.permanentBuffTriggers = currentAbsorbed + actualGain;
+              }
+            }
           }
 
           // Beast Tier 4: Apex Alpha Wolf (+2/+2 to adjacent allies, Golden +4/+4)
@@ -385,11 +417,21 @@ export class CombatResolver {
             }
           }
 
-          // Beast Tier 6: Apex World-Eater (+2/+2 on any death, Golden +4/+4)
-          if (ally.cardId === 'beast_god_behemoth') {
-            const buff = ally.isGolden ? 4 : 2;
-            ally.attack += buff;
-            ally.health += buff;
+          // Beast Tier 6: Apex World-Eater (+2/+2 on friendly Beast death, Golden +4/+4, max 3 times)
+          if (ally.cardId === 'beast_god_behemoth' && minion.tribe === 'BEAST') {
+            const triggers = ally.permanentBuffTriggers ?? 0;
+            if (triggers < 3) {
+              const buff = ally.isGolden ? 4 : 2;
+              ally.attack += buff;
+              ally.health += buff;
+              ally.permanentBuffTriggers = triggers + 1;
+              if (originalMinion) {
+                originalMinion.attack += buff;
+                originalMinion.health += buff;
+                originalMinion.maxHealth += buff;
+                originalMinion.permanentBuffTriggers = triggers + 1;
+              }
+            }
           }
         }
 

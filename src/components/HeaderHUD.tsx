@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { PlayerState } from '../types';
 import { sound } from '../audio/sound';
+import { motion, isReducedMotion } from '../utils/motion';
+import gsap from 'gsap';
 
 interface HeaderHUDProps {
   player: PlayerState;
@@ -25,6 +27,28 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({
   onOpenMenu,
   onToggleMobileLobby,
 }) => {
+  const coinContainerRef = useRef<HTMLDivElement>(null);
+  const timerRef = useRef<HTMLDivElement>(null);
+  const prevCoins = useRef(player.coins);
+
+  // Coin scale-punch on coin count change
+  useEffect(() => {
+    if (prevCoins.current !== player.coins) {
+      motion.pulseScale(coinContainerRef.current, 1.15, 0.22);
+      prevCoins.current = player.coins;
+    }
+  }, [player.coins]);
+
+  // Timer one-shot pulse per second in final 10s
+  useEffect(() => {
+    if (timeLeft <= 10 && timeLeft > 0 && timerRef.current && !isReducedMotion()) {
+      gsap.fromTo(
+        timerRef.current,
+        { scale: 1.25 },
+        { scale: 1, duration: 0.35, ease: 'power2.out' }
+      );
+    }
+  }, [timeLeft]);
   return (
     <header className="w-full bg-[#0d071d]/90 border-b border-[#3b2a59] px-2.5 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between shadow-xl backdrop-blur-md z-30 select-none gap-1.5 sm:gap-4">
       {/* Left: Astral Lobby Header */}
@@ -43,7 +67,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({
       </div>
 
       {/* Center: Cog-Coins Treasury */}
-      <div className="flex items-center gap-1.5 sm:gap-3 bg-[#130b29] px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-2xl border-2 border-yellow-500/70 shadow-brass flex-shrink-0">
+      <div ref={coinContainerRef} className="flex items-center gap-1.5 sm:gap-3 bg-[#130b29] px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-2xl border-2 border-yellow-500/70 shadow-brass flex-shrink-0">
         <span className="text-base sm:text-xl">🪙</span>
         <div className="flex items-baseline gap-0.5 sm:gap-1">
           <span className="font-cinzel text-base sm:text-lg font-black text-yellow-300 drop-shadow">
@@ -59,7 +83,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({
           {Array.from({ length: 10 }).map((_, i) => (
             <div
               key={i}
-              className={`w-2 h-4 rounded-sm border transition-all ${
+              className={`w-2 h-4 rounded-sm border transition-[background-color,border-color,transform] duration-150 ${
                 i < player.coins
                   ? 'bg-yellow-400 border-yellow-200 shadow-[0_0_8px_rgba(255,215,0,0.9)] scale-105'
                   : i < player.maxCoins
@@ -77,7 +101,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({
         {onToggleMobileLobby && (
           <button
             onClick={onToggleMobileLobby}
-            className="lg:hidden flex items-center gap-1 px-2 py-1.5 bg-[#120a26] hover:bg-yellow-500 hover:text-black border border-yellow-500/50 rounded-xl text-xs font-cinzel font-bold text-yellow-300 transition-all shadow-sm"
+            className="lg:hidden flex items-center gap-1 px-2 py-1.5 bg-[#120a26] hover:bg-yellow-500 hover:text-black border border-yellow-500/50 rounded-xl text-xs font-cinzel font-bold text-yellow-300 transition-[background-color,color] duration-150 shadow-sm"
             title="Toggle 8-Player Lobby Standings"
           >
             <span>👥</span>
@@ -90,7 +114,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({
           <div className="text-[10px] sm:text-xs font-black text-yellow-200 font-cinzel tracking-wider">
             T{currentTurn}
           </div>
-          <div className={`text-[10px] sm:text-[11px] font-bold ${timeLeft <= 10 ? 'text-red-400 animate-pulse' : 'text-cyan-300'}`}>
+          <div ref={timerRef} className={`text-[10px] sm:text-[11px] font-bold ${timeLeft <= 10 ? 'text-red-400 font-black' : 'text-cyan-300'}`}>
             ⏳ {timeLeft}s
           </div>
         </div>
@@ -101,7 +125,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({
             sound.playAttackLunge();
             onReadyCombat();
           }}
-          className="flex items-center gap-1 px-2.5 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 hover:from-red-500 hover:to-amber-500 border border-red-300 text-white font-cinzel font-black text-[10px] sm:text-xs rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all"
+          className="flex items-center gap-1 px-2.5 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 hover:from-red-500 hover:to-amber-500 border border-red-300 text-white font-cinzel font-black text-[10px] sm:text-xs rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-[background-color,transform] duration-150"
         >
           <span>⚔️</span>
           <span className="hidden sm:inline">COMBAT</span>
@@ -114,7 +138,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({
               sound.playCardSnap();
               onOpenCodex();
             }}
-            className="flex items-center gap-1 p-1.5 sm:px-3 sm:py-2 bg-[#120a26] hover:bg-yellow-500 hover:text-black border border-yellow-500/50 rounded-xl text-xs font-cinzel font-bold text-yellow-300 transition-all shadow-sm"
+            className="flex items-center gap-1 p-1.5 sm:px-3 sm:py-2 bg-[#120a26] hover:bg-yellow-500 hover:text-black border border-yellow-500/50 rounded-xl text-xs font-cinzel font-bold text-yellow-300 transition-[background-color,color] duration-150 shadow-sm"
             title="Open Astral World Codex"
           >
             <span>📖</span>
@@ -138,7 +162,7 @@ export const HeaderHUD: React.FC<HeaderHUDProps> = ({
               sound.playCardSnap();
               onOpenMenu();
             }}
-            className="flex items-center gap-1 p-1.5 sm:p-2 bg-[#120a26] hover:bg-yellow-500 hover:text-black border border-yellow-500/50 rounded-xl text-xs sm:text-sm text-yellow-300 transition-all shadow-sm cursor-pointer"
+            className="flex items-center gap-1 p-1.5 sm:p-2 bg-[#120a26] hover:bg-yellow-500 hover:text-black border border-yellow-500/50 rounded-xl text-xs sm:text-sm text-yellow-300 transition-[background-color,color] duration-150 shadow-sm cursor-pointer"
             title="Game Menu / Concede / Exit (Esc)"
           >
             <span>⚙️</span>

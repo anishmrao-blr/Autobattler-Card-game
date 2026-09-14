@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Hero } from '../types';
 import { HERO_PROFILES } from '../engine/heroes';
 import { CardMediaArt } from './CardMediaArt';
 import { sound } from '../audio/sound';
+import { motion } from '../utils/motion';
 
 interface HeroProfileModalProps {
   hero: Hero;
@@ -17,11 +18,29 @@ export const HeroProfileModal: React.FC<HeroProfileModalProps> = ({
   onSelect,
   canSelect = false,
 }) => {
+  const modalRef = useRef<HTMLDivElement>(null);
   const profile = HERO_PROFILES[hero.id] || {
     lore: 'A revered astral commander battling across the infinite tavern timelines.',
     signatureSynergy: 'Universal warband synergies and tactical adaptability.',
     difficulty: 'Novice',
   };
+
+  useEffect(() => {
+    motion.modalEnter(modalRef.current, 1.4);
+  }, []);
+
+  // Determine tribe accent glow color
+  const glowMap: Record<string, string> = {
+    hero_chronos: 'rgba(234,179,8,0.3)',
+    hero_kaelthas: 'rgba(6,182,212,0.3)',
+    hero_sylvanas: 'rgba(168,85,247,0.35)',
+    hero_rexxar: 'rgba(34,197,94,0.3)',
+    hero_edwin: 'rgba(244,63,94,0.3)',
+    hero_patchwerk: 'rgba(239,68,68,0.35)',
+    hero_malygos: 'rgba(59,130,246,0.3)',
+    hero_reno: 'rgba(245,158,11,0.35)',
+  };
+  const accentGlow = glowMap[hero.id] || 'rgba(234,179,8,0.3)';
 
   return (
     <div
@@ -29,9 +48,20 @@ export const HeroProfileModal: React.FC<HeroProfileModalProps> = ({
       className="fixed inset-0 bg-black/90 backdrop-blur-xl z-50 flex flex-col items-center justify-start sm:justify-center p-3 sm:p-8 overflow-y-auto animate-fadeIn"
     >
       <div
+        ref={modalRef}
         onClick={(e) => e.stopPropagation()}
-        className="relative max-w-4xl w-full bg-[#0d071d]/95 border-2 border-yellow-500/60 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.95)] flex flex-col md:flex-row items-center md:items-start gap-4 sm:gap-8 my-auto"
+        style={{
+          boxShadow: `0 20px 60px rgba(0,0,0,0.95), 0 0 45px ${accentGlow}`,
+        }}
+        className="relative max-w-4xl w-full bg-[#0d071d]/95 border-2 border-yellow-500/60 rounded-2xl sm:rounded-3xl p-4 sm:p-8 flex flex-col md:flex-row items-center md:items-start gap-4 sm:gap-8 my-auto overflow-hidden"
       >
+        {/* Subtle Ambient Radial Glow */}
+        <div
+          className="absolute -inset-10 pointer-events-none opacity-20 rounded-3xl"
+          style={{
+            background: `radial-gradient(circle at 30% 30%, ${accentGlow} 0%, transparent 70%)`,
+          }}
+        />
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -121,7 +151,7 @@ export const HeroProfileModal: React.FC<HeroProfileModalProps> = ({
                 sound.playTierUpgrade();
                 onSelect();
               }}
-              className="w-full py-3 bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-black font-cinzel font-black text-xs rounded-xl shadow-brass transition-all hover:scale-105 mt-2"
+              className="w-full py-3 bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-black font-cinzel font-black text-xs rounded-xl shadow-brass transition-[background-color,transform] duration-150 hover:scale-105 active:scale-95 mt-2"
             >
               DEPLOY WITH {hero.name.toUpperCase()} ➔
             </button>

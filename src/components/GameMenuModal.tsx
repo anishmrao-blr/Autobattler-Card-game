@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { sound } from '../audio/sound';
+import { motion, isReducedMotion } from '../utils/motion';
+import gsap from 'gsap';
 
 interface GameMenuModalProps {
   onClose: () => void;
@@ -26,13 +28,27 @@ export const GameMenuModal: React.FC<GameMenuModalProps> = ({
   onOpenTutorial,
   predictedPlacement = 8,
   playerName = 'Commander',
-  heroName = 'Astral Hero',
+  heroName = 'Hero',
   avatar = '⚙️',
   isMuted,
   onToggleMute,
   currentPhase = 'TAVERN',
 }) => {
   const [confirmState, setConfirmState] = useState<ConfirmState>('NONE');
+  const modalRef = useRef<HTMLDivElement>(null);
+  const buttonsContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    motion.modalEnter(modalRef.current, 1.2);
+    if (buttonsContainerRef.current && !isReducedMotion()) {
+      const btns = buttonsContainerRef.current.querySelectorAll('button');
+      gsap.fromTo(
+        btns,
+        { opacity: 0, y: 12 },
+        { opacity: 1, y: 0, duration: 0.25, stagger: 0.08, ease: 'power2.out', delay: 0.1 }
+      );
+    }
+  }, []);
 
   // Handle ESC key to cancel confirmation or close menu
   useEffect(() => {
@@ -90,7 +106,10 @@ export const GameMenuModal: React.FC<GameMenuModalProps> = ({
         }}
       />
 
-      <div className="relative max-w-md w-full bg-[#0d071d]/95 border-2 border-yellow-500/80 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.9),0_0_30px_rgba(234,179,8,0.3)] overflow-hidden z-10 flex flex-col">
+      <div
+        ref={modalRef}
+        className="relative max-w-md w-full bg-[#0d071d]/95 border-2 border-yellow-500/80 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.9),0_0_30px_rgba(234,179,8,0.3)] overflow-hidden z-10 flex flex-col"
+      >
         {/* AAA Artwork Header Banner */}
         <div className="relative h-36 w-full overflow-hidden border-b-2 border-yellow-500/50">
           <div
@@ -102,7 +121,7 @@ export const GameMenuModal: React.FC<GameMenuModalProps> = ({
           {/* Close Button */}
           <button
             onClick={handleResume}
-            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/70 hover:bg-yellow-500 hover:text-black border border-yellow-500/50 text-yellow-300 flex items-center justify-center text-sm font-bold transition-all shadow-lg cursor-pointer"
+            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/70 hover:bg-yellow-500 hover:text-black border border-yellow-500/50 text-yellow-300 flex items-center justify-center text-sm font-bold transition-[background-color,color] duration-150 shadow-lg cursor-pointer"
             title="Resume Game (Esc)"
           >
             ✕
@@ -135,13 +154,13 @@ export const GameMenuModal: React.FC<GameMenuModalProps> = ({
         </div>
 
         {/* Modal Body: State-Driven Actions */}
-        <div className="p-6 flex flex-col gap-3">
+        <div ref={buttonsContainerRef} className="p-6 flex flex-col gap-3">
           {confirmState === 'NONE' && (
             <>
               {/* 1. Resume Game */}
               <button
                 onClick={handleResume}
-                className="w-full py-3 px-4 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:from-emerald-500 hover:to-teal-500 border border-emerald-300/80 text-white font-cinzel font-black text-sm rounded-2xl shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-3 px-4 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:from-emerald-500 hover:to-teal-500 border border-emerald-300/80 text-white font-cinzel font-black text-sm rounded-2xl shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-[background-color,transform] duration-150 flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>▶</span>
                 <span>RESUME GAME</span>
@@ -154,7 +173,7 @@ export const GameMenuModal: React.FC<GameMenuModalProps> = ({
                     sound.playCardSnap();
                     onToggleMute();
                   }}
-                  className="py-2.5 px-3 bg-[#170e30] hover:bg-[#231548] border border-purple-800/60 rounded-xl text-xs font-cinzel font-bold text-slate-200 flex items-center justify-center gap-2 transition-all cursor-pointer"
+                  className="py-2.5 px-3 bg-[#170e30] hover:bg-[#231548] border border-purple-800/60 rounded-xl text-xs font-cinzel font-bold text-slate-200 flex items-center justify-center gap-2 transition-[background-color] duration-150 cursor-pointer"
                 >
                   <span>{isMuted ? '🔇' : '🔊'}</span>
                   <span>{isMuted ? 'UNMUTE SOUND' : 'MUTE SOUND'}</span>
@@ -167,7 +186,7 @@ export const GameMenuModal: React.FC<GameMenuModalProps> = ({
                       onClose();
                       onOpenCodex();
                     }}
-                    className="py-2.5 px-3 bg-[#170e30] hover:bg-[#231548] border border-purple-800/60 rounded-xl text-xs font-cinzel font-bold text-yellow-300 flex items-center justify-center gap-2 transition-all cursor-pointer"
+                    className="py-2.5 px-3 bg-[#170e30] hover:bg-[#231548] border border-purple-800/60 rounded-xl text-xs font-cinzel font-bold text-yellow-300 flex items-center justify-center gap-2 transition-[background-color] duration-150 cursor-pointer"
                   >
                     <span>📖</span>
                     <span>WORLD CODEX</span>
@@ -199,7 +218,7 @@ export const GameMenuModal: React.FC<GameMenuModalProps> = ({
               {/* 3. Concede Match */}
               <button
                 onClick={handleTriggerConcede}
-                className="w-full py-2.5 px-4 bg-gradient-to-r from-rose-950/80 via-red-900/80 to-rose-950/80 hover:from-rose-900 hover:to-red-800 border border-rose-600/60 hover:border-rose-400 text-rose-200 font-cinzel font-bold text-xs rounded-xl shadow transition-all hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-2.5 px-4 bg-gradient-to-r from-rose-950/80 via-red-900/80 to-rose-950/80 hover:from-rose-900 hover:to-red-800 border border-rose-600/60 hover:border-rose-400 text-rose-200 font-cinzel font-bold text-xs rounded-xl shadow transition-[background-color,border-color,transform] duration-150 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>🏳️</span>
                 <span>CONCEDE MATCH</span>
@@ -211,7 +230,7 @@ export const GameMenuModal: React.FC<GameMenuModalProps> = ({
               {/* 4. Exit to Login Screen */}
               <button
                 onClick={handleTriggerExit}
-                className="w-full py-2.5 px-4 bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white font-cinzel font-bold text-xs rounded-xl shadow transition-all hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-2.5 px-4 bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white font-cinzel font-bold text-xs rounded-xl shadow transition-[background-color,border-color,color,transform] duration-150 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>🚪</span>
                 <span>EXIT TO LOGIN SCREEN</span>
@@ -234,13 +253,13 @@ export const GameMenuModal: React.FC<GameMenuModalProps> = ({
               <div className="w-full flex items-center gap-3">
                 <button
                   onClick={() => setConfirmState('NONE')}
-                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-cinzel font-bold text-xs rounded-xl transition-all cursor-pointer"
+                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-cinzel font-bold text-xs rounded-xl transition-[background-color] duration-150 cursor-pointer"
                 >
                   CANCEL (ESC)
                 </button>
                 <button
                   onClick={handleConfirmConcede}
-                  className="flex-1 py-2.5 bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 border border-red-300 text-white font-cinzel font-black text-xs rounded-xl shadow-lg transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                  className="flex-1 py-2.5 bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 border border-red-300 text-white font-cinzel font-black text-xs rounded-xl shadow-lg transition-[background-color,transform] duration-150 hover:scale-105 active:scale-95 cursor-pointer"
                 >
                   CONFIRM CONCEDE
                 </button>
@@ -262,13 +281,13 @@ export const GameMenuModal: React.FC<GameMenuModalProps> = ({
               <div className="w-full flex items-center gap-3">
                 <button
                   onClick={() => setConfirmState('NONE')}
-                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-cinzel font-bold text-xs rounded-xl transition-all cursor-pointer"
+                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-cinzel font-bold text-xs rounded-xl transition-[background-color] duration-150 cursor-pointer"
                 >
                   CANCEL (ESC)
                 </button>
                 <button
                   onClick={handleConfirmExit}
-                  className="flex-1 py-2.5 bg-gradient-to-r from-purple-700 to-indigo-600 hover:from-purple-600 hover:to-indigo-500 border border-purple-400 text-white font-cinzel font-black text-xs rounded-xl shadow-lg transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                  className="flex-1 py-2.5 bg-gradient-to-r from-purple-700 to-indigo-600 hover:from-purple-600 hover:to-indigo-500 border border-purple-400 text-white font-cinzel font-black text-xs rounded-xl shadow-lg transition-[background-color,transform] duration-150 hover:scale-105 active:scale-95 cursor-pointer"
                 >
                   CONFIRM QUIT
                 </button>

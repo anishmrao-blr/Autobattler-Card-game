@@ -1,7 +1,9 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { REALMS_LORE, FACTIONS_LORE, TIMELINE_LORE, RELICS_LORE, RealmEntry, FactionEntry } from '../engine/lore';
 import { sound } from '../audio/sound';
 import { useLenisScroll } from '../hooks/useLenisScroll';
+import { motion, isReducedMotion } from '../utils/motion';
+import gsap from 'gsap';
 
 interface AstralCodexModalProps {
   onClose: () => void;
@@ -14,7 +16,20 @@ export const AstralCodexModal: React.FC<AstralCodexModalProps> = ({ onClose }) =
   const [selectedRealm, setSelectedRealm] = useState<RealmEntry>(REALMS_LORE[0]);
   const [selectedFaction, setSelectedFaction] = useState<FactionEntry>(FACTIONS_LORE[0]);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const tabContentRef = useRef<HTMLDivElement>(null);
+
   useLenisScroll(scrollRef, undefined, [activeTab, selectedRealm, selectedFaction]);
+
+  useEffect(() => {
+    motion.modalEnter(modalRef.current, 1.2);
+  }, []);
+
+  useEffect(() => {
+    if (tabContentRef.current && !isReducedMotion()) {
+      gsap.fromTo(tabContentRef.current, { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.22, ease: 'power2.out' });
+    }
+  }, [activeTab]);
 
   return (
     <div
@@ -22,9 +37,14 @@ export const AstralCodexModal: React.FC<AstralCodexModalProps> = ({ onClose }) =
       className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[60] flex items-center justify-center p-2 sm:p-8 animate-fadeIn select-none overflow-y-auto"
     >
       <div
+        ref={modalRef}
         onClick={(e) => e.stopPropagation()}
         className="relative max-w-5xl w-full h-[92vh] sm:h-[85vh] bg-[#0c071d]/95 border-2 border-yellow-500/70 rounded-2xl sm:rounded-3xl p-3 sm:p-6 shadow-[0_20px_60px_rgba(0,0,0,0.95)] flex flex-col justify-between overflow-hidden"
       >
+        {/* Ambient background slot for Flow video artifact */}
+        <div className="absolute inset-0 pointer-events-none opacity-25 overflow-hidden z-0">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(168,85,247,0.18)_0%,transparent_75%)]" />
+        </div>
         {/* Header Bar */}
         <div className="flex flex-col gap-2.5 pb-2.5 sm:pb-3 border-b border-[#3e345e] z-10 flex-shrink-0">
           <div className="flex items-center justify-between">
@@ -58,7 +78,7 @@ export const AstralCodexModal: React.FC<AstralCodexModalProps> = ({ onClose }) =
                   sound.playCardSnap();
                   setActiveTab(tab);
                 }}
-                className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-cinzel text-[11px] sm:text-xs font-bold transition-all whitespace-nowrap flex-shrink-0 ${
+                className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-cinzel text-[11px] sm:text-xs font-bold transition-colors duration-150 whitespace-nowrap flex-shrink-0 ${
                   activeTab === tab
                     ? 'bg-yellow-500 text-black shadow-brass font-black'
                     : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
@@ -73,6 +93,8 @@ export const AstralCodexModal: React.FC<AstralCodexModalProps> = ({ onClose }) =
           </div>
         </div>
 
+        {/* Tab Content Container with Crossfade */}
+        <div ref={tabContentRef} className="flex-1 flex flex-col overflow-hidden min-h-0">
         {/* TAB 1: REALMS & BATTLEGROUNDS */}
         {activeTab === 'REALMS' && (
           <div className="flex-1 flex flex-col md:flex-row gap-3 sm:gap-6 my-2 sm:my-4 overflow-hidden min-h-0">
@@ -85,7 +107,7 @@ export const AstralCodexModal: React.FC<AstralCodexModalProps> = ({ onClose }) =
                     sound.playCardSnap();
                     setSelectedRealm(r);
                   }}
-                  className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl border transition-all cursor-pointer flex items-center gap-2.5 sm:gap-3 ${
+                  className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl border transition-[background-color,border-color] duration-150 cursor-pointer flex items-center gap-2.5 sm:gap-3 ${
                     selectedRealm.id === r.id
                       ? 'border-yellow-400 bg-yellow-950/40 shadow-[0_0_15px_rgba(234,179,8,0.25)]'
                       : 'border-[#3b2a59] bg-[#120a26]/70 hover:border-purple-500/50'
@@ -169,7 +191,7 @@ export const AstralCodexModal: React.FC<AstralCodexModalProps> = ({ onClose }) =
                     sound.playCardSnap();
                     setSelectedFaction(f);
                   }}
-                  className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl border transition-all cursor-pointer flex items-center gap-2.5 sm:gap-3 ${
+                  className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl border transition-[background-color,border-color] duration-150 cursor-pointer flex items-center gap-2.5 sm:gap-3 ${
                     selectedFaction.id === f.id
                       ? 'border-yellow-400 bg-yellow-950/40 shadow-[0_0_15px_rgba(234,179,8,0.25)]'
                       : 'border-[#3b2a59] bg-[#120a26]/70 hover:border-purple-500/50'
@@ -318,13 +340,14 @@ export const AstralCodexModal: React.FC<AstralCodexModalProps> = ({ onClose }) =
             ))}
           </div>
         )}
+        </div>
 
         {/* Footer */}
         <div className="pt-2 sm:pt-3 border-t border-[#3e345e] flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] sm:text-[11px] text-slate-400 font-sans flex-shrink-0">
           <span className="hidden sm:inline">Aetherium World Compendium • Compiled from the Astral Atrium Archives</span>
           <button
             onClick={onClose}
-            className="w-full sm:w-auto px-4 py-2 sm:py-1.5 bg-yellow-500 hover:bg-yellow-400 text-black font-cinzel font-bold text-xs rounded-xl shadow-brass transition-all text-center cursor-pointer"
+            className="w-full sm:w-auto px-4 py-2 sm:py-1.5 bg-yellow-500 hover:bg-yellow-400 text-black font-cinzel font-bold text-xs rounded-xl shadow-brass transition-[background-color,transform] duration-150 active:scale-95 text-center cursor-pointer"
           >
             RETURN TO BATTLEGROUNDS ➔
           </button>

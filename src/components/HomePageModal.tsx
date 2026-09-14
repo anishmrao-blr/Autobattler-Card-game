@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { sound } from '../audio/sound';
+import { isReducedMotion } from '../utils/motion';
+import gsap from 'gsap';
 
 interface HomePageModalProps {
   onLogin: (playerName: string, title: string) => void;
@@ -19,6 +21,37 @@ export const HomePageModal: React.FC<HomePageModalProps> = ({ onLogin, onOpenCod
   const [playerName, setPlayerName] = useState('Commander Thorne');
   const [selectedTitle, setSelectedTitle] = useState(COMMANDER_TITLES[0]);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const subtitleRef = useRef<HTMLDivElement>(null);
+  const submitBtnRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (isReducedMotion()) return;
+    const tl = gsap.timeline();
+    if (titleRef.current) {
+      tl.fromTo(
+        titleRef.current,
+        { opacity: 0, y: -20, scale: 0.9 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: 'power3.out' }
+      );
+    }
+    if (subtitleRef.current) {
+      tl.fromTo(
+        subtitleRef.current,
+        { opacity: 0, y: 10 },
+        { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' },
+        '-=0.3'
+      );
+    }
+    if (submitBtnRef.current) {
+      tl.fromTo(
+        submitBtnRef.current,
+        { opacity: 0, scale: 0.85, y: 15 },
+        { opacity: 1, scale: 1, y: 0, duration: 0.45, ease: 'back.out(1.3)' },
+        '-=0.15'
+      );
+    }
+  }, []);
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +68,7 @@ export const HomePageModal: React.FC<HomePageModalProps> = ({ onLogin, onOpenCod
 
   return (
     <main
-      className={`fixed inset-0 z-50 flex items-center justify-center overflow-hidden transition-all duration-1000 ${
+      className={`fixed inset-0 z-50 flex items-center justify-center overflow-hidden transition-[transform,opacity,filter] duration-1000 ${
         isAuthenticating ? 'scale-125 opacity-0 filter blur-md' : 'scale-100 opacity-100'
       }`}
       style={{
@@ -85,10 +118,10 @@ export const HomePageModal: React.FC<HomePageModalProps> = ({ onLogin, onOpenCod
         </div>
 
         {/* Title & Tagline */}
-        <h1 className="font-cinzel text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-200 to-amber-500 tracking-wider drop-shadow-[0_0_20px_rgba(234,179,8,0.6)] mb-2">
+        <h1 ref={titleRef} className="font-cinzel text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-200 to-amber-500 tracking-wider drop-shadow-[0_0_20px_rgba(234,179,8,0.6)] mb-2">
           AETHERIUM
         </h1>
-        <div className="text-xs sm:text-sm font-cinzel font-bold text-cyan-300 tracking-widest uppercase mb-6 flex items-center gap-2">
+        <div ref={subtitleRef} className="text-xs sm:text-sm font-cinzel font-bold text-cyan-300 tracking-widest uppercase mb-6 flex items-center gap-2">
           <span className="h-px w-8 bg-cyan-400/50" />
           <span>ASTRAL BATTLEGROUNDS</span>
           <span className="h-px w-8 bg-cyan-400/50" />
@@ -144,6 +177,7 @@ export const HomePageModal: React.FC<HomePageModalProps> = ({ onLogin, onOpenCod
 
           {/* Enter Button */}
           <button
+            ref={submitBtnRef}
             type="submit"
             disabled={isAuthenticating || !playerName.trim()}
             className="w-full mt-4 py-3.5 bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 hover:from-amber-500 hover:to-yellow-400 text-black font-cinzel font-black text-sm rounded-xl shadow-[0_0_25px_rgba(234,179,8,0.5)] transition-[transform,opacity] duration-150 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 tracking-wider"

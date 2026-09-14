@@ -52,6 +52,7 @@ export interface BoardMinion {
   videoUrl?: string;
   tempAttackBuff: number;
   tempHealthBuff: number;
+  permanentBuffTriggers?: number;
 }
 
 export interface DeployContext {

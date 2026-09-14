@@ -31,6 +31,7 @@ export function createBoardMinion(card: MinionCard, isGolden = false): BoardMini
     videoUrl: card.videoUrl,
     tempAttackBuff: 0,
     tempHealthBuff: 0,
+    permanentBuffTriggers: 0,
   };
 }
 
@@ -86,8 +87,8 @@ export const MINION_DATABASE: MinionCard[] = [
     attack: 1,
     health: 3,
     keywords: [],
-    description: 'Catalyst Aura: Whenever you recruit a Celestial, gain +1 Attack permanently.',
-    goldenDescription: 'Catalyst Aura: Whenever you recruit a Celestial, gain +2 Attack permanently.',
+    description: 'Catalyst Aura: Whenever you recruit a Celestial, gain +1 Attack permanently (max +6 Attack).',
+    goldenDescription: 'Catalyst Aura: Whenever you recruit a Celestial, gain +2 Attack permanently (max +12 Attack).',
     icon: '✨',
     artUrl: '/assets/art/card_celest_spark.jpg',
     flavor: 'A piece of a fallen constellation that never stopped burning.'
@@ -230,8 +231,8 @@ export const MINION_DATABASE: MinionCard[] = [
     attack: 4,
     health: 4,
     keywords: [],
-    description: 'Catalyst Aura: Whenever a friendly Voidborn dies, gain +2/+1 permanently.',
-    goldenDescription: 'Catalyst Aura: Whenever a friendly Voidborn dies, gain +4/+2 permanently.',
+    description: 'Catalyst Aura: Whenever a friendly Voidborn dies, gain +2/+1 permanently (max 4 times).',
+    goldenDescription: 'Catalyst Aura: Whenever a friendly Voidborn dies, gain +4/+2 permanently (max 4 times).',
     icon: '🌑',
     artUrl: '/assets/art/cards/void_devourer.jpg',
     flavor: 'Feeds on the passing echoes of its fallen brood.'
@@ -388,8 +389,8 @@ export const MINION_DATABASE: MinionCard[] = [
     attack: 6,
     health: 7,
     keywords: [],
-    description: 'Catalyst Aura: At the end of your turn, grant all friendly Automata +2/+2.',
-    goldenDescription: 'Catalyst Aura: At the end of your turn, grant all friendly Automata +4/+4.',
+    description: 'Catalyst Aura: At the end of your turn, grant all friendly Automata +1/+1 permanently (max 5 times).',
+    goldenDescription: 'Catalyst Aura: At the end of your turn, grant all friendly Automata +2/+2 permanently (max 5 times).',
     icon: '👑',
     artUrl: '/assets/art/cards/auto_overlord.jpg',
     flavor: 'Synchronizes every cog in the warband into unified kinetic slaughter.'
@@ -402,8 +403,8 @@ export const MINION_DATABASE: MinionCard[] = [
     attack: 7,
     health: 7,
     keywords: ['BASTION'],
-    description: 'Aegis Bastion. Whenever another friendly minion dies, absorb its Attack permanently.',
-    goldenDescription: 'Aegis Bastion. Whenever another friendly minion dies, absorb 2x its Attack permanently.',
+    description: 'Aegis Bastion. Whenever a friendly Voidborn dies, absorb its Attack permanently (max +15 Attack).',
+    goldenDescription: 'Aegis Bastion. Whenever a friendly Voidborn dies, absorb 2x its Attack permanently (max +30 Attack).',
     icon: '🐙',
     artUrl: '/assets/art/cards/void_abomination.jpg',
     flavor: 'Grows exponentially larger as its brethren return to the void.'
@@ -502,8 +503,8 @@ export const MINION_DATABASE: MinionCard[] = [
     attack: 6,
     health: 10,
     keywords: [],
-    description: 'Catalyst Aura: At the end of your turn, double the Attack and Health of your leftmost minion.',
-    goldenDescription: 'Catalyst Aura: At the end of your turn, double the Attack and Health of your 2 leftmost minions.',
+    description: 'Catalyst Aura: At the end of your turn, grant your leftmost minion +5/+5 permanently.',
+    goldenDescription: 'Catalyst Aura: At the end of your turn, grant your 2 leftmost minions +10/+10 permanently.',
     icon: '🧪',
     artUrl: '/assets/art/cards/alch_elixir_master.jpg',
     flavor: 'Unlocks the secret of perpetual cellular and mechanical replication.'
@@ -530,8 +531,8 @@ export const MINION_DATABASE: MinionCard[] = [
     attack: 12,
     health: 12,
     keywords: ['BASTION', 'OVERCLOCK'],
-    description: 'Aegis Bastion. Kinetic Overclock. Whenever any unit dies, gain +2/+2 permanently.',
-    goldenDescription: 'Aegis Bastion. Kinetic Overclock. Whenever any unit dies, gain +4/+4 permanently.',
+    description: 'Aegis Bastion. Kinetic Overclock. Whenever a friendly Beast dies, gain +2/+2 permanently (max 3 times).',
+    goldenDescription: 'Aegis Bastion. Kinetic Overclock. Whenever a friendly Beast dies, gain +4/+4 permanently (max 3 times).',
     icon: '🦖',
     artUrl: '/assets/art/cards/beast_god_behemoth.jpg',
     flavor: 'The ancient primordial predator that slumbers beneath the asteroid crusts.'

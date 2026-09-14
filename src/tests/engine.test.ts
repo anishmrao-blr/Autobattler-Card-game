@@ -250,3 +250,272 @@ describe('Aetherium Engine - Full 8-Player Game Simulation', () => {
     expect(game.matchPhase).toBe('GAME_OVER');
   });
 });
+
+describe('Aetherium Engine - Balance Orders & Permanent Buff Caps', () => {
+  let pool: SharedCardPool;
+  let tavern: TavernManager;
+  let combat: CombatResolver;
+  let player: PlayerState;
+
+  beforeEach(() => {
+    pool = new SharedCardPool();
+    tavern = new TavernManager(pool);
+    combat = new CombatResolver();
+    player = {
+      id: 'test_player',
+      name: 'Tester',
+      isHuman: true,
+      avatar: '⚙️',
+      hero: HERO_DATABASE[0],
+      hp: 40,
+      maxHp: 40,
+      coins: 20,
+      maxCoins: 20,
+      tavernTier: 6,
+      tierUpgradeCost: 5,
+      isFrozen: false,
+      hand: [],
+      board: [],
+      tavernSlots: [],
+      triplesFound: 0,
+      winStreak: 0,
+      isEliminated: false,
+    };
+  });
+
+  it('celest_spark caps attack gain at +6 (or +12 golden)', () => {
+    const sparkCard = MINION_DATABASE.find(c => c.id === 'celest_spark')!;
+    const sparkMinion = createBoardMinion(sparkCard);
+    player.board.push(sparkMinion);
+    const initialAtk = sparkMinion.attack;
+
+    const celestialCard = MINION_DATABASE.find(c => c.tribe === 'CELESTIAL' && c.id !== 'celest_spark')!;
+    // Buy 8 celestials
+    for (let i = 0; i < 8; i++) {
+      player.tavernSlots = [{ ...celestialCard }];
+      player.coins = 10;
+      tavern.buyMinion(player, 0);
+    }
+
+    // Should have capped at initial + 6
+    expect(sparkMinion.attack).toBe(initialAtk + 6);
+    expect(sparkMinion.permanentBuffTriggers).toBe(6);
+
+    // Test Golden: cap at +12
+    const goldenSpark = createBoardMinion(sparkCard, true);
+    player.board = [goldenSpark];
+    const initialGoldenAtk = goldenSpark.attack;
+    for (let i = 0; i < 10; i++) {
+      player.tavernSlots = [{ ...celestialCard }];
+      player.coins = 10;
+      tavern.buyMinion(player, 0);
+    }
+    expect(goldenSpark.attack).toBe(initialGoldenAtk + 12);
+    expect(goldenSpark.permanentBuffTriggers).toBe(12);
+  });
+
+  it('auto_overlord caps at 5 triggers and grants +1/+1 (+2/+2 golden)', () => {
+    const overlordCard = MINION_DATABASE.find(c => c.id === 'auto_overlord')!;
+    const overlord = createBoardMinion(overlordCard);
+    const scrapper = createBoardMinion(MINION_DATABASE.find(c => c.id === 'auto_scrapper')!);
+    player.board = [overlord, scrapper];
+
+    const initialOverlordAtk = overlord.attack;
+    const initialScrapperAtk = scrapper.attack;
+
+    // Trigger processTurnStartBuffs 7 times
+    for (let i = 0; i < 7; i++) {
+      tavern.processTurnStartBuffs(player);
+    }
+
+    // Should trigger exactly 5 times (+5/+5 to all automata)
+    expect(overlord.permanentBuffTriggers).toBe(5);
+    expect(scrapper.attack).toBe(initialScrapperAtk + 5);
+    expect(scrapper.health).toBe(scrapper.maxHealth);
+    expect(overlord.attack).toBe(initialOverlordAtk + 5);
+  });
+
+  it('alch_elixir_master grants flat +5/+5 (+10/+10 golden) instead of 2x doubling', () => {
+    const alchCard = MINION_DATABASE.find(c => c.id === 'alch_elixir_master')!;
+    const alch = createBoardMinion(alchCard);
+    const target = createBoardMinion(MINION_DATABASE.find(c => c.id === 'auto_scrapper')!);
+    target.attack = 4;
+    target.health = 4;
+    target.maxHealth = 4;
+
+    player.board = [target, alch]; // target is leftmost
+
+    tavern.processTurnStartBuffs(player);
+    // +5/+5 flat
+    expect(target.attack).toBe(9);
+    expect(target.health).toBe(9);
+
+    // Test Golden: +10/+10 to 2 leftmost
+    const goldenAlch = createBoardMinion(alchCard, true);
+    player.board = [target, alch, goldenAlch];
+    tavern.processTurnStartBuffs(player);
+    // goldenAlch gives +10/+10 to target and alch, regular alch gives +5/+5 to target
+    expect(target.attack).toBe(9 + 10 + 5);
+    expect(alch.attack).toBe(6 + 10);
+  });
+
+  it('void_devourer caps at 4 friendly Voidborn deaths in combat', () => {
+    const devourer = createBoardMinion(MINION_DATABASE.find(c => c.id === 'void_devourer')!);
+    const larva = createBoardMinion(MINION_DATABASE.find(c => c.id === 'void_larva')!);
+    const initialAtk = devourer.attack;
+    const initialHp = devourer.health;
+
+    // Setup board with devourer and dying friendly Voidborns
+    const p1: PlayerState = {
+      ...player,
+      board: [
+        { ...larva, health: 1, maxHealth: 1 },
+        { ...larva, health: 1, maxHealth: 1 },
+        { ...larva, health: 1, maxHealth: 1 },
+        { ...larva, health: 1, maxHealth: 1 },
+        { ...larva, health: 1, maxHealth: 1 },
+        devourer,
+      ]
+    };
+
+    // Fast enemy that will kill the larvae
+    const enemyMinion = createBoardMinion({
+      id: 'killer',
+      name: 'Killer',
+      tier: 6,
+      tribe: 'NEUTRAL',
+      attack: 10,
+      health: 100,
+      keywords: [],
+      description: '',
+      icon: '⚔️',
+      flavor: ''
+    });
+
+    const p2: PlayerState = {
+      ...player,
+      id: 'enemy',
+      board: [enemyMinion]
+    };
+
+    combat.simulate1v1(p1, p2);
+    // Even if 5 larvae die, devourer should only gain 4 triggers (+8/+4)
+    expect(devourer.permanentBuffTriggers).toBe(4);
+    expect(devourer.attack).toBe(initialAtk + 8);
+    expect(devourer.health).toBe(initialHp + 4);
+  });
+
+  it('void_abomination only absorbs friendly VOIDBORN and caps at +15 (+30 golden)', () => {
+    const abomination = createBoardMinion(MINION_DATABASE.find(c => c.id === 'void_abomination')!);
+    abomination.health = 500;
+    abomination.maxHealth = 500;
+    abomination.keywords = [];
+    const initialAtk = abomination.attack;
+
+    // Ally non-voidborn minion: should NOT be absorbed
+    const beastAlly = createBoardMinion(MINION_DATABASE.find(c => c.id === 'beast_ripper')!);
+    beastAlly.attack = 10;
+    beastAlly.health = 1;
+    beastAlly.keywords = ['BASTION'];
+
+    // Ally voidborn minion: should be absorbed
+    const voidAlly1 = createBoardMinion(MINION_DATABASE.find(c => c.id === 'void_larva')!);
+    voidAlly1.attack = 10;
+    voidAlly1.health = 1;
+    voidAlly1.keywords = ['BASTION'];
+
+    const voidAlly2 = createBoardMinion(MINION_DATABASE.find(c => c.id === 'void_larva')!);
+    voidAlly2.attack = 10;
+    voidAlly2.health = 1;
+    voidAlly2.keywords = ['BASTION'];
+
+    const p1: PlayerState = {
+      ...player,
+      board: [beastAlly, voidAlly1, voidAlly2, abomination]
+    };
+
+    const enemy = createBoardMinion({
+      id: 'enemy_giant',
+      name: 'Giant',
+      tier: 6,
+      tribe: 'NEUTRAL',
+      attack: 20,
+      health: 200,
+      keywords: [],
+      description: '',
+      icon: '💀',
+      flavor: ''
+    });
+
+    const p2: PlayerState = {
+      ...player,
+      id: 'enemy',
+      board: [enemy]
+    };
+
+    combat.simulate1v1(p1, p2);
+
+    // beastAlly died (10 atk) -> ignored
+    // voidAlly1 died (10 atk) -> absorbs 10 (triggers = 10)
+    // voidAlly2 died (10 atk) -> absorbs remaining 5 up to cap 15 (triggers = 15)
+    expect(abomination.permanentBuffTriggers).toBe(15);
+    expect(abomination.attack).toBe(initialAtk + 15);
+  });
+
+  it('beast_god_behemoth only triggers on friendly BEAST deaths up to max 3 times', () => {
+    const behemoth = createBoardMinion(MINION_DATABASE.find(c => c.id === 'beast_god_behemoth')!);
+    behemoth.health = 500;
+    behemoth.maxHealth = 500;
+    behemoth.keywords = [];
+    const initialAtk = behemoth.attack;
+    const initialHp = behemoth.health;
+
+    const friendlyBeast = createBoardMinion(MINION_DATABASE.find(c => c.id === 'beast_ripper')!);
+    friendlyBeast.health = 1;
+    friendlyBeast.keywords = ['BASTION'];
+
+    const friendlyAutomata = createBoardMinion(MINION_DATABASE.find(c => c.id === 'auto_scrapper')!);
+    friendlyAutomata.health = 1;
+    friendlyAutomata.keywords = ['BASTION'];
+
+    const p1: PlayerState = {
+      ...player,
+      board: [
+        { ...friendlyBeast },
+        { ...friendlyBeast },
+        { ...friendlyBeast },
+        { ...friendlyBeast },
+        { ...friendlyAutomata }, // should NOT trigger behemoth
+        behemoth
+      ]
+    };
+
+    const enemy = createBoardMinion({
+      id: 'enemy_boss',
+      name: 'Boss',
+      tier: 6,
+      tribe: 'NEUTRAL',
+      attack: 30,
+      health: 300,
+      keywords: [],
+      description: '',
+      icon: '👾',
+      flavor: ''
+    });
+
+    const p2: PlayerState = {
+      ...player,
+      id: 'enemy',
+      board: [enemy]
+    };
+
+    combat.simulate1v1(p1, p2);
+
+    // friendlyAutomata ignored.
+    // 4 friendly beasts die, but max triggers is 3 (+6/+6)
+    expect(behemoth.permanentBuffTriggers).toBe(3);
+    expect(behemoth.attack).toBe(initialAtk + 6);
+    expect(behemoth.health).toBe(initialHp + 6);
+  });
+});
+

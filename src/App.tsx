@@ -340,13 +340,13 @@ export const App: React.FC = () => {
 
           <button
             onClick={handleRestartGame}
-            className="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-black font-cinzel font-bold text-sm rounded-xl shadow-brass transition-all hover:scale-105 cursor-pointer"
+            className="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-black font-cinzel font-bold text-sm rounded-xl shadow-brass transition-[transform,background-color,box-shadow] hover:scale-105 cursor-pointer"
           >
             PLAY AGAIN ➔
           </button>
           <button
             onClick={handleRestartGame}
-            className="w-full mt-2 py-2.5 bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white font-cinzel font-bold text-xs rounded-xl transition-all cursor-pointer"
+            className="w-full mt-2 py-2.5 bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white font-cinzel font-bold text-xs rounded-xl transition-colors cursor-pointer"
           >
             🚪 EXIT TO LOGIN SCREEN
           </button>

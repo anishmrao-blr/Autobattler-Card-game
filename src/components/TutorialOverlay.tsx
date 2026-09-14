@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { sound } from '../audio/sound';
+import { motion, isReducedMotion } from '../utils/motion';
+import gsap from 'gsap';
 
 export const TUTORIAL_STORAGE_KEY = 'aabg_tutorial_seen';
 
@@ -93,6 +95,24 @@ interface TutorialOverlayProps {
 
 export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ isOpen, onClose }) => {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const stepContentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (modalRef.current) {
+      motion.modalEnter(modalRef.current, 1.2);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (stepContentRef.current && !isReducedMotion()) {
+      gsap.fromTo(
+        stepContentRef.current,
+        { opacity: 0, x: 20 },
+        { opacity: 1, x: 0, duration: 0.25, ease: 'power2.out' }
+      );
+    }
+  }, [currentStepIndex]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -162,6 +182,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ isOpen, onClos
 
       {/* Tutorial Card Dialog */}
       <div
+        ref={modalRef}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -195,7 +216,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ isOpen, onClos
         </div>
 
         {/* Center Content */}
-        <div className="my-6 space-y-4">
+        <div ref={stepContentRef} className="my-6 space-y-4">
           <div>
             <h2 id="tutorial-step-title" className="font-cinzel text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-200 to-amber-500 tracking-wider mb-1">
               {currentStep.title}
@@ -226,7 +247,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ isOpen, onClos
                 sound.playCardSnap();
                 setCurrentStepIndex(idx);
               }}
-              className={`h-2 rounded-full transition-all duration-300 ${
+              className={`h-2 rounded-full transition-[width,background-color] duration-300 ${
                 idx === currentStepIndex
                   ? 'w-8 bg-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.8)]'
                   : idx < currentStepIndex

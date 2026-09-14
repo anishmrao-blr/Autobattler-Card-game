@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { PlayerState } from '../types';
 import { CardMediaArt } from './CardMediaArt';
 import { sound } from '../audio/sound';
+import { motion } from '../utils/motion';
 
 interface CommanderHeroStationProps {
   player: PlayerState;
@@ -23,8 +24,8 @@ export const CommanderHeroStation: React.FC<CommanderHeroStationProps> = ({
   if (player.hp < 15) {
     hpColor = 'from-red-600 to-rose-700 animate-pulse';
     hpText = 'text-red-400';
-    hpBorder = 'border-red-500/80 shadow-[0_0_15px_rgba(239,68,68,0.5)]';
-  } else if (player.hp < 28) {
+    hpBorder = 'border-red-500/60';
+  } else if (player.hp < 25) {
     hpColor = 'from-amber-500 to-yellow-600';
     hpText = 'text-yellow-300';
     hpBorder = 'border-amber-500/60';
@@ -42,7 +43,7 @@ export const CommanderHeroStation: React.FC<CommanderHeroStationProps> = ({
           onInspectHero?.();
         }}
         title="Click to inspect Commander Lore & Stats"
-        className="group relative w-16 h-24 sm:w-24 sm:h-32 rounded-2xl border-2 border-yellow-400/80 overflow-hidden bg-black/90 shadow-[0_0_20px_rgba(234,179,8,0.35)] cursor-pointer hover:border-yellow-300 hover:scale-105 transition-all flex-shrink-0"
+        className="group relative w-16 h-24 sm:w-24 sm:h-32 rounded-2xl border-2 border-yellow-400/80 overflow-hidden bg-black/90 shadow-[0_0_20px_rgba(234,179,8,0.35)] cursor-pointer hover:border-yellow-300 transition-[border-color,transform] duration-200 hover:scale-105 active:scale-95 flex-shrink-0"
       >
         <CardMediaArt
           artUrl={player.hero.artUrl || player.artUrl || '/assets/art/hero_chronos.jpg'}
@@ -91,14 +92,15 @@ export const CommanderHeroStation: React.FC<CommanderHeroStationProps> = ({
               setIsPowerHovered(true);
             }}
             onMouseLeave={() => setIsPowerHovered(false)}
-            onClick={() => {
+            onClick={(e) => {
               if (canUseHeroPower) {
+                motion.buttonPunch(e.currentTarget, 1.12);
                 sound.playCoinClink();
                 onUseHeroPower();
               }
             }}
             disabled={!canUseHeroPower}
-            className={`w-full flex items-center gap-2 p-1.5 rounded-xl border transition-all ${
+            className={`w-full flex items-center gap-2 p-1.5 rounded-xl border transition-[background-color,border-color,color,opacity] duration-150 ${
               player.hero.powerType === 'PASSIVE'
                 ? 'bg-purple-950/70 border-purple-500/50 text-purple-200 cursor-help'
                 : canUseHeroPower
@@ -161,7 +163,7 @@ export const CommanderHeroStation: React.FC<CommanderHeroStationProps> = ({
           </div>
           <div className="w-full bg-slate-950 h-3 rounded-full overflow-hidden p-0.5 border border-slate-800">
             <div
-              className={`h-full rounded-full bg-gradient-to-r ${hpColor} transition-all duration-300 shadow-[0_0_10px_rgba(255,255,255,0.4)]`}
+              className={`h-full rounded-full bg-gradient-to-r ${hpColor} transition-[width] duration-300 ease-out shadow-[0_0_10px_rgba(255,255,255,0.4)]`}
               style={{ width: `${hpPercent}%` }}
             />
           </div>

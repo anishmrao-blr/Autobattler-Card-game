@@ -239,7 +239,7 @@ export const CardView: React.FC<CardViewProps> = ({
             onInspect(card, boardMinion);
           }}
           title="Zoom & Inspect Artwork"
-          className="absolute top-2 right-2 bg-black/80 hover:bg-yellow-500 hover:text-black text-yellow-300 border border-yellow-500/60 rounded-full w-6 h-6 flex items-center justify-center text-[11px] opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/card:opacity-100 transition-opacity z-40 shadow-lg"
+          className="absolute top-2 right-2 bg-black/80 hover:bg-yellow-500 hover:text-black text-yellow-300 border border-yellow-500/60 rounded-full w-6 h-6 flex items-center justify-center text-[11px] opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/card:opacity-100 transition-[opacity,background-color,color] duration-150 z-40 shadow-lg"
         >
           🔍
         </button>

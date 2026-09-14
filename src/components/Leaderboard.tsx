@@ -1,6 +1,8 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { PlayerState } from '../types';
 import { useLenisScroll } from '../hooks/useLenisScroll';
+import { isReducedMotion } from '../utils/motion';
+import gsap from 'gsap';
 
 interface LeaderboardProps {
   players: PlayerState[];
@@ -16,6 +18,9 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
   onClose,
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const itemsRef = useRef<Map<string, HTMLDivElement>>(new Map());
+  const prevPositions = useRef<Map<string, number>>(new Map());
+
   useLenisScroll(scrollRef);
 
   const sorted = [...players].sort((a, b) => {
@@ -24,6 +29,26 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
     if (a.hp !== b.hp) return b.hp - a.hp;
     return b.tavernTier - a.tavernTier;
   });
+
+  // FLIP-style smooth position swap when rankings change
+  useEffect(() => {
+    if (isReducedMotion()) return;
+
+    itemsRef.current.forEach((el, id) => {
+      const newTop = el.getBoundingClientRect().top;
+      const oldTop = prevPositions.current.get(id);
+
+      if (oldTop !== undefined && oldTop !== newTop) {
+        const deltaY = oldTop - newTop;
+        gsap.fromTo(
+          el,
+          { y: deltaY, scale: 1.03, zIndex: 10 },
+          { y: 0, scale: 1, zIndex: 1, duration: 0.38, ease: 'power2.out' }
+        );
+      }
+      prevPositions.current.set(id, newTop);
+    });
+  }, [sorted.map(p => `${p.id}:${p.hp}`).join(',')]);
 
   return (
     <div className={`h-full bg-[#0a0717]/95 flex flex-col p-3 shadow-2xl backdrop-blur-md ${className}`}>
@@ -73,8 +98,12 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
           return (
             <div
               key={p.id}
+              ref={(el) => {
+                if (el) itemsRef.current.set(p.id, el);
+                else itemsRef.current.delete(p.id);
+              }}
               className={`
-                relative flex items-center gap-2 p-2 rounded-xl border transition-all duration-200
+                relative flex items-center gap-2 p-2 rounded-xl border transition-[background-color,border-color,opacity] duration-200
                 ${p.isHuman ? 'border-cyan-400 bg-cyan-950/40 shadow-[0_0_15px_rgba(0,240,255,0.25)]' : 'border-[#3d3257] bg-[#120e24]/80'}
                 ${isDead ? 'opacity-40 grayscale border-red-950 bg-black/80' : 'hover:border-yellow-500/50'}
               `}
@@ -112,7 +141,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                 {!isDead && (
                   <div className="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden mt-1 border border-slate-700/50">
                     <div
-                      className={`h-full ${hpBarColor} transition-all duration-300`}
+                      className={`h-full ${hpBarColor} transition-[width] duration-300 ease-out`}
                       style={{ width: `${hpPercent}%` }}
                     />
                   </div>
