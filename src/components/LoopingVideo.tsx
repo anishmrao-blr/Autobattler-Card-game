@@ -156,8 +156,19 @@ export const LoopingVideo: React.FC<LoopingVideoProps> = ({
 
   if (!src) return null;
 
+  // Callers pass their own positioning: full-screen backgrounds pass
+  // `absolute inset-0 ...`, while inline/icon usages pass only sizing
+  // classes and rely on an already-positioned parent. Hard-coding
+  // `relative` unconditionally here collided with a caller's `absolute`
+  // (both are core Tailwind utilities of equal specificity, and `.relative`
+  // happens to be generated after `.absolute` in the compiled stylesheet,
+  // so it silently won - the wrapper stayed in normal flow instead of
+  // covering the screen). Only fall back to `relative` when the caller
+  // didn't already specify a position.
+  const hasPositionClass = /\b(absolute|fixed|sticky)\b/.test(className);
+
   return (
-    <div className={`relative overflow-hidden ${className}`}>
+    <div className={`${hasPositionClass ? '' : 'relative '}overflow-hidden ${className}`}>
       <video
         ref={videoRefA}
         src={src}
