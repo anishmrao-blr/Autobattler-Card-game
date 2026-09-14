@@ -150,6 +150,13 @@ export const App: React.FC = () => {
     syncState();
   };
 
+  const handleReorderHand = (fromIndex: number, toIndex: number) => {
+    const game = gameRef.current;
+    const p = game.getHumanPlayer();
+    game.tavern.reorderHand(p, fromIndex, toIndex);
+    syncState();
+  };
+
   const handleReroll = () => {
     const game = gameRef.current;
     const p = game.getHumanPlayer();
@@ -507,6 +514,7 @@ export const App: React.FC = () => {
           hand={human.hand}
           boardCount={human.board.length}
           onPlayCard={handlePlayCard}
+          onReorderHand={handleReorderHand}
           onUseHeroPower={handleUseHeroPower}
           onInspectHero={() => setInspectingHero(human.hero)}
           onInspect={handleInspectCard}

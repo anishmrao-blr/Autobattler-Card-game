@@ -138,6 +138,13 @@ export class TavernManager {
     player.board.splice(toIndex, 0, moved);
   }
 
+  public reorderHand(player: PlayerState, fromIndex: number, toIndex: number): void {
+    if (fromIndex < 0 || fromIndex >= player.hand.length) return;
+    if (toIndex < 0 || toIndex >= player.hand.length) return;
+    const [moved] = player.hand.splice(fromIndex, 1);
+    player.hand.splice(toIndex, 0, moved);
+  }
+
   public checkForTriplets(player: PlayerState, cardId: string): void {
     const handIndices: number[] = [];
     const boardIndices: number[] = [];

@@ -362,6 +362,8 @@ describe('Aetherium Engine - Balance Orders & Permanent Buff Caps', () => {
   it('void_devourer caps at 4 friendly Voidborn deaths in combat', () => {
     const devourer = createBoardMinion(MINION_DATABASE.find(c => c.id === 'void_devourer')!);
     const larva = createBoardMinion(MINION_DATABASE.find(c => c.id === 'void_larva')!);
+    devourer.health = 500;
+    devourer.maxHealth = 500;
     const initialAtk = devourer.attack;
     const initialHp = devourer.health;
 
@@ -369,11 +371,11 @@ describe('Aetherium Engine - Balance Orders & Permanent Buff Caps', () => {
     const p1: PlayerState = {
       ...player,
       board: [
-        { ...larva, health: 1, maxHealth: 1 },
-        { ...larva, health: 1, maxHealth: 1 },
-        { ...larva, health: 1, maxHealth: 1 },
-        { ...larva, health: 1, maxHealth: 1 },
-        { ...larva, health: 1, maxHealth: 1 },
+        { ...larva, health: 1, maxHealth: 1, keywords: ['BASTION'] },
+        { ...larva, health: 1, maxHealth: 1, keywords: ['BASTION'] },
+        { ...larva, health: 1, maxHealth: 1, keywords: ['BASTION'] },
+        { ...larva, health: 1, maxHealth: 1, keywords: ['BASTION'] },
+        { ...larva, health: 1, maxHealth: 1, keywords: ['BASTION'] },
         devourer,
       ]
     };
@@ -517,5 +519,41 @@ describe('Aetherium Engine - Balance Orders & Permanent Buff Caps', () => {
     expect(behemoth.attack).toBe(initialAtk + 6);
     expect(behemoth.health).toBe(initialHp + 6);
   });
+
+  it('reorders hand and board correctly with boundary safety', () => {
+    const tavern = new TavernManager(pool);
+    const card1 = MINION_DATABASE[0];
+    const card2 = MINION_DATABASE[1];
+    const card3 = MINION_DATABASE[2];
+
+    const p: PlayerState = {
+      ...player,
+      hand: [card1, card2, card3],
+      board: [
+        createBoardMinion(card1),
+        createBoardMinion(card2),
+        createBoardMinion(card3),
+      ]
+    };
+
+    // Reorder hand: move index 0 to index 2 -> [card2, card3, card1]
+    tavern.reorderHand(p, 0, 2);
+    expect(p.hand[0].id).toBe(card2.id);
+    expect(p.hand[1].id).toBe(card3.id);
+    expect(p.hand[2].id).toBe(card1.id);
+
+    // Reorder board: move index 2 to index 0 -> [card3, card1, card2]
+    tavern.reorderBoard(p, 2, 0);
+    expect(p.board[0].cardId).toBe(card3.id);
+    expect(p.board[1].cardId).toBe(card1.id);
+    expect(p.board[2].cardId).toBe(card2.id);
+
+    // Out of bounds safety checks
+    tavern.reorderHand(p, -1, 2);
+    expect(p.hand[0].id).toBe(card2.id);
+    tavern.reorderHand(p, 0, 99);
+    expect(p.hand[0].id).toBe(card2.id);
+  });
 });
+
 
