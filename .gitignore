@@ -4,3 +4,8 @@ dist
 .git
 .DS_Store
 *.log
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/e2e-audit-violations.json
