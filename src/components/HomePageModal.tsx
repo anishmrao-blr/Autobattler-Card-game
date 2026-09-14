@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { sound } from '../audio/sound';
 import { isReducedMotion } from '../utils/motion';
 import gsap from 'gsap';
+import { LoopingVideo } from './LoopingVideo';
 
 interface HomePageModalProps {
   onLogin: (playerName: string, title: string) => void;
@@ -78,11 +79,7 @@ export const HomePageModal: React.FC<HomePageModalProps> = ({ onLogin, onOpenCod
       }}
     >
       {/* Background Cinematic Video with Static Poster Fallback */}
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
+      <LoopingVideo
         poster="/assets/art/astral_portal.jpg"
         className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
         src="/assets/video/title_portal.mp4"

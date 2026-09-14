@@ -19,7 +19,7 @@ export const HeroSelectModal: React.FC<HeroSelectModalProps> = ({ onSelectHero, 
   const [inspectingHero, setInspectingHero] = useState<Hero | null>(null);
 
   return (
-    <main className="fixed inset-0 bg-[#05030b]/95 backdrop-blur-lg flex flex-col items-center justify-start sm:justify-center z-50 p-3 sm:p-6 overflow-y-auto">
+    <main className="fixed inset-0 bg-[#05030b]/95 backdrop-blur-lg flex flex-col items-center justify-start sm:justify-center z-50 p-3 sm:p-6 overflow-y-auto scroll-stable">
       {inspectingHero && (
         <HeroProfileModal
           hero={inspectingHero}

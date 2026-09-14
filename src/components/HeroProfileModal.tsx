@@ -47,7 +47,7 @@ export const HeroProfileModal: React.FC<HeroProfileModalProps> = ({
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 bg-black/90 backdrop-blur-xl z-50 flex flex-col items-center justify-start sm:justify-center p-3 sm:p-8 overflow-y-auto animate-fadeIn"
+      className="fixed inset-0 bg-black/90 backdrop-blur-xl z-50 flex flex-col items-center justify-start sm:justify-center p-3 sm:p-8 overflow-y-auto scroll-stable animate-fadeIn"
     >
       <div
         ref={modalRef}

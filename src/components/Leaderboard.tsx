@@ -77,7 +77,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
       </div>
 
       {/* Player List */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-2 pr-1">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto scroll-stable space-y-2 pr-1">
         {sorted.map((p, idx) => {
           const isDead = p.isEliminated || p.hp <= 0;
           const hpPercent = Math.max(0, Math.min(100, (p.hp / p.maxHp) * 100));

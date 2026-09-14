@@ -17,6 +17,7 @@ import { HandTray } from './components/HandTray';
 import { CombatArena3D } from './components/CombatArena3D';
 import { GameMenuModal } from './components/GameMenuModal';
 import { TutorialOverlay, TUTORIAL_STORAGE_KEY } from './components/TutorialOverlay';
+import { LoopingVideo } from './components/LoopingVideo';
 import { sound } from './audio/sound';
 import confetti from 'canvas-confetti';
 
@@ -330,11 +331,7 @@ export const App: React.FC = () => {
     return (
       <main className="fixed inset-0 bg-[#05030b] flex flex-col items-center justify-center p-6 text-center z-50 overflow-hidden">
         {/* Ambient Victory / Defeat Background Video with Static Poster Fallback */}
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
+        <LoopingVideo
           aria-hidden="true"
           poster={isWinner ? '/assets/art/astral_portal.jpg' : '/assets/art/void_devourer.jpg'}
           className="absolute inset-0 w-full h-full object-cover opacity-25 pointer-events-none filter blur-sm"
@@ -345,11 +342,7 @@ export const App: React.FC = () => {
         <div className="relative max-w-md w-full bg-[#120a26]/95 border-2 border-yellow-500 rounded-3xl p-8 shadow-golden flex flex-col items-center z-10">
           {/* Result Cinematic Video Badge */}
           <div className="relative w-24 h-24 rounded-2xl overflow-hidden border-2 border-yellow-500/70 shadow-lg mb-3 bg-black/90 flex items-center justify-center">
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
+            <LoopingVideo
               poster={isWinner ? '/assets/art/hero_chronos.jpg' : '/assets/art/void_devourer.jpg'}
               className="w-full h-full object-cover"
               src={isWinner ? '/assets/video/elemental_burst.mp4' : '/assets/video/defeat_monster.mp4'}
@@ -540,7 +533,7 @@ export const App: React.FC = () => {
           </div>
         )}
 
-        <main className="w-full flex-1 flex flex-col justify-start p-2 sm:p-4 overflow-y-auto gap-2 sm:gap-3">
+        <main className="w-full flex-1 flex flex-col justify-start p-2 sm:p-4 overflow-y-auto scroll-stable gap-2 sm:gap-3">
           <TavernShop
             player={human}
             forecastOdds={combatOdds}

@@ -30,6 +30,11 @@
   background: #c89b3c;
 }
 
+/* Stable Scrollbar Gutter to prevent content jump / layout shift */
+.scroll-stable {
+  scrollbar-gutter: stable;
+}
+
 /* Dark Steel Runic Card Styling */
 .dark-steel-card {
   background: linear-gradient(180deg, #18122c 0%, #0e0a1c 50%, #07040f 100%);

@@ -3,6 +3,7 @@ import { sound } from '../audio/sound';
 import { motion, isReducedMotion } from '../utils/motion';
 import { TIMELINE_LORE } from '../engine/lore';
 import gsap from 'gsap';
+import { LoopingVideo } from './LoopingVideo';
 
 export const TUTORIAL_STORAGE_KEY = 'aabg_tutorial_seen';
 
@@ -166,12 +167,8 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ isOpen, onClos
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn select-none overflow-hidden">
       {/* Dynamic Ambient Cinematic Atmosphere (Tavern / Battleground Arena) */}
-      <video
+      <LoopingVideo
         key={ambientVideoSrc}
-        autoPlay
-        loop
-        muted
-        playsInline
         aria-hidden="true"
         poster={ambientPoster}
         className="absolute inset-0 w-full h-full object-cover opacity-30 pointer-events-none filter blur-[2px] transition-opacity duration-700"

@@ -7,6 +7,7 @@ import { CombatVFXCanvas, VFXHandle } from './CombatVFXCanvas';
 import { VictoryCelebrationVFX } from './VictoryCelebrationVFX';
 import { sound } from '../audio/sound';
 import { motion } from '../utils/motion';
+import { LoopingVideo } from './LoopingVideo';
 
 interface CombatArena3DProps {
   player: PlayerState;
@@ -396,11 +397,7 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
   return (
     <main className="relative w-full h-screen overflow-hidden bg-[#06030e] flex flex-col justify-between p-2 sm:p-4">
       {/* Dynamic Battleground Atmospheric Loop */}
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
+      <LoopingVideo
         poster="/assets/art/runic_table.jpg"
         className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none filter blur-[1px]"
         src="/assets/video/tutorial_arena.mp4"
@@ -601,7 +598,7 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
 
       {/* Hero-Themed Streak-Scaled Victory / Defeat Modal */}
       {combatFinished && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex flex-col items-center justify-start sm:justify-center z-50 animate-fadeIn p-4 sm:p-6 overflow-y-auto">
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex flex-col items-center justify-start sm:justify-center z-50 animate-fadeIn p-4 sm:p-6 overflow-y-auto scroll-stable">
           <div className={`max-w-md w-full my-auto bg-[#140b2b]/95 border-2 rounded-2xl sm:rounded-3xl p-4 sm:p-6 text-center flex flex-col items-center shadow-2xl ${
             playerWon
               ? effectiveWinStreak >= 3
@@ -632,11 +629,7 @@ export const CombatArena3D: React.FC<CombatArena3DProps> = ({
 
             {/* Cinematic Result Emblem Video */}
             <div className="relative w-20 h-20 rounded-2xl overflow-hidden border border-yellow-500/40 mb-2 shadow-lg bg-black/80 flex items-center justify-center">
-              <video
-                autoPlay
-                loop
-                muted
-                playsInline
+              <LoopingVideo
                 className="w-full h-full object-cover object-center"
                 src={playerWon ? '/assets/video/elemental_burst.mp4' : isTie ? '/assets/video/tutorial_arena.mp4' : '/assets/video/defeat_monster.mp4'}
               />

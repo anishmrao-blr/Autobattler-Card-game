@@ -9,6 +9,7 @@ import { PlayerState } from '../types';
 import { calculateCardFan } from '../hooks/useCardFan';
 import { getFactionForHero } from '../engine/lore';
 import { resolveTargetIndex } from '../hooks/useCardReorder';
+import { LoopingVideo } from '../components/LoopingVideo';
 
 describe('Aetherium Engine - Shared Pool & Tavern', () => {
   let pool: SharedCardPool;
@@ -882,6 +883,13 @@ describe('useCardReorder - resolveTargetIndex Threshold & Clamping', () => {
   it('safely handles edge cases like 0 slotPitch or 0 itemCount', () => {
     expect(resolveTargetIndex(100, 1, 0, SLOT_PITCH)).toBe(1);
     expect(resolveTargetIndex(100, 1, ITEM_COUNT, 0)).toBe(1);
+  });
+});
+
+describe('LoopingVideo Component', () => {
+  it('is defined and exported properly', () => {
+    expect(LoopingVideo).toBeDefined();
+    expect(typeof LoopingVideo).toBe('function');
   });
 });
 

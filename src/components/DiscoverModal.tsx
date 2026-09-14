@@ -4,6 +4,7 @@ import { CardView } from './CardView';
 import { sound } from '../audio/sound';
 import { motion, isReducedMotion } from '../utils/motion';
 import gsap from 'gsap';
+import { LoopingVideo } from './LoopingVideo';
 
 interface DiscoverModalProps {
   options: MinionCard[];
@@ -70,18 +71,14 @@ export const DiscoverModal: React.FC<DiscoverModalProps> = ({ options, tier, onC
   }, []);
 
   return (
-    <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex flex-col items-center justify-start sm:justify-center z-50 animate-fadeIn p-3 sm:p-4 overflow-y-auto">
+    <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex flex-col items-center justify-start sm:justify-center z-50 animate-fadeIn p-3 sm:p-4 overflow-y-auto scroll-stable">
       <div
         ref={modalRef}
         className="relative max-w-3xl w-full my-auto bg-gradient-to-b from-[#1c1236] via-[#100a21] to-[#080412] border-2 border-yellow-400 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-golden flex flex-col items-center text-center overflow-hidden"
       >
         {/* Flow Video Artifact & Radial Glow Slot (discover_reveal_burst.mp4) */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl sm:rounded-3xl z-0">
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
+          <LoopingVideo
             className="absolute inset-0 w-full h-full object-cover object-center opacity-35 filter blur-[1px]"
             src="/assets/video/discover_reveal_burst.mp4"
             onError={(e) => {
@@ -96,11 +93,7 @@ export const DiscoverModal: React.FC<DiscoverModalProps> = ({ options, tier, onC
           ref={chestRef}
           className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border border-yellow-400/60 shadow-[0_0_25px_rgba(234,179,8,0.5)] mb-2 sm:mb-3 bg-black/80 z-10"
         >
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
+          <LoopingVideo
             className="w-full h-full object-cover"
             src="/assets/video/reward_chest.mp4"
           />

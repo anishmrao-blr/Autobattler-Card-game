@@ -1,4 +1,5 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
+import { LoopingVideo } from './LoopingVideo';
 
 interface CardMediaArtProps {
   artUrl: string;
@@ -22,7 +23,6 @@ export const CardMediaArt: React.FC<CardMediaArtProps> = ({
 }) => {
   const [videoFailed, setVideoFailed] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const zoomClass = hoverZoom
     ? 'transform transition-transform duration-300 group-hover:scale-110'
@@ -31,14 +31,9 @@ export const CardMediaArt: React.FC<CardMediaArtProps> = ({
   return (
     <div className="relative w-full h-full overflow-hidden bg-black/80 flex items-center justify-center">
       {videoUrl && !videoFailed ? (
-        <video
-          ref={videoRef}
+        <LoopingVideo
           src={videoUrl}
           poster={artUrl}
-          autoPlay
-          loop
-          muted
-          playsInline
           draggable={false}
           onError={() => setVideoFailed(true)}
           className={`${className} ${zoomClass} transition-opacity duration-300 ${
