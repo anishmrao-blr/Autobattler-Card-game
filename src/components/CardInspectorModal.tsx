@@ -79,15 +79,36 @@ export const CardInspectorModal: React.FC<CardInspectorModalProps> = ({
   const health = showGolden && !boardMinion?.isGolden ? baseHealth * 2 : baseHealth;
   const artUrl = boardMinion?.artUrl || card?.artUrl || TRIBE_ART_MAP[tribe] || '/assets/art/hero_chronos.jpg';
 
+  const [holoStyle, setHoloStyle] = useState<React.CSSProperties>({
+    '--holo-x': '50%',
+    '--holo-y': '50%',
+    '--holo-angle': '115deg',
+    '--holo-opacity': '0',
+  } as React.CSSProperties);
+
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isReducedMotion()) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left - rect.width / 2;
     const y = e.clientY - rect.top - rect.height / 2;
     setRotate({ x: -y / 15, y: x / 15 });
+
+    if (showGolden) {
+      const px = (e.clientX - rect.left) / rect.width;
+      const py = (e.clientY - rect.top) / rect.height;
+      const angle = Math.atan2(py - 0.5, px - 0.5) * (180 / Math.PI) + 90;
+      setHoloStyle({
+        '--holo-x': `${(px * 100).toFixed(1)}%`,
+        '--holo-y': `${(py * 100).toFixed(1)}%`,
+        '--holo-angle': `${angle.toFixed(1)}deg`,
+        '--holo-opacity': '0.85',
+      } as React.CSSProperties);
+    }
   };
 
   const handleMouseLeave = () => {
     setRotate({ x: 0, y: 0 });
+    setHoloStyle(prev => ({ ...prev, '--holo-opacity': '0' }));
   };
 
   return (
@@ -133,10 +154,19 @@ export const CardInspectorModal: React.FC<CardInspectorModalProps> = ({
               ${showGolden ? 'golden-steel-card shimmer-foil' : 'dark-steel-card'}
             `}
             style={{
+              ...holoStyle,
               transform: `rotateX(${rotate.x}deg) rotateY(${rotate.y}deg) scale3d(1.02, 1.02, 1.02)`,
               transformStyle: 'preserve-3d',
             }}
           >
+            {/* Dynamic Holographic Foil Specular Sheen for Golden Cards */}
+            {showGolden && (
+              <>
+                <div className="holo-specular-sheen" />
+                <div className="holo-rainbow-stripes" />
+              </>
+            )}
+
             {/* Header Plaque */}
             <div className="flex items-center justify-between gap-1 z-10">
               <div className="flex items-center gap-0.5 bg-black/80 px-2 py-0.5 rounded-md border border-yellow-500/60 text-xs text-yellow-400 font-bold">

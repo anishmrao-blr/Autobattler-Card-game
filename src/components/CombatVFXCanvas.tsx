@@ -1134,6 +1134,7 @@ export const CombatVFXCanvas = forwardRef<VFXHandle, { className?: string }>(({ 
       const textures = texturesRef.current;
       if (!bloom) return;
 
+      // 1. Center fiery core burst
       const wave = new Sprite(textures.slash2 || textures.glowRing || textures.sparkSoft);
       wave.anchor.set(0.5);
       wave.position.set(x, y);
@@ -1156,6 +1157,69 @@ export const CombatVFXCanvas = forwardRef<VFXHandle, { className?: string }>(({ 
         onComplete: () => {
           bloom.removeChild(wave);
           wave.destroy();
+        },
+      });
+
+      // 2. Dual Left and Right Arc Shockwaves (Hearthstone Cleave / Sweep physics)
+      // Left arc shockwave: slices outward left (-32deg, shifts -width*0.85)
+      const leftArc = new Sprite(textures.slash2 || textures.glowRing);
+      leftArc.anchor.set(0.5);
+      leftArc.position.set(x - 10, y);
+      leftArc.rotation = -0.55;
+      leftArc.tint = '#ff3300';
+      leftArc.blendMode = 'add';
+      leftArc.scale.set(0.3, 0.3);
+      bloom.addChild(leftArc);
+
+      gsap.to(leftArc.position, {
+        x: x - (width * 0.85),
+        duration: 0.35,
+        ease: 'power2.out',
+      });
+      gsap.to(leftArc.scale, {
+        x: 1.5,
+        y: 0.9,
+        duration: 0.35,
+        ease: 'power2.out',
+      });
+      gsap.to(leftArc, {
+        alpha: 0,
+        duration: 0.35,
+        ease: 'power2.out',
+        onComplete: () => {
+          bloom.removeChild(leftArc);
+          leftArc.destroy();
+        },
+      });
+
+      // Right arc shockwave: slices outward right (+32deg, shifts +width*0.85)
+      const rightArc = new Sprite(textures.slash2 || textures.glowRing);
+      rightArc.anchor.set(0.5);
+      rightArc.position.set(x + 10, y);
+      rightArc.rotation = 0.55;
+      rightArc.tint = '#ffaa00';
+      rightArc.blendMode = 'add';
+      rightArc.scale.set(0.3, 0.3);
+      bloom.addChild(rightArc);
+
+      gsap.to(rightArc.position, {
+        x: x + (width * 0.85),
+        duration: 0.35,
+        ease: 'power2.out',
+      });
+      gsap.to(rightArc.scale, {
+        x: 1.5,
+        y: 0.9,
+        duration: 0.35,
+        ease: 'power2.out',
+      });
+      gsap.to(rightArc, {
+        alpha: 0,
+        duration: 0.35,
+        ease: 'power2.out',
+        onComplete: () => {
+          bloom.removeChild(rightArc);
+          rightArc.destroy();
         },
       });
     },

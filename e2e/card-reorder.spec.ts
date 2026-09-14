@@ -289,5 +289,48 @@ test.describe('Tactile TCG Card Reorder', () => {
       path: path.join(ARTIFACT_DIR, screenshotName),
     });
   });
+
+  test('renders dynamic holographic foil and 3D tilt in card inspector', async ({ page, isMobile }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: /ENTER THE AETHERIUM/i }).click();
+    await expect(page.getByText(/Select your Commander/i)).toBeVisible({ timeout: 10_000 });
+    await page.getByRole('button', { name: /CHOOSE COMMANDER/i }).first().click();
+
+    // Skip tutorial
+    await expect(page.getByText('WELCOME TO THE AETHERIUM')).toBeVisible({ timeout: 10_000 });
+    await page.getByRole('button', { name: /SKIP TUTORIAL/i }).click();
+
+    // Open inspector on the first shop card
+    const inspectBtn = page.getByTitle('Zoom & Inspect Artwork').first();
+    await inspectBtn.click();
+    await expect(page.getByText(/Tribe Affinity/i)).toBeVisible({ timeout: 5000 });
+
+    // Click to preview Golden Form
+    const goldenToggle = page.getByRole('button', { name: /Preview Golden Form/i });
+    await goldenToggle.click();
+    await page.waitForTimeout(300);
+
+    // Verify holographic specular sheen and rainbow stripes are mounted
+    const holoSheen = page.locator('.holo-specular-sheen');
+    const holoRainbow = page.locator('.holo-rainbow-stripes');
+    await expect(holoSheen).toBeVisible({ timeout: 5000 });
+    await expect(holoRainbow).toBeVisible({ timeout: 5000 });
+
+    // Test 3D pointer parallax tilt on desktop
+    if (!isMobile) {
+      const cardBox = await page.locator('.perspective-1000').boundingBox();
+      if (cardBox) {
+        await page.mouse.move(cardBox.x + 40, cardBox.y + 40);
+        await page.waitForTimeout(200);
+      }
+    }
+
+    // Capture screenshot of dynamic golden holographic foil in inspector
+    const screenshotName = isMobile ? 'batch2_golden_holo_mobile.png' : 'batch2_golden_holo_desktop.png';
+    await page.screenshot({
+      path: path.join(ARTIFACT_DIR, screenshotName),
+    });
+  });
 });
+
 

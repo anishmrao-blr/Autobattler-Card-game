@@ -4,6 +4,7 @@ import { TRIBE_ART_MAP } from '../engine/cards';
 import { CardHoverPreview } from './CardHoverPreview';
 import { CardMediaArt } from './CardMediaArt';
 import { sound } from '../audio/sound';
+import { isReducedMotion } from '../utils/motion';
 
 interface CardViewProps {
   card?: MinionCard;
@@ -125,13 +126,43 @@ export const CardView: React.FC<CardViewProps> = ({
     hoverTimerRef.current = setTimeout(showPreviewNow, 350);
   };
 
-  const handleMouseLeave = () => {
+  const [holoStyle, setHoloStyle] = useState<React.CSSProperties>({
+    '--holo-x': '50%',
+    '--holo-y': '50%',
+    '--holo-angle': '115deg',
+    '--holo-opacity': '0',
+  } as React.CSSProperties);
+  const [tiltTransform, setTiltTransform] = useState<string | undefined>(undefined);
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isGolden || isReducedMotion()) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width;
+    const py = (e.clientY - rect.top) / rect.height;
+    const tiltX = (py - 0.5) * -12;
+    const tiltY = (px - 0.5) * 12;
+    const angle = Math.atan2(py - 0.5, px - 0.5) * (180 / Math.PI) + 90;
+
+    setTiltTransform(`perspective(600px) rotateX(${tiltX.toFixed(1)}deg) rotateY(${tiltY.toFixed(1)}deg) scale3d(1.03, 1.03, 1.03)`);
+    setHoloStyle({
+      '--holo-x': `${(px * 100).toFixed(1)}%`,
+      '--holo-y': `${(py * 100).toFixed(1)}%`,
+      '--holo-angle': `${angle.toFixed(1)}deg`,
+      '--holo-opacity': '0.75',
+    } as React.CSSProperties);
+  };
+
+  const handlePointerLeave = () => {
     if (useTapToPreview) return;
     if (hoverTimerRef.current) {
       clearTimeout(hoverTimerRef.current);
       hoverTimerRef.current = null;
     }
     setHoverPosition(null);
+    if (isGolden) {
+      setTiltTransform(undefined);
+      setHoloStyle(prev => ({ ...prev, '--holo-opacity': '0' }));
+    }
   };
 
   const handleActivate = () => {
@@ -196,8 +227,13 @@ export const CardView: React.FC<CardViewProps> = ({
         onClick={!disabled ? handleActivate : undefined}
         onContextMenu={handleContextMenu}
         onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
+        onPointerMove={handlePointerMove}
+        onPointerLeave={handlePointerLeave}
         onDragStart={(e) => e.preventDefault()}
+        style={{
+          ...holoStyle,
+          transform: tiltTransform || undefined,
+        }}
         className={`
           relative select-none flex flex-col justify-between rounded-2xl p-1.5 transition-transform duration-200 ease-out cursor-pointer overflow-hidden group/card
           ${sizeDimensions}
@@ -211,6 +247,14 @@ export const CardView: React.FC<CardViewProps> = ({
           ${disabled ? 'opacity-50 cursor-not-allowed grayscale' : ''}
         `}
       >
+      {/* Dynamic Holographic Foil Specular Sheen for Golden Minions */}
+      {isGolden && (
+        <>
+          <div className="holo-specular-sheen" />
+          <div className="holo-rainbow-stripes" />
+        </>
+      )}
+
       {/* Hexagonal Forcefield Barrier Overlay */}
       {hasBarrier && (
         <div className="absolute inset-0 rounded-2xl border-2 border-cyan-400/90 bg-cyan-400/20 hex-barrier pointer-events-none z-30 flex items-center justify-center overflow-hidden">

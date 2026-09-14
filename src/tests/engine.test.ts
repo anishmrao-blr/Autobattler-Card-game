@@ -686,5 +686,114 @@ describe('Batch 1 Polish - HearthSim Monte Carlo Odds Predictor', () => {
   });
 });
 
+describe('Batch 2 Polish - HearthSim 0-Attack Pass Rule', () => {
+  let combat: CombatResolver;
+  let basePlayer: PlayerState;
+
+  beforeEach(() => {
+    combat = new CombatResolver();
+    basePlayer = {
+      id: 'p1',
+      name: 'Player 1',
+      isHuman: true,
+      avatar: '⚙️',
+      hero: HERO_DATABASE[0],
+      hp: 30,
+      maxHp: 30,
+      coins: 10,
+      maxCoins: 10,
+      tavernTier: 1,
+      tierUpgradeCost: 5,
+      isFrozen: false,
+      hand: [],
+      board: [],
+      tavernSlots: [],
+      triplesFound: 0,
+      winStreak: 0,
+      isEliminated: false,
+    };
+  });
+
+  it('skips 0-attack minion and selects the first minion with > 0 attack', () => {
+    const zeroAtkMinion = {
+      ...createBoardMinion(MINION_DATABASE[0]),
+      attack: 0,
+      health: 10,
+      name: '0-Atk Egg',
+    };
+    const regularAttacker = {
+      ...createBoardMinion(MINION_DATABASE[1]),
+      attack: 5,
+      health: 5,
+      name: 'Attacker 5/5',
+    };
+    const enemyDefender = {
+      ...createBoardMinion(MINION_DATABASE[2]),
+      attack: 2,
+      health: 4,
+      name: 'Defender 2/4',
+    };
+
+    const p1 = { ...basePlayer, board: [zeroAtkMinion, regularAttacker] };
+    const p2 = { ...basePlayer, id: 'p2', name: 'Opponent', board: [enemyDefender] };
+
+    const result = combat.simulate1v1(p1, p2);
+    // Find the first attack event
+    const firstAttack = result.events.find(e => e.type === 'ATTACK_START');
+    expect(firstAttack).toBeDefined();
+    // Attacker must be regularAttacker (5/5), NOT zeroAtkMinion (0/10)
+    expect(firstAttack?.attackerId).toBe(regularAttacker.instanceId);
+  });
+
+  it('passes turn when all minions on one side have 0 attack', () => {
+    const zeroAtkWall = {
+      ...createBoardMinion(MINION_DATABASE[0]),
+      attack: 0,
+      health: 8,
+      name: '0-Atk Wall',
+    };
+    const enemyAttacker = {
+      ...createBoardMinion(MINION_DATABASE[1]),
+      attack: 4,
+      health: 4,
+      name: 'Enemy Slasher 4/4',
+    };
+
+    const p1 = { ...basePlayer, board: [zeroAtkWall] };
+    const p2 = { ...basePlayer, id: 'p2', name: 'Opponent', board: [enemyAttacker] };
+
+    const result = combat.simulate1v1(p1, p2);
+    // Enemy should win because 0-Atk wall cannot hit back when initiating
+    expect(result.winnerSide).toBe(2);
+    // All attacks must come from enemy attacker
+    const attacks = result.events.filter(e => e.type === 'ATTACK_START');
+    expect(attacks.every(a => a.attackerId === enemyAttacker.instanceId)).toBe(true);
+  });
+
+  it('immediately terminates in a Draw when both sides have only 0-attack minions', () => {
+    const wall1 = {
+      ...createBoardMinion(MINION_DATABASE[0]),
+      attack: 0,
+      health: 10,
+    };
+    const wall2 = {
+      ...createBoardMinion(MINION_DATABASE[1]),
+      attack: 0,
+      health: 10,
+    };
+
+    const p1 = { ...basePlayer, board: [wall1] };
+    const p2 = { ...basePlayer, id: 'p2', name: 'Opponent', board: [wall2] };
+
+    const result = combat.simulate1v1(p1, p2);
+    expect(result.winnerSide).toBe(0);
+    expect(result.damageDealt).toBe(0);
+    // No attacks should have occurred
+    const attacks = result.events.filter(e => e.type === 'ATTACK_START');
+    expect(attacks.length).toBe(0);
+  });
+});
+
+
 
 

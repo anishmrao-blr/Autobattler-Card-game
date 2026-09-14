@@ -70,15 +70,25 @@ export class CombatResolver {
     while (this.hasLivingMinions(board1) && this.hasLivingMinions(board2) && turnCount < MAX_TURNS) {
       turnCount++;
 
+      // HearthSim 0-Attack Pass Rule: If neither side can attack, terminate immediately as Draw
+      if (!this.hasLivingAttackers(board1) && !this.hasLivingAttackers(board2)) {
+        break;
+      }
+
       if (currentSide === 1) {
-        if (!this.hasLivingMinions(board1)) {
+        if (!this.hasLivingAttackers(board1)) {
           currentSide = 2;
           continue;
         }
 
-        const livingAttacking = board1.filter(m => m.health > 0);
-        if (p1Cursor >= livingAttacking.length) p1Cursor = 0;
-        const attacker = livingAttacking[p1Cursor];
+        const attackInfo = this.findNextAttacker(board1, p1Cursor);
+        if (!attackInfo) {
+          currentSide = 2;
+          continue;
+        }
+
+        const { attacker, nextCursor } = attackInfo;
+        p1Cursor = nextCursor;
 
         const defender = this.selectDefender(board2);
         if (attacker && defender) {
@@ -93,17 +103,21 @@ export class CombatResolver {
           }
         }
 
-        p1Cursor++;
         currentSide = 2;
       } else {
-        if (!this.hasLivingMinions(board2)) {
+        if (!this.hasLivingAttackers(board2)) {
           currentSide = 1;
           continue;
         }
 
-        const livingAttacking = board2.filter(m => m.health > 0);
-        if (p2Cursor >= livingAttacking.length) p2Cursor = 0;
-        const attacker = livingAttacking[p2Cursor];
+        const attackInfo = this.findNextAttacker(board2, p2Cursor);
+        if (!attackInfo) {
+          currentSide = 1;
+          continue;
+        }
+
+        const { attacker, nextCursor } = attackInfo;
+        p2Cursor = nextCursor;
 
         const defender = this.selectDefender(board1);
         if (attacker && defender) {
@@ -118,7 +132,6 @@ export class CombatResolver {
           }
         }
 
-        p2Cursor++;
         currentSide = 1;
       }
     }
@@ -224,6 +237,29 @@ export class CombatResolver {
 
   private hasLivingMinions(board: BoardMinion[]): boolean {
     return board.some(m => m.health > 0);
+  }
+
+  private hasLivingAttackers(board: BoardMinion[]): boolean {
+    return board.some(m => m.health > 0 && m.attack > 0);
+  }
+
+  private findNextAttacker(
+    board: BoardMinion[],
+    cursor: number
+  ): { attacker: BoardMinion; nextCursor: number } | null {
+    const living = board.filter(m => m.health > 0);
+    if (living.length === 0) return null;
+
+    for (let i = 0; i < living.length; i++) {
+      const idx = (cursor + i) % living.length;
+      if (living[idx].attack > 0) {
+        return {
+          attacker: living[idx],
+          nextCursor: (idx + 1) % living.length,
+        };
+      }
+    }
+    return null;
   }
 
   private selectDefender(board: BoardMinion[]): BoardMinion | undefined {

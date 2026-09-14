@@ -107,6 +107,46 @@
   100% { transform: translateX(120%) rotate(25deg); }
 }
 
+/* Dynamic Holographic Foil Overlay (Pokemon Pack & Hearthstone Golden Minion physics) */
+.holo-specular-sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    circle 150px at var(--holo-x, 50%) var(--holo-y, 50%),
+    rgba(255, 255, 255, 0.5) 0%,
+    rgba(255, 215, 0, 0.3) 25%,
+    rgba(0, 240, 255, 0.35) 45%,
+    rgba(255, 42, 95, 0.3) 65%,
+    transparent 85%
+  );
+  mix-blend-mode: color-dodge;
+  opacity: var(--holo-opacity, 0);
+  transition: opacity 250ms ease-out;
+  z-index: 35;
+}
+
+.holo-rainbow-stripes {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    var(--holo-angle, 115deg),
+    transparent 10%,
+    rgba(255, 215, 0, 0.25) 25%,
+    rgba(0, 255, 200, 0.3) 40%,
+    rgba(238, 130, 238, 0.3) 55%,
+    rgba(255, 165, 0, 0.25) 70%,
+    transparent 90%
+  );
+  mix-blend-mode: overlay;
+  opacity: var(--holo-opacity, 0);
+  transition: opacity 250ms ease-out;
+  z-index: 36;
+}
+
 /* Hexagonal Forcefield Pulse */
 @keyframes hexPulse {
   0%, 100% {
