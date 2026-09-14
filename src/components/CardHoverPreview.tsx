@@ -39,19 +39,25 @@ export const CardHoverPreview: React.FC<CardHoverPreviewProps> = ({
   const tribeInfo = TRIBE_COLORS[tribe];
 
   // Smart horizontal & vertical positioning so the preview never covers the hovered card
-  const previewWidth = 320;
   const windowWidth = typeof window !== 'undefined' ? window.innerWidth : 1280;
   const windowHeight = typeof window !== 'undefined' ? window.innerHeight : 720;
 
-  const showOnRight = position.x + position.width + previewWidth + 24 <= windowWidth;
-  const leftPos = showOnRight
+  // A side panel needs real desktop-width real estate; below that there's no
+  // room to place it beside the card without going off-screen, so it centers
+  // in the viewport instead of trying to dodge the card.
+  const fitsBeside = windowWidth >= 640;
+  const previewWidth = fitsBeside ? 320 : Math.min(320, windowWidth - 32);
+
+  const showOnRight = fitsBeside && position.x + position.width + previewWidth + 24 <= windowWidth;
+  const leftPos = !fitsBeside
+    ? (windowWidth - previewWidth) / 2
+    : showOnRight
     ? position.x + position.width + 12
     : Math.max(12, position.x - previewWidth - 12);
 
-  const topPos = Math.max(
-    16,
-    Math.min(position.y - 40, windowHeight - 460)
-  );
+  const topPos = !fitsBeside
+    ? Math.max(16, Math.min(windowHeight * 0.5 - 230, windowHeight - 460))
+    : Math.max(16, Math.min(position.y - 40, windowHeight - 460));
 
   return (
     <div
@@ -154,7 +160,7 @@ export const CardHoverPreview: React.FC<CardHoverPreviewProps> = ({
           </div>
 
           <div className="text-[10px] text-amber-400/80 font-cinzel text-center">
-            Right-click or click 🔍 to inspect full 3D card
+            Tap 🔍 to inspect full 3D card
           </div>
         </div>
       </div>

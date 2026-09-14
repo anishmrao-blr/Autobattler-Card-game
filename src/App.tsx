@@ -110,10 +110,14 @@ export const App: React.FC = () => {
 
   const handleSelectHero = (hero: Hero) => {
     const game = gameRef.current;
-    setTimeLeft(70);
+    const isFirstEverMatch = typeof window !== 'undefined' && !localStorage.getItem(TUTORIAL_STORAGE_KEY);
+    // A brand-new player's first turn is genuinely harder than every turn
+    // after it - unfamiliar shop, unfamiliar keywords - so it gets extra
+    // real time on top of the standard 70s. Returning players are unaffected.
+    setTimeLeft(isFirstEverMatch ? 100 : 70);
     game.initGame(hero, playerCallsign || 'Commander Player');
     syncState();
-    if (typeof window !== 'undefined' && !localStorage.getItem(TUTORIAL_STORAGE_KEY)) {
+    if (isFirstEverMatch) {
       setShowTutorial(true);
     }
   };
@@ -477,7 +481,7 @@ export const App: React.FC = () => {
           </div>
         )}
 
-        <main className="w-full flex-1 flex flex-col justify-between p-2 sm:p-4 overflow-y-auto gap-2 sm:gap-3">
+        <main className="w-full flex-1 flex flex-col justify-start p-2 sm:p-4 overflow-y-auto gap-2 sm:gap-3">
           <TavernShop
             player={human}
             onBuyMinion={handleBuyMinion}

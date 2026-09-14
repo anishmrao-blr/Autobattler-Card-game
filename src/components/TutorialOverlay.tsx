@@ -59,7 +59,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     title: 'COMBAT KEYWORDS & INSPECTION',
     subtitle: 'Synergies & Strategic Triggers',
     description:
-      'Hover over any card for 350ms to preview combat stats, abilities, and inline keyword definitions (Bastion, Aether Barrier, Surge, Last Gasp, Miasmic). Right-click or click 🔍 to view full 3D card art.',
+      'Tap any shop card once to preview its combat stats, abilities, and inline keyword definitions (Bastion, Aether Barrier, Surge, Last Gasp, Miasmic) before you buy — tap it again to confirm the purchase. Tap 🔍 to view full 3D card art.',
     icon: '🔍',
     badge: 'CARD CLARITY',
     tip: 'Synergies between tribes (Automata, Voidborn, Alchemist, Celestial, Beast, Pirate) grant immense scaling power.',
@@ -82,7 +82,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
       'Once your warband is prepared, click "Engage Combat" or wait for the round timer. Combat is fully automated with physical shockwaves, particle blooming, and real-time damage calculation.',
     icon: '🔥',
     badge: 'ENGAGE HOSTILES',
-    tip: 'You can replay this tutorial anytime via the Game Menu (Esc or ⚙️ icon in top-right).',
+    tip: 'You can replay this tutorial anytime via the ⚙️ icon in the top-right (or Esc on desktop).',
   },
 ];
 

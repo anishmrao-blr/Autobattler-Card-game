@@ -50,18 +50,24 @@ export const HandTray: React.FC<HandTrayProps> = ({
               </span>
             )}
           </div>
-          <div className="text-[11px] text-slate-400 font-sans hidden lg:block">
-            <span className="text-purple-300 font-bold">Click card in hand to deploy</span>
+          <div className="hidden sm:block text-[11px] text-slate-400 font-sans flex-shrink-0">
+            <span className="text-purple-300 font-bold">Tap a card in hand to deploy</span>
           </div>
         </div>
 
         {/* Hand Cards Horizontal Scroll */}
-        <div className="flex items-center gap-2 overflow-x-auto py-1 px-2 scrollbar-thin">
+        <div
+          className="flex items-center gap-2 overflow-x-auto snap-x snap-mandatory scroll-smooth py-1 px-2"
+          style={{
+            WebkitMaskImage: 'linear-gradient(to right, transparent 0, black 16px, black calc(100% - 16px), transparent 100%)',
+            maskImage: 'linear-gradient(to right, transparent 0, black 16px, black calc(100% - 16px), transparent 100%)',
+          }}
+        >
           {hand.length > 0 ? (
             hand.map((card, idx) => (
               <div
                 key={idx}
-                className="transform transition-transform hover:-translate-y-4 hover:z-20 cursor-pointer flex-shrink-0"
+                className="transform transition-transform hover:-translate-y-4 hover:z-20 cursor-pointer flex-shrink-0 snap-center"
               >
                 <CardView
                   card={card}

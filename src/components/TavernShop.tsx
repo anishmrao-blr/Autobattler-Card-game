@@ -126,12 +126,14 @@ export const TavernShop: React.FC<TavernShopProps> = ({
       </div>
 
       {/* Shop Board */}
-      <div 
-        className="flex items-center justify-start sm:justify-center gap-2.5 sm:gap-3 min-h-[240px] p-2.5 sm:p-4 rounded-2xl border-2 border-[#524775]/60 shadow-[0_12px_32px_rgba(0,0,0,0.9)] relative overflow-x-auto scrollbar-thin"
+      <div
+        className="flex items-center justify-start sm:justify-center gap-2.5 sm:gap-3 min-h-[240px] p-2.5 sm:p-4 rounded-2xl border-2 border-[#524775]/60 shadow-[0_12px_32px_rgba(0,0,0,0.9)] relative overflow-x-auto snap-x snap-mandatory scroll-smooth"
         style={{
           backgroundImage: 'radial-gradient(rgba(18, 12, 38, 0.75), rgba(7, 4, 16, 0.94)), url(/assets/art/runic_table.jpg)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
+          WebkitMaskImage: 'linear-gradient(to right, transparent 0, black 20px, black calc(100% - 20px), transparent 100%)',
+          maskImage: 'linear-gradient(to right, transparent 0, black 20px, black calc(100% - 20px), transparent 100%)',
         }}
       >
         {player.tavernSlots.length > 0 ? (
@@ -139,7 +141,7 @@ export const TavernShop: React.FC<TavernShopProps> = ({
             const cost = (player.hero.id === 'hero_chronos' && minion.tribe === 'AUTOMATA') ? 2 : 3;
             const canAfford = player.coins >= cost && player.hand.length < 10;
             return (
-              <div key={idx} className="relative group">
+              <div key={idx} className="relative group snap-center">
                 <CardView
                   card={minion}
                   showPrice={true}

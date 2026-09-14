@@ -89,19 +89,44 @@ export const CardView: React.FC<CardViewProps> = ({
 
   const cardRef = useRef<HTMLDivElement | null>(null);
   const hoverTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const armedTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [hoverPosition, setHoverPosition] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const [tapArmed, setTapArmed] = useState(false);
+
+  // No hover on touch, so a mouseenter/click racing off the same tap is what
+  // caused a tap to sometimes preview and sometimes instantly buy. Touch
+  // devices get an explicit two-step flow instead, scoped to the shop
+  // (showPrice) where an accidental purchase is the actual risk - hand and
+  // board cards keep their existing single-tap behavior.
+  const isTouchDevice = useRef(
+    typeof window !== 'undefined' && window.matchMedia('(hover: none)').matches
+  ).current;
+  const useTapToPreview = isTouchDevice && showPrice;
+
+  const showPreviewNow = () => {
+    if (cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect();
+      setHoverPosition({ x: rect.left, y: rect.top, width: rect.width, height: rect.height });
+    }
+  };
+
+  const dismissPreview = () => {
+    setTapArmed(false);
+    setHoverPosition(null);
+    if (armedTimerRef.current) {
+      clearTimeout(armedTimerRef.current);
+      armedTimerRef.current = null;
+    }
+  };
 
   const handleMouseEnter = () => {
+    if (useTapToPreview) return;
     if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
-    hoverTimerRef.current = setTimeout(() => {
-      if (cardRef.current) {
-        const rect = cardRef.current.getBoundingClientRect();
-        setHoverPosition({ x: rect.left, y: rect.top, width: rect.width, height: rect.height });
-      }
-    }, 350);
+    hoverTimerRef.current = setTimeout(showPreviewNow, 350);
   };
 
   const handleMouseLeave = () => {
+    if (useTapToPreview) return;
     if (hoverTimerRef.current) {
       clearTimeout(hoverTimerRef.current);
       hoverTimerRef.current = null;
@@ -109,9 +134,42 @@ export const CardView: React.FC<CardViewProps> = ({
     setHoverPosition(null);
   };
 
+  const handleActivate = () => {
+    if (disabled) return;
+    if (!useTapToPreview) {
+      onClick?.();
+      return;
+    }
+    if (!tapArmed) {
+      setTapArmed(true);
+      showPreviewNow();
+      sound.playCardSnap();
+      // Generous on purpose: this only guards against a preview being left
+      // open indefinitely if the player wanders off. A real decision -
+      // reading ability text and keyword explanations - can easily take
+      // longer than a typical hover-tooltip timeout.
+      armedTimerRef.current = setTimeout(dismissPreview, 15000);
+      return;
+    }
+    dismissPreview();
+    onClick?.();
+  };
+
+  useEffect(() => {
+    if (!tapArmed) return;
+    const handleOutside = (e: PointerEvent) => {
+      if (cardRef.current && !cardRef.current.contains(e.target as Node)) {
+        dismissPreview();
+      }
+    };
+    document.addEventListener('pointerdown', handleOutside, true);
+    return () => document.removeEventListener('pointerdown', handleOutside, true);
+  }, [tapArmed]);
+
   useEffect(() => {
     return () => {
       if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+      if (armedTimerRef.current) clearTimeout(armedTimerRef.current);
     };
   }, []);
 
@@ -135,7 +193,7 @@ export const CardView: React.FC<CardViewProps> = ({
     <>
       <div
         ref={cardRef}
-        onClick={!disabled ? onClick : undefined}
+        onClick={!disabled ? handleActivate : undefined}
         onContextMenu={handleContextMenu}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -144,7 +202,7 @@ export const CardView: React.FC<CardViewProps> = ({
           ${sizeDimensions}
           ${isGolden ? 'golden-steel-card shimmer-foil' : 'dark-steel-card'}
           ${isFrozen ? 'frost-card' : ''}
-          ${isSelected ? 'ring-4 ring-cyan-400 scale-105 shadow-[0_0_25px_rgba(0,240,255,0.7)]' : 'hover:scale-105 hover:shadow-[0_15px_30px_rgba(0,0,0,0.9)]'}
+          ${tapArmed ? 'ring-4 ring-yellow-400 scale-[1.03] shadow-[0_0_25px_rgba(234,179,8,0.6)]' : isSelected ? 'ring-4 ring-cyan-400 scale-105 shadow-[0_0_25px_rgba(0,240,255,0.7)]' : 'hover:scale-105 hover:shadow-[0_15px_30px_rgba(0,0,0,0.9)]'}
           ${isAttacking ? 'scale-110 -translate-y-4 ring-4 ring-yellow-400 z-30' : ''}
           ${isHit ? 'animate-wiggle ring-4 ring-red-500 scale-95 duration-100' : ''}
           ${hasBastion ? 'ring-2 ring-blue-500/80 rounded-2xl' : ''}
@@ -181,7 +239,7 @@ export const CardView: React.FC<CardViewProps> = ({
             onInspect(card, boardMinion);
           }}
           title="Zoom & Inspect Artwork"
-          className="absolute top-2 right-2 bg-black/80 hover:bg-yellow-500 hover:text-black text-yellow-300 border border-yellow-500/60 rounded-full w-5 h-5 flex items-center justify-center text-[10px] opacity-0 group-hover/card:opacity-100 transition-all z-40 shadow-lg"
+          className="absolute top-2 right-2 bg-black/80 hover:bg-yellow-500 hover:text-black text-yellow-300 border border-yellow-500/60 rounded-full w-6 h-6 flex items-center justify-center text-[11px] opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/card:opacity-100 transition-opacity z-40 shadow-lg"
         >
           🔍
         </button>
@@ -197,6 +255,12 @@ export const CardView: React.FC<CardViewProps> = ({
       {barrierBroken && (
         <div className="absolute inset-0 flex items-center justify-center text-cyan-200 font-black text-xl animate-ping z-40">
           SHATTER!
+        </div>
+      )}
+
+      {tapArmed && (
+        <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-yellow-500 text-black font-cinzel font-black text-[10px] px-2.5 py-1 rounded-full shadow-[0_0_15px_rgba(234,179,8,0.8)] z-40 animate-pulse whitespace-nowrap">
+          TAP AGAIN TO BUY
         </div>
       )}
 
@@ -234,9 +298,11 @@ export const CardView: React.FC<CardViewProps> = ({
         </div>
       </div>
 
-      {/* Description Slate Plaque */}
-      <div className="relative steel-text-plaque p-1.5 rounded-lg my-1 flex flex-col justify-between min-h-[46px] z-10">
-        <div className="text-[13px] text-slate-200 line-clamp-2 leading-snug font-sans">
+      {/* Description Slate Plaque - kept to one line; full text is one tap away
+          via the hover/tap preview, so this only needs to signal, not explain.
+          The tier pip row was dropped: tier is already shown as stars above. */}
+      <div className="relative steel-text-plaque p-1.5 rounded-lg my-0.5 min-h-[26px] z-10">
+        <div className="text-[13px] text-slate-200 line-clamp-1 leading-snug font-sans">
           {description ? (
             <span>
               {keywords.map(kw => (
@@ -249,15 +315,6 @@ export const CardView: React.FC<CardViewProps> = ({
           ) : (
             <span className="text-slate-400 italic">No additional combat triggers.</span>
           )}
-        </div>
-
-        {/* 5-Diamond Tier Pips */}
-        <div className="flex items-center justify-center gap-1 mt-0.5 text-[9px]">
-          {[1, 2, 3, 4, 5, 6].map(t => (
-            <span key={t} className={t <= tier ? (isGolden ? 'text-yellow-400' : 'text-purple-400') : 'text-slate-700'}>
-              ◆
-            </span>
-          ))}
         </div>
       </div>
 

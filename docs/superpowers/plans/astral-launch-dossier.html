@@ -1,0 +1,770 @@
+<title>Astral Launch Dossier</title>
+<style>
+  :root {
+    --bg: #e7e1d2;
+    --surface: #f2ede0;
+    --surface-2: #eae3d0;
+    --text: #241f1a;
+    --text-dim: #5c5346;
+    --brass: #8a6423;
+    --brass-soft: #a37b34;
+    --crimson: #8c2c3f;
+    --rule: #cbbfa0;
+    --mono-bg: #ddd4bd;
+    --shadow: rgba(60, 48, 20, 0.15);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d0b16;
+      --surface: #17132a;
+      --surface-2: #1f1836;
+      --text: #ece6da;
+      --text-dim: #b3a8c4;
+      --brass: #c9a04e;
+      --brass-soft: #ddb968;
+      --crimson: #d8586f;
+      --rule: #382c54;
+      --mono-bg: #120f22;
+      --shadow: rgba(0, 0, 0, 0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d0b16;
+    --surface: #17132a;
+    --surface-2: #1f1836;
+    --text: #ece6da;
+    --text-dim: #b3a8c4;
+    --brass: #c9a04e;
+    --brass-soft: #ddb968;
+    --crimson: #d8586f;
+    --rule: #382c54;
+    --mono-bg: #120f22;
+    --shadow: rgba(0, 0, 0, 0.5);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Source Serif 4', Georgia, serif;
+    line-height: 1.65;
+    margin: 0;
+  }
+  h1, h2, h3, .display {
+    font-family: 'Cinzel', Georgia, serif;
+    letter-spacing: 0.02em;
+    text-wrap: balance;
+  }
+  code, .mono, .order-body, .order-label, .toc, kbd {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+  }
+
+  a { color: var(--brass-soft); }
+
+  .wrap { max-width: 780px; margin: 0 auto; padding: 0 24px 120px; }
+
+  /* Masthead */
+  .masthead {
+    border-bottom: 3px double var(--brass);
+    padding: 48px 0 28px;
+    margin-bottom: 8px;
+  }
+  .masthead .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--crimson);
+    margin: 0 0 10px;
+  }
+  .masthead h1 {
+    font-size: clamp(2rem, 5vw, 2.75rem);
+    margin: 0 0 6px;
+    color: var(--brass);
+  }
+  .masthead .sub {
+    font-size: 15px;
+    color: var(--text-dim);
+    margin: 0;
+  }
+
+  /* Sticky nav */
+  .toc-bar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--bg);
+    border-bottom: 1px solid var(--rule);
+    padding: 10px 0;
+    margin-bottom: 8px;
+  }
+  .toc-scroll {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 0 24px;
+    scrollbar-width: thin;
+  }
+  .toc-scroll a {
+    flex: 0 0 auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--text-dim);
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    padding: 6px 10px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+  .toc-scroll a:hover { color: var(--brass); border-color: var(--brass); }
+
+  /* Mission parameters box */
+  .params {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--brass);
+    padding: 20px 24px;
+    margin: 28px 0 40px;
+    border-radius: 2px;
+  }
+  .params h3 { margin: 0 0 12px; font-size: 15px; color: var(--brass); }
+  .params dl { display: grid; grid-template-columns: 120px 1fr; gap: 8px 16px; margin: 0; font-size: 14.5px; }
+  .params dt { color: var(--text-dim); font-family: 'JetBrains Mono', monospace; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; padding-top: 2px; }
+  .params dd { margin: 0; }
+
+  /* Chapter divider */
+  .chapter {
+    margin: 72px 0 28px;
+    scroll-margin-top: 64px;
+  }
+  .chapter .kicker {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 6px;
+  }
+  .chapter .kicker::before, .chapter .kicker::after {
+    content: '';
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--brass), transparent);
+  }
+  .chapter .kicker span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--crimson);
+    white-space: nowrap;
+  }
+  .chapter h2 {
+    text-align: center;
+    font-size: clamp(1.4rem, 4vw, 1.9rem);
+    margin: 0 0 6px;
+    color: var(--text);
+  }
+  .chapter .dek {
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 14.5px;
+    max-width: 60ch;
+    margin: 0 auto;
+  }
+
+  h3.section-h { font-size: 1.15rem; margin-top: 40px; color: var(--brass); }
+  h4.sub-h { font-size: 1rem; margin-top: 28px; color: var(--text); border-bottom: 1px solid var(--rule); padding-bottom: 4px; }
+
+  p, li { font-size: 16px; }
+  ul, ol { padding-left: 1.3em; }
+  li { margin-bottom: 6px; }
+
+  /* Finding card (audit items) */
+  .finding {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 18px 20px;
+    margin: 18px 0;
+  }
+  .finding .f-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .finding .f-name { font-weight: 700; font-size: 15.5px; }
+  .finding .f-verdict {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .v-cut { background: color-mix(in srgb, var(--crimson) 18%, transparent); color: var(--crimson); border: 1px solid var(--crimson); }
+  .v-fix { background: color-mix(in srgb, var(--brass) 18%, transparent); color: var(--brass-soft); border: 1px solid var(--brass); }
+  .v-keep { background: color-mix(in srgb, var(--text-dim) 15%, transparent); color: var(--text-dim); border: 1px solid var(--rule); }
+  .finding p { font-size: 14.5px; margin: 6px 0; }
+  .finding .cite { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-dim); }
+
+  /* Order blocks (copy-paste prompts) */
+  .order {
+    background: var(--mono-bg);
+    border: 1px solid var(--brass);
+    border-radius: 4px;
+    margin: 16px 0 24px;
+    overflow: hidden;
+  }
+  .order-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--brass);
+    color: var(--surface);
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 7px 12px;
+  }
+  :root:not([data-theme="light"]) .order-label { color: #0d0b16; }
+  :root[data-theme="dark"] .order-label { color: #0d0b16; }
+  .order-label button {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    background: rgba(0,0,0,0.15);
+    border: 1px solid rgba(0,0,0,0.25);
+    color: inherit;
+    padding: 3px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  .order-label button:hover { background: rgba(0,0,0,0.28); }
+  .order-body {
+    padding: 14px 16px;
+    font-size: 13.2px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    color: var(--text);
+  }
+  .order-meta {
+    padding: 0 16px 12px;
+    font-size: 11.5px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin: 16px 0; }
+  .table-wrap { overflow-x: auto; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); }
+  td.num { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
+  .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; border: 1px solid var(--rule); }
+
+  /* Checklist / sprint schedule */
+  .day { background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: 18px 20px; margin: 14px 0; }
+  .day h4 { margin: 0 0 12px; color: var(--brass); font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: 0.05em; text-transform: uppercase; }
+  .day ol { margin: 0; padding-left: 1.2em; }
+  .day li { font-size: 14.5px; margin-bottom: 10px; }
+  .day li b { color: var(--text); }
+
+  blockquote {
+    border-left: 3px solid var(--crimson);
+    margin: 20px 0;
+    padding: 4px 0 4px 18px;
+    color: var(--text-dim);
+    font-style: italic;
+    font-size: 15px;
+  }
+
+  .callout {
+    background: color-mix(in srgb, var(--crimson) 10%, var(--surface));
+    border: 1px solid var(--crimson);
+    border-radius: 4px;
+    padding: 16px 20px;
+    margin: 20px 0;
+    font-size: 14.5px;
+  }
+  .callout .c-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--crimson);
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  footer { margin-top: 80px; padding-top: 24px; border-top: 1px solid var(--rule); font-size: 12.5px; color: var(--text-dim); text-align: center; font-family: 'JetBrains Mono', monospace; }
+
+  @media (max-width: 560px) {
+    .params dl { grid-template-columns: 1fr; }
+    .params dt { padding-top: 8px; }
+  }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<div class="toc-bar">
+  <div class="toc-scroll">
+    <a href="#intel">Cold Intel</a>
+    <a href="#audit">Slop Audit</a>
+    <a href="#system">Design System</a>
+    <a href="#tutorial">Tutorial</a>
+    <a href="#clarity">Card Clarity</a>
+    <a href="#gemini">Gemini Art</a>
+    <a href="#flow">Flow Cinema</a>
+    <a href="#spec">Antigravity Spec</a>
+    <a href="#sprint">Sprint Schedule</a>
+    <a href="#verify">Verification</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="masthead">
+    <p class="eyebrow">Field Dossier &middot; Operation: Public Launch</p>
+    <h1>Aetherium: Astral Battlegrounds</h1>
+    <p class="sub">Commander's brief on turning a mechanically-sound auto-battler into a game a stranger can pick up cold &mdash; compiled after a full cold playtest, a code-level slop audit, and a weekend build plan for you, Antigravity, and Google's generative stack.</p>
+  </div>
+
+  <div class="params">
+    <h3>Mission Parameters</h3>
+    <dl>
+      <dt>Goal</dt><dd>Public launch. First impressions from a general casual audience have to hold up &mdash; not a portfolio piece, not friends-only.</dd>
+      <dt>Audience</dt><dd>Someone who has never played Hearthstone Battlegrounds, TFT, or Super Auto Pets, and decides in seconds whether to keep going.</dd>
+      <dt>Taste north star</dt><dd>Hearthstone Battlegrounds &mdash; specifically its own in-built tutorial and card clarity, not its visual style.</dd>
+      <dt>Builder</dt><dd>Antigravity implements the code (Part VIII is its spec, verbatim-pasteable). You run the Gemini/Flow asset generation. I verify the result afterward, same as the VFX pass.</dd>
+      <dt>Window</dt><dd>One weekend. Flow access is already active.</dd>
+      <dt>Scope</dt><dd>Systemic &mdash; a real typography/motion system fix, not per-screen patches &mdash; plus a mandatory first-match tutorial built now, not deferred.</dd>
+    </dl>
+  </div>
+
+  <p>Three things prompted this dossier: the game reads as slop despite real engineering under the hood, a lot of it is too small to see or read, and &mdash; the sharpest finding, which came from you, not me &mdash; nobody who doesn't already know an auto-battler can learn to play this one. That third thing turned out to be the biggest lever. Everything below is ordered so you fix the thing that loses players first.</p>
+
+  <!-- ============ PART I ============ -->
+  <div class="chapter" id="intel">
+    <div class="kicker"><span>Part I</span></div>
+    <h2>Cold Intelligence Report</h2>
+    <p class="dek">What actually happens when someone with zero auto-battler knowledge opens the link, reconstructed from playing it and reading the code that drives each screen.</p>
+  </div>
+
+  <p>I played this cold across several full matches this session, then went back through <code>App.tsx</code>'s phase machine and every modal it mounts to confirm what a first-timer can and can't discover on their own. The finding: <b>there is no tutorial, no onboarding, and almost no in-context explanation anywhere in the game.</b> A <code>grep</code> for "tutorial" across the entire <code>src/</code> tree returns zero matches. Here is exactly what that produces, screen by screen.</p>
+
+  <h4 class="sub-h">Login &rarr; Hero Select</h4>
+  <p>You type a callsign, pick a title, and are shown eight commanders with dense passive/active ability text (e.g. "Passive: Whenever a friendly Beast dies in combat, your remaining Beasts gain +1/+1 permanently"). Nothing tells you what a <i>tribe</i> is, why Beast synergy matters, or what playstyle each commander actually feels like to play. You pick blind, based on ability text you can't yet contextualize.</p>
+
+  <h4 class="sub-h">The Tavern</h4>
+  <p>You land on "Astral Atrium Lobby," Turn 1, a countdown timer running, three cards for sale, and a "Tavern Tier" panel. The <i>entire</i> body of contextual help in this screen &mdash; and in the whole game &mdash; is one sentence: <span class="cite">"Tips: Drag cards to position attack order (leftmost strikes first)."</span> That's it. Nothing explains:</p>
+  <ul>
+    <li>What Cog-Coins are or that they refresh each turn</li>
+    <li>What "Tavern Tier" does or why you'd spend coins upgrading it instead of buying minions</li>
+    <li>What "Freeze" does (it's a padlock icon with no label)</li>
+    <li>What "Reroll" costs or refreshes</li>
+    <li>That there even <i>is</i> a shared board other players are also building against</li>
+  </ul>
+  <p>Keyword tooltips for <code>BASTION</code>, <code>AETHER_BARRIER</code>, <code>LAST_GASP</code>, <code>MIASMIC</code>, <code>OVERCLOCK</code>, <code>RE_WIND</code>, <code>SWEEP</code>, and <code>MAGNETIC</code> exist &mdash; but only inside <code>CardInspectorModal</code>, reached by hovering a card and clicking a small zoom glyph in its corner. A first-timer under a 70-second turn timer has no reason to discover that glyph exists.</p>
+
+  <h4 class="sub-h">Combat</h4>
+  <p>You click "Engage Combat" and then <i>nothing is asked of you again</i>. Minions auto-fight in an order you may not have realized you set. Tribe signature attacks fire &mdash; a beast breathes fire, a machine fires a laser &mdash; with zero prior explanation that tribes even have signature attacks, or that this is a payoff for the synergy you might have stumbled into. The recently-verified PixiJS bloom and GSAP choreography looks good, but it's spectacle a new player can't yet read as <i>meaningful</i>.</p>
+
+  <h4 class="sub-h">The lore that already exists and nobody sees</h4>
+  <p>There's a genuinely substantial world bible already written &mdash; <code>src/engine/lore.ts</code> defines realms, factions, a timeline, and named relics, surfaced through <code>AstralCodexModal</code> behind a small top-right icon. Nothing in the actual game ever points a new player at it, gives them a reason to open it, or frames <i>why</i> they're standing in a tavern recruiting monsters in the first place. It's a finished book nobody is handed.</p>
+
+  <blockquote>The pattern across every screen is the same: the mechanical depth is real, the lore is real, the keyword system is real &mdash; but all three are opt-in, discoverable only by someone who already suspects they exist. A first-timer experiences none of it. That's the actual "AI slop" feeling: not that anything looks fake, but that nothing explains itself, which reads as unfinished regardless of polish.</blockquote>
+
+  <!-- ============ PART II ============ -->
+  <div class="chapter" id="audit">
+    <div class="kicker"><span>Part II</span></div>
+    <h2>The Slop Audit</h2>
+    <p class="dek">Applying the removal test &mdash; name it, state its job, decide keep, fix, or cut &mdash; to the three things you flagged, plus one I found.</p>
+  </div>
+
+  <div class="finding">
+    <div class="f-head"><span class="f-name">Body typeface: Rajdhani</span><span class="f-verdict v-fix">Fix</span></div>
+    <p><b>Its job:</b> render every stat, card name, tooltip, and button label in the game.</p>
+    <p><b>What I checked:</b> it isn't a loading bug. <code>index.html</code> correctly pulls Rajdhani from Google Fonts, and <code>index.css</code> sets <code class="cite">body { font-family: 'Rajdhani', sans-serif }</code> as a base rule. It's genuinely rendering.</p>
+    <p><b>Why it still reads as generic:</b> Rajdhani is one of the single most reused typefaces in dark-fantasy and sci-fi "gamer UI" template kits &mdash; it's a reflex pick for exactly this aesthetic, which is precisely what makes a choice slop under the <code>no-ai-design-slop</code> test even when correctly implemented: it "could be pasted into an unrelated product unchanged." Cinzel for headings is fine and untouched &mdash; you named body text specifically, and that's the half that's the problem.</p>
+    <p><b>Fix:</b> new body pairing in Part III, one considered swap, not a redesign.</p>
+  </div>
+
+  <div class="finding">
+    <div class="f-head"><span class="f-name">Motion: two competing languages</span><span class="f-verdict v-fix">Fix</span></div>
+    <p><b>Its job:</b> give clicks and hovers feedback.</p>
+    <p><b>What I checked:</b> combat now runs on hand-tuned GSAP timelines with real easing (<code class="cite">elastic.out(1.2, 0.4)</code>, <code class="cite">power2.out</code>) from the recent VFX work &mdash; that part is good and shouldn't be touched. Everywhere else, <code>transition-all</code> appears 49 times across the component tree, almost always paired with the same <code class="cite">hover:scale-105 active:scale-95</code> combo copy-pasted button to button, menu to menu.</p>
+    <p><b>Why it reads as dated:</b> <code>transition-all</code> animates every property indiscriminately (including layout-triggering ones) and Tailwind's default ease is famously flat &mdash; the seam between "someone hand-tuned this" (combat) and "this is a template default" (everything else) is exactly where the game feels unfinished, because you can feel the two hands.</p>
+    <p><b>Fix:</b> one shared GSAP micro-interaction layer reusing combat's own easing curves, in Part III.</p>
+  </div>
+
+  <div class="finding">
+    <div class="f-head"><span class="f-name">Readability & scale</span><span class="f-verdict v-fix">Fix</span></div>
+    <p><b>Its job:</b> let a player read what a card does before deciding to buy it.</p>
+    <p><b>What I checked, in <code>CardView.tsx</code>:</b> card name renders at <code class="cite">text-[11px]</code>, ability description at <code class="cite">text-[10px]</code>, tribe tag at <code class="cite">text-[8px]</code>, cost/attack badges at <code class="cite">text-[9px]</code>&ndash;<code class="cite">text-[10px]</code> &mdash; on a shop card that is <code class="cite">w-28</code>, 112 pixels wide. That's below comfortable reading size on a desktop monitor, and this is the size real shared-link traffic will hit first on a phone.</p>
+    <p><b>Fix:</b> real minimum sizes and a slightly larger base card, in Part III.</p>
+  </div>
+
+  <div class="finding">
+    <div class="f-head"><span class="f-name">Unit art: 40 cards, 6 pictures</span><span class="f-verdict v-fix">Fix &mdash; top priority</span></div>
+    <p><b>Its job:</b> make each of the 40 minions in <code>src/engine/cards.ts</code> feel like a distinct creature worth recruiting.</p>
+    <p><b>What I checked:</b> every single card falls back to <code class="cite">card.artUrl || TRIBE_ART_MAP[card.tribe]</code> &mdash; and not one of the 40 cards actually sets its own <code>artUrl</code>. There are 6 tribes and 6 pieces of art. Every Automata card, from a 1-cost Cogwork Scrapper to a top-tier Clockwork Overlord, shows the identical image. This is the single most concrete, fixable reason the game reads as unfinished, and it's exactly the gap Gemini is well suited to close &mdash; see Part VI.</p>
+  </div>
+
+  <!-- ============ PART III ============ -->
+  <div class="chapter" id="system">
+    <div class="kicker"><span>Part III</span></div>
+    <h2>The Fix: A Systemic Design Pass</h2>
+    <p class="dek">Refinement, not replacement &mdash; the dark astral-steampunk identity stays. Only the reflexive choices move.</p>
+  </div>
+
+  <h4 class="sub-h">Typography</h4>
+  <div class="table-wrap">
+  <table>
+    <tr><th>Role</th><th>Was</th><th>Becomes</th><th>Why</th></tr>
+    <tr><td>Display / headings</td><td>Cinzel</td><td><b>Cinzel</b> (unchanged)</td><td>You said headings already work &mdash; leave it.</td></tr>
+    <tr><td>Body / UI chrome</td><td>Rajdhani</td><td><b>Familjen Grotesk</b></td><td>Geometric-humanist warmth, excellent legibility at small sizes, not on the common template-kit list.</td></tr>
+    <tr><td>Numbers &amp; data</td><td>(none &mdash; inherits body)</td><td><b>JetBrains Mono</b></td><td>Attack/health/cost/damage get tabular figures and a "ledger" precision that's a genuine, meaningful distinction between flavor text and hard numbers &mdash; not decoration.</td></tr>
+  </table>
+  </div>
+  <p>Load addition for <code>index.html</code>: <code class="cite">family=Familjen+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600</code> alongside the existing Cinzel/Rajdhani link (drop Rajdhani once the swap lands). Update <code>tailwind.config.js</code> &mdash; replace <code class="cite">sans: ['Rajdhani', 'sans-serif']</code> with <code class="cite">sans: ['Familjen Grotesk', 'sans-serif']</code> and add <code class="cite">mono: ['JetBrains Mono', 'monospace']</code>. Update the <code>body</code> rule in <code>index.css</code> to match.</p>
+
+  <h4 class="sub-h">Minimum type scale</h4>
+  <div class="table-wrap">
+  <table>
+    <tr><th>Element</th><th class="num">Current</th><th class="num">Floor</th></tr>
+    <tr><td>Card name</td><td class="num">11px</td><td class="num">14px</td></tr>
+    <tr><td>Card ability text</td><td class="num">10px</td><td class="num">13px</td></tr>
+    <tr><td>Tribe tag / cost badge</td><td class="num">8&ndash;9px</td><td class="num">12px</td></tr>
+    <tr><td>Shop card width (sm)</td><td class="num">112px</td><td class="num">140px</td></tr>
+  </table>
+  </div>
+  <p>140px still fits three cards comfortably in the current shop row; verify at 375px mobile width as part of QA in Part X.</p>
+
+  <h4 class="sub-h">Motion: one signature, not two</h4>
+  <p>Replace the 49 <code>transition-all</code> instances with two small shared GSAP helpers &mdash; a hover-lift and a press-settle &mdash; using the easing already proven in <code>CombatArena3D.tsx</code> (<code class="cite">power2.out</code> for lifts, <code class="cite">elastic.out(1.2, 0.4)</code> for anything that should feel physical, like the reroll lever or freeze padlock from the prior VFX spec). No new animation library: GSAP is already a dependency and already the house style in combat. Adding Framer Motion or a second engine here would just recreate the two-language problem this is meant to fix.</p>
+
+  <h4 class="sub-h">Where a second library genuinely earns its place</h4>
+  <p>You asked about Lenis specifically. I looked it up: Lenis is a momentum smooth-scroll library that pairs with GSAP's ScrollTrigger, and its own maintainers explicitly advise skipping it on data-heavy, non-scrolling interfaces &mdash; which describes most of this game (<code>body</code> is <code class="cite">overflow-hidden h-screen w-screen</code>, there's no page scroll to smooth). Adding it app-wide would be exactly the kind of reflexive library addition the slop framework warns against. It does have one honest home: <code>AstralCodexModal.tsx</code> and <code>Leaderboard.tsx</code> are the only two components with real <code class="cite">overflow-y-auto</code> scrolling, and the Codex in particular is meant to feel like paging through an in-world book &mdash; that's the "scroll feel is a differentiator" case Lenis is actually for. Scope it to those two panels only.</p>
+  <p>Also worth knowing about for the icon-level animations from the prior spec (the mechanical freeze padlock, the spinning reroll lever, gear cogs): <b>Rive</b> or <b>Lottie</b> (via <code>@lottiefiles/dotlottie-react</code>) produce tiny, production-quality looping vector animations that are easier to art-direct precisely than hand-written CSS keyframes. Optional, not required &mdash; only reach for one if Antigravity's CSS version of those icons looks stiff after Part VIII lands.</p>
+
+  <div class="callout">
+    <span class="c-label">Sources checked for this section</span>
+    Lenis/GSAP scope guidance and the "skip it for data-heavy UI" rule, plus Rive/Lottie as current production options for vector icon motion &mdash; both confirmed via live web search this session, not from training memory.
+  </div>
+
+  <!-- ============ PART IV ============ -->
+  <div class="chapter" id="tutorial">
+    <div class="kicker"><span>Part IV</span></div>
+    <h2>The First Match</h2>
+    <p class="dek">A mandatory, skippable-per-step guided walkthrough built on the existing <code>phase</code> state machine &mdash; the way Hearthstone Battlegrounds actually teaches itself.</p>
+  </div>
+
+  <p>Mechanism: a thin overlay component (<code>TutorialOverlay.tsx</code>) that spotlights one real UI element at a time with a short callout, gated by a <code class="cite">localStorage</code> flag (<code>aabg_tutorial_seen</code>) so it only forces itself on genuinely new players and never again. Every step has a visible "Skip tutorial" link &mdash; anyone who already knows the genre gets out in one click, on step one.</p>
+
+  <div class="table-wrap">
+  <table>
+    <tr><th>Step</th><th>Phase</th><th>Spotlights</th><th>Says</th></tr>
+    <tr><td class="num">0</td><td>HERO_SELECT</td><td>&mdash;</td><td>Two-sentence hook pulled from <code>lore.ts</code>: who you are, why you're here. Never blocks picking a hero.</td></tr>
+    <tr><td class="num">1</td><td>TAVERN</td><td>Shop row + coin counter</td><td>"This is the Astral Atrium. You get 3 Cog-Coins a turn &mdash; spend them recruiting minions below."</td></tr>
+    <tr><td class="num">2</td><td>TAVERN</td><td>A shop card</td><td>"Click a card to recruit it." Waits for the real click before advancing.</td></tr>
+    <tr><td class="num">3</td><td>TAVERN</td><td>Warband Formation row</td><td>"Drag it here to deploy. Leftmost minions strike first &mdash; order is a real decision."</td></tr>
+    <tr><td class="num">4</td><td>TAVERN</td><td>Freeze / Reroll / Tavern Tier</td><td>One line each, dismissible individually.</td></tr>
+    <tr><td class="num">5</td><td>TAVERN</td><td>Engage Combat button</td><td>"Ready? Your warband auto-battles &mdash; sit back and watch."</td></tr>
+    <tr><td class="num">6</td><td>COMBAT</td><td>First tribe attack, after it resolves</td><td>"That's a tribe signature attack &mdash; different tribes play differently. Tap any card any time to see exactly what it does." Points at the zoom glyph.</td></tr>
+  </table>
+  </div>
+
+  <p>Cheap addition worth including since the copy above is already written: surface the same seven lines as a permanent, optional "How to Play" entry in <code>GameMenuModal.tsx</code>, so a player who skipped it &mdash; or wants a refresher mid-match &mdash; can pull it back up. This doesn't change the primary mechanism you chose (mandatory-on-first-run); it's a near-zero-cost reuse of content that already exists once Step 0&ndash;6 are written.</p>
+
+  <!-- ============ PART V ============ -->
+  <div class="chapter" id="clarity">
+    <div class="kicker"><span>Part V</span></div>
+    <h2>Card Clarity Before You Buy</h2>
+    <p class="dek">The other half of your onboarding complaint: seeing what a card actually does before spending a coin on it, under a running turn timer.</p>
+  </div>
+
+  <p>The full <code>CardInspectorModal</code> already exists and is good &mdash; but it's a click-to-open modal, which is the wrong interaction for a 70-second shopping timer. Add a lighter <b>hover preview</b>: after ~350ms of hovering any shop or hand card, a floating panel appears beside it (never covering the card itself) showing full-size art, full-size ability text, and each keyword rendered with its one-line explanation inline &mdash; reusing the existing <code class="cite">KEYWORD_EXPLANATIONS</code> map from <code>CardInspectorModal.tsx</code> directly rather than duplicating it. No click, no modal, no interrupted flow. The full inspector modal stays for a deliberate, unhurried look (hero select, post-match review).</p>
+
+  <!-- ============ PART VI ============ -->
+  <div class="chapter" id="gemini">
+    <div class="kicker"><span>Part VI</span></div>
+    <h2>Gemini Unit Art Orders</h2>
+    <p class="dek">40 cards, 6 tribes, 1 template &mdash; closing the biggest single gap found in the audit.</p>
+  </div>
+
+  <p>Existing art (<code>public/assets/art/*.jpg</code>) is 1024&times;1024 square &mdash; match that exactly so new art drops in with zero CSS changes. Every prompt below shares one structure: a fixed "render style" clause that's identical across all 40 generations (so the whole roster feels like one artist painted it), plus a tribe-locked palette clause, plus per-unit specifics you fill in from <code>cards.ts</code>.</p>
+
+  <h4 class="sub-h">Tribe palette lock</h4>
+  <div class="table-wrap">
+  <table>
+    <tr><th>Tribe</th><th>Cards</th><th>Palette clause</th></tr>
+    <tr><td>AUTOMATA</td><td class="num">6</td><td><span class="swatch" style="background:#8a6d3b"></span>gunmetal steel and burnished brass, glowing cyan-blue energy accents, riveted plating and gear-work</td></tr>
+    <tr><td>VOIDBORN</td><td class="num">9</td><td><span class="swatch" style="background:#5b3a7a"></span>obsidian-violet and magenta-black, faint bioluminescent purple glow, void-rift tendrils</td></tr>
+    <tr><td>ALCHEMIST</td><td class="num">6</td><td><span class="swatch" style="background:#4a7a4f"></span>emerald green and violet with acid-yellow highlights, glass-vial and alchemical-smoke texture</td></tr>
+    <tr><td>CELESTIAL</td><td class="num">6</td><td><span class="swatch" style="background:#c9a04e"></span>warm gold, pale starlight-blue, ivory white, constellation-glow particles</td></tr>
+    <tr><td>BEAST</td><td class="num">7</td><td><span class="swatch" style="background:#8c2c3f"></span>crimson red, burnt umber, bone white, primal fur and claw texture, embered highlights</td></tr>
+    <tr><td>PIRATE</td><td class="num">6</td><td><span class="swatch" style="background:#2c7a7a"></span>weathered teal-cyan and tarnished gold, salt-worn leather, astral sail-cloth texture</td></tr>
+  </table>
+  </div>
+
+  <h4 class="sub-h">Master template &mdash; run once per card</h4>
+  <div class="order">
+    <div class="order-label"><span>Order &mdash; Per-Unit Template</span><button onclick="copyOrder(this)">Copy</button></div>
+    <div class="order-body">Painted digital card-game illustration of {UNIT_NAME}, a {ROLE_OR_TIER_DESCRIPTOR} creature in the Aetherium: Astral Battlegrounds universe. {ONE_SENTENCE_VISUAL_DESCRIPTION}. Rendered in a dark, painterly fantasy-collectible-card-game style with dramatic single-source rim lighting, rich brushwork texture, and a shallow-depth-of-field cosmic-void backdrop. Color palette strictly limited to {TRIBE_PALETTE_CLAUSE}. Square 1:1 composition, 1024x1024, centered subject with generous negative space in the upper third for a card-frame overlay. No text, no watermark, no border, no UI elements baked in &mdash; illustration only.</div>
+    <div class="order-meta">Fill {UNIT_NAME} and {ONE_SENTENCE_VISUAL_DESCRIPTION} from src/engine/cards.ts &middot; {TRIBE_PALETTE_CLAUSE} from the table above &middot; export at 1024x1024 &middot; save as public/assets/art/units/{kebab-case-name}.jpg &middot; set that path as artUrl on the matching card entry</div>
+  </div>
+
+  <h4 class="sub-h">Two worked examples</h4>
+  <div class="order">
+    <div class="order-label"><span>Order &mdash; Cogwork Scrapper (Automata, Tier 1)</span><button onclick="copyOrder(this)">Copy</button></div>
+    <div class="order-body">Painted digital card-game illustration of Cogwork Scrapper, a scrappy low-tier clockwork automaton in the Aetherium: Astral Battlegrounds universe. A hunched, patchwork construct of mismatched gears and riveted plating, a single glowing optic lens, clutching a scavenged wrench-blade. Rendered in a dark, painterly fantasy-collectible-card-game style with dramatic single-source rim lighting, rich brushwork texture, and a shallow-depth-of-field cosmic-void backdrop. Color palette strictly limited to gunmetal steel and burnished brass, glowing cyan-blue energy accents, riveted plating and gear-work. Square 1:1 composition, 1024x1024, centered subject with generous negative space in the upper third for a card-frame overlay. No text, no watermark, no border, no UI elements baked in &mdash; illustration only.</div>
+  </div>
+  <div class="order">
+    <div class="order-label"><span>Order &mdash; Apex Alpha Wolf (Beast, high tier)</span><button onclick="copyOrder(this)">Copy</button></div>
+    <div class="order-body">Painted digital card-game illustration of Apex Alpha Wolf, a towering apex predator in the Aetherium: Astral Battlegrounds universe. A massive spectral wolf wreathed in embered fur, cracked bone armor plates on its shoulders, jaws parted mid-snarl with astral flame licking between its teeth. Rendered in a dark, painterly fantasy-collectible-card-game style with dramatic single-source rim lighting, rich brushwork texture, and a shallow-depth-of-field cosmic-void backdrop. Color palette strictly limited to crimson red, burnt umber, bone white, primal fur and claw texture, embered highlights. Square 1:1 composition, 1024x1024, centered subject with generous negative space in the upper third for a card-frame overlay. No text, no watermark, no border, no UI elements baked in &mdash; illustration only.</div>
+  </div>
+
+  <h4 class="sub-h">Combined order: tribe moodboard sheet</h4>
+  <p>Before committing to all 40 full-resolution generations, use one combined prompt per tribe to sanity-check the palette across multiple units at once. Multi-subject consistency in a single generation is never as reliable as one-subject-per-image, so treat this as a fast preview pass, not a final asset &mdash; regenerate anything you actually want to ship using the per-unit template above.</p>
+  <div class="order">
+    <div class="order-label"><span>Order &mdash; Tribe Moodboard (fill in tribe)</span><button onclick="copyOrder(this)">Copy</button></div>
+    <div class="order-body">A contact-sheet style grid of six different {TRIBE_NAME} character concepts for a dark-fantasy collectible card game, arranged in a clean 2x3 grid with even gutters between panels. Each character has a distinct silhouette and combat role (scout, brute, support, sentry, elite, apex) but all six are unified by one strict color palette: {TRIBE_PALETTE_CLAUSE}. Painterly digital illustration style, dramatic rim lighting, dark cosmic-void background behind every panel, no text or labels anywhere in the image.</div>
+  </div>
+
+  <p>Full 40-card roster with tavern tier and existing flavor text lives in <code>src/engine/cards.ts</code> &mdash; work through it tribe by tribe so each batch stays palette-consistent while you're deep in that tribe's mood.</p>
+
+  <!-- ============ PART VII ============ -->
+  <div class="chapter" id="flow">
+    <div class="kicker"><span>Part VII</span></div>
+    <h2>Google Flow Cinematic Orders</h2>
+    <p class="dek">Video earns three spots: the title screen, the eight hero-select portraits, and short mood beats inside the new tutorial. Not a UI explainer &mdash; Flow renders atmosphere and character, not diagrams.</p>
+  </div>
+
+  <div class="callout">
+    <span class="c-label">A scope call, stated plainly</span>
+    Flow is very good at cinematic atmosphere and bad at literally explaining a "click here" UI interaction. The tutorial's actual teaching happens through the overlay copy in Part IV, not video. Flow's job in the tutorial is a short ambient establishing shot playing behind Step 0's lore hook &mdash; mood, not instruction.
+  </div>
+
+  <div class="callout">
+    <span class="c-label">Character consistency: use Ingredients to Video, not text alone</span>
+    Every hero and the title archway already exist as painted key art. Don't re-describe them from scratch in a text prompt &mdash; that lets the model reinterpret the face, outfit, and palette on every generation. Instead, in Flow, select <b>Video Ingredients</b> and drag in the existing asset itself as a reference (up to 3 per generation), then write a prompt that only describes <i>motion</i> &mdash; the ingredient supplies appearance. That's what every order below now assumes; each names the exact file to upload. One caveat straight from Google's own guidance: ingredient references work best on a plain or segmented background, and these portraits are full painted scenes, so if a first pass drifts on likeness, isolate the character onto a clean background with Gemini/Nano Banana first, then feed <i>that</i> into Flow as the ingredient.
+  </div>
+
+  <h4 class="sub-h">Set once: Agent Instructions</h4>
+  <p>Flow's Agent has a project-scoped, persistent instruction set (enable the Agent, then click the <b>Agent Instructions</b> icon in the prompt box &rarr; Add instruction) &mdash; it takes one reference image plus free-text guidelines and applies them to every generation in the project, so the tone/lighting/palette rules below don't need repeating in each of the 9 orders. Set this up once, first, before running anything else in this part.</p>
+  <div class="order">
+    <div class="order-label"><span>Agent Instructions &mdash; Set Once Per Project</span><button onclick="copyOrder(this)">Copy</button></div>
+    <div class="order-body">This project generates short cinematic video assets for "Aetherium: Astral Battlegrounds," a dark astral-steampunk auto-battler card game. Maintain one consistent visual world across every generation.
+
+Tone: moody, painterly dark-fantasy key art. Cosmic void backdrops, volumetric light, drifting embers and astral dust. Never bright, cartoonish, or comedic.
+
+Lighting: one dramatic rim-light source per shot, cool base tones (teal/violet/indigo) with warm gold/brass accents on metal, runes, and light sources. Never flat or evenly lit.
+
+Motion: slow and deliberate, always seamlessly loopable. No fast cuts, no shake, no rapid zooms.
+
+Framing: character/hero clips are vertical 9:16, subject centered with generous headroom. Environment/establishing shots are 16:9.
+
+Never render on-screen text, logos, watermarks, subtitles, or UI elements of any kind &mdash; these are pure key art; all text is added later in the game engine.
+
+When a reference image is supplied as an ingredient for a specific character, preserve their exact face, outfit, and coloring precisely. Only animate the scene and environment around them &mdash; never reinterpret or restyle the character itself.
+
+Tribe color law, when a character or scene belongs to one of these six factions: Automata = gunmetal steel + brass + cyan glow. Voidborn = obsidian violet + magenta-black glow. Alchemist = emerald + violet + acid-yellow glow. Celestial = gold + starlight blue + ivory. Beast = crimson + burnt umber + bone white. Pirate = weathered teal-cyan + tarnished gold.</div>
+    <div class="order-meta">Reference image to attach: public/assets/art/astral_portal.jpg &mdash; anchors overall world tone without biasing toward one hero's face; per-character likeness is handled separately by the Ingredient upload on each order below</div>
+  </div>
+
+  <h4 class="sub-h">Title screen cinematic</h4>
+  <p>Replace the static <code>astral_portal.jpg</code> behind the login card with a looping video background. 8&ndash;10 second loop, 16:9, export and compress to a web-weight <code>.mp4</code>/<code>.webm</code> pair before committing (Flow's raw export is far heavier than a login screen should ship). Uploading the same file as the ingredient keeps the animated version and the static fallback reading as one piece of key art, not two competing interpretations.</p>
+  <div class="order">
+    <div class="order-label"><span>Order &mdash; Title Cinematic</span><button onclick="copyOrder(this)">Copy</button></div>
+    <div class="order-body">The archway ingredient sits in a cosmic void with drifting nebula clouds of teal, purple and gold starlight. Slow, majestic push-in on the runic engravings. Volumetric light rays pulse rhythmically through the archway like a heartbeat. Tiny embers and astral dust particles drift upward past the camera. Cinematic, atmospheric, no text, no characters, seamless loop, 16:9, moody teal-and-violet lighting with warm gold rim-light on the rune carvings.</div>
+    <div class="order-meta">Video Ingredient: public/assets/art/astral_portal.jpg &middot; Placement: index.html login screen, behind HomePageModal.tsx, same slot as the static image &middot; must have a static-image fallback (Part VIII) if video fails to load</div>
+  </div>
+
+  <h4 class="sub-h">Hero-select cinematics (8 orders, one per commander)</h4>
+  <p>Short, loopable, vertical framing to match the existing card-portrait slot in <code>HeroSelectModal.tsx</code>. Every prompt below is deliberately short &mdash; it only describes motion and environment, because the uploaded ingredient (the hero's existing portrait) is what anchors face, outfit, and color.</p>
+
+  <div class="table-wrap">
+  <table>
+    <tr><th>Hero</th><th>Signature</th></tr>
+    <tr><td>Professor Chronos</td><td>Clockwork Calibration &mdash; Automata cost discount</td></tr>
+    <tr><td>Madame Nyx</td><td>Abyssal Tithe &mdash; sacrifice for Voidborn</td></tr>
+    <tr><td>Archimedes Spark</td><td>Aether Overcharge &mdash; frontline barrier burst</td></tr>
+    <tr><td>Vespera the Seer</td><td>Star Alignment &mdash; Celestial discovery</td></tr>
+    <tr><td>Baron Von Cog</td><td>Industrial Subsidies &mdash; cheap tavern tiers</td></tr>
+    <tr><td>Malakor the Ancient</td><td>Primal Awakening &mdash; Beast death-scaling</td></tr>
+    <tr><td>Captain Skylar</td><td>Plunder &amp; Raid &mdash; Pirate sweep buffs</td></tr>
+    <tr><td>Dr. Aurelius</td><td>Elixir Infusion &mdash; Alchemist stat/barrier</td></tr>
+  </table>
+  </div>
+
+  <div class="order">
+    <div class="order-label"><span>Order &mdash; Professor Chronos</span><button onclick="copyOrder(this)">Copy</button></div>
+    <div class="order-body">The clockmaker ingredient stands in a chamber of floating clockwork gears and glowing blue chronometer dials. He raises his staff; translucent turquoise time-ripples pulse outward, and the gears behind him slow and speed up in sync. Steampunk dark-fantasy atmosphere, dramatic rim lighting, slow hypnotic push-in, seamless loop, vertical 9:16 framing.</div>
+    <div class="order-meta">Video Ingredient: public/assets/art/hero_chronos.jpg</div>
+  </div>
+  <div class="order">
+    <div class="order-label"><span>Order &mdash; Madame Nyx</span><button onclick="copyOrder(this)">Copy</button></div>
+    <div class="order-body">The sorceress ingredient stands before a swirling void rift, tendrils of dark purple eldritch energy curling from her outstretched hand, small void wisps writhing in the rift behind her. Cold violet and magenta rim light, ominous slow sway, seamless loop, vertical 9:16 framing.</div>
+    <div class="order-meta">Video Ingredient: public/assets/art/hero_nyx.jpg</div>
+  </div>
+  <div class="order">
+    <div class="order-label"><span>Order &mdash; Archimedes Spark</span><button onclick="copyOrder(this)">Copy</button></div>
+    <div class="order-body">The inventor ingredient channels crackling cyan lightning between two industrial coils, a shimmering hexagonal energy barrier flickering into being around him, sparks scattering. Electric-blue rim lighting, kinetic but seamlessly loopable motion, vertical 9:16 framing.</div>
+    <div class="order-meta">Video Ingredient: public/assets/art/auto_titan.jpg</div>
+  </div>
+  <div class="order">
+    <div class="order-label"><span>Order &mdash; Vespera the Seer</span><button onclick="copyOrder(this)">Copy</button></div>
+    <div class="order-body">The oracle ingredient stands with arms raised beneath a slowly rotating constellation map of glowing golden stars, faint celestial light rays descending from above. Warm gold and soft white light, meditative slow motion, seamless loop, vertical 9:16 framing.</div>
+    <div class="order-meta">Video Ingredient: public/assets/art/celestial_weaver.jpg</div>
+  </div>
+  <div class="order">
+    <div class="order-label"><span>Order &mdash; Baron Von Cog</span><button onclick="copyOrder(this)">Copy</button></div>
+    <div class="order-body">The aristocrat ingredient stands before towering vaults of glowing cog-coins, idly flipping a golden gear-stamped coin that catches the light. Warm amber lighting, opulent industrial-fantasy atmosphere, slow loopable motion, vertical 9:16 framing.</div>
+    <div class="order-meta">Video Ingredient: public/assets/art/hero_baron.jpg</div>
+  </div>
+  <div class="order">
+    <div class="order-label"><span>Order &mdash; Malakor the Ancient</span><button onclick="copyOrder(this)">Copy</button></div>
+    <div class="order-body">The beastmaster ingredient stands atop a rocky outcrop as ghostly astral wolf spirits pace and howl around him, their forms flickering between solid and starlit mist. Cold blue-violet moonlight, primal atmosphere, slow loopable motion, vertical 9:16 framing.</div>
+    <div class="order-meta">Video Ingredient: public/assets/art/beast_apex.jpg</div>
+  </div>
+  <div class="order">
+    <div class="order-label"><span>Order &mdash; Captain Skylar</span><button onclick="copyOrder(this)">Copy</button></div>
+    <div class="order-body">The corsair captain ingredient stands at the helm of a skeletal astral airship sailing through a starfield, cutlass raised, cape billowing. Cool cyan-teal moonlight with warm lantern glow, dynamic but seamlessly loopable motion, vertical 9:16 framing.</div>
+    <div class="order-meta">Video Ingredient: public/assets/art/pirate_admiral.jpg</div>
+  </div>
+  <div class="order">
+    <div class="order-label"><span>Order &mdash; Dr. Aurelius</span><button onclick="copyOrder(this)">Copy</button></div>
+    <div class="order-body">The alchemist ingredient stands surrounded by bubbling glass alembics and vials of glowing emerald and violet serum, carefully pouring a shimmering elixir that emits soft sparkling motes. Warm laboratory candlelight with emerald accent glow, slow loopable motion, vertical 9:16 framing.</div>
+    <div class="order-meta">Video Ingredient: public/assets/art/alchemist.jpg</div>
+  </div>
+
+  <h4 class="sub-h">Tutorial mood beats (2 orders)</h4>
+  <div class="order">
+    <div class="order-label"><span>Order &mdash; Tavern Establishing Shot</span><button onclick="copyOrder(this)">Copy</button></div>
+    <div class="order-body">A wide, slow establishing shot drifting through a cavernous underground tavern carved from dark runic stone, floating brass shop-signs and glowing cog-coin motes drifting past merchant stalls. Warm amber lantern light against cool violet ambient shadow, cinematic depth of field, seamless loop, 16:9, painterly dark-fantasy atmosphere, no characters, no text.</div>
+    <div class="order-meta">Placement: behind Step 0 of the tutorial (HERO_SELECT lore hook)</div>
+  </div>
+  <div class="order">
+    <div class="order-label"><span>Order &mdash; Combat Arena Establishing Shot</span><button onclick="copyOrder(this)">Copy</button></div>
+    <div class="order-body">A slow overhead drift above a dark runic battlefield arena, glowing hexagonal rune-lines pulsing faintly across the stone floor, distant astral storm clouds swirling above. Cool cyan-violet lighting, ominous anticipatory mood, seamless loop, 16:9, painterly dark-fantasy atmosphere, no characters, no text.</div>
+    <div class="order-meta">Placement: behind Step 6 of the tutorial (first combat callout)</div>
+  </div>
+
+  <!-- ============ PART VIII ============ -->
+  <div class="chapter" id="spec">
+    <div class="kicker"><span>Part VIII</span></div>
+    <h2>The Antigravity Build Spec</h2>
+    <p class="dek">Same format as the VFX overhaul spec that already shipped &mdash; paste this to Antigravity as-is.</p>
+  </div>
+
+  <div class="order">
+    <div class="order-label"><span>Antigravity Build Spec &mdash; Onboarding &amp; Polish Pass</span><button onclick="copyOrder(this)">Copy</button></div>
+    <div class="order-body">### Context
+Aetherium: Astral Battlegrounds (React 19, TypeScript, Tailwind, Vite, PixiJS+GSAP combat VFX already shipped and verified) reads as unfinished for two separate reasons: (1) generic reflexive choices &mdash; body font Rajdhani, 49 instances of Tailwind `transition-all` + `hover:scale-105`, card text as small as 8px &mdash; and (2) a complete absence of onboarding: zero tutorial, keyword tooltips buried in a rarely-discovered modal, and 40 unique cards sharing only 6 pieces of tribe-level art.
+
+### Constraints
+- Preserve the existing dark astral-steampunk identity and the Cinzel heading typeface exactly &mdash; this is refinement, not redesign.
+- Do not introduce a second animation engine (no Framer Motion, no competing scroll libraries) where GSAP already covers the case &mdash; consolidate onto GSAP's existing easing vocabulary (`power2.out`, `elastic.out(1.2, 0.4)`) from CombatArena3D.tsx.
+- `npx vitest run` and `npm run build` must pass clean before and after, same bar as the VFX pass.
+- New video assets must degrade gracefully to the existing static art if a file is missing or fails to load &mdash; never a blank screen.
+
+### Phase 1 - Typography system
+Swap `tailwind.config.js` `fontFamily.sans` from Rajdhani to Familjen Grotesk; add a `mono: ['JetBrains Mono', 'monospace']` entry. Update the Google Fonts link in `index.html` and the base `body` rule in `index.css`. Raise minimum card text sizes in `CardView.tsx`: name to 14px, ability text to 13px, tribe/cost badges to 12px; widen the `sm` card size token from `w-28` to a 140px-wide equivalent. Route numeric stat displays (attack, health, cost, damage numbers) through the new mono face.
+
+### Phase 2 - Motion consolidation
+Replace the 49 `transition-all` + `hover:scale-105`/`active:scale-95` instances across `TavernShop.tsx`, `HomePageModal.tsx`, `HeroSelectModal.tsx`, and any other component matching that pattern with two small shared GSAP helpers (a hover-lift using `power2.out`, a press-settle using `elastic.out(1.2, 0.4)`) so DOM chrome motion matches the physicality already established in combat. Scope Lenis smooth-scroll narrowly to the two components with real internal scrolling, `AstralCodexModal.tsx` and `Leaderboard.tsx` only &mdash; do not add it app-wide, since the app shell itself has no page scroll to smooth.
+
+### Phase 3 - Card clarity: hover preview
+Add a hover-triggered hover preview panel (delay ~350ms) reusable from any shop or hand card: full-size art, full ability text, and every keyword the card has rendered inline with its explanation, sourced directly from the existing `KEYWORD_EXPLANATIONS` map in `CardInspectorModal.tsx` (do not duplicate that data). Never covers the card itself; dismiss on mouse-leave. The existing click-to-open `CardInspectorModal` is unchanged and stays for hero select and post-match review.
+
+### Phase 4 - First-match tutorial
+Build `TutorialOverlay.tsx`: a spotlight-and-callout overlay driven by the existing `phase` state in `App.tsx`, gated by a `localStorage` flag (`aabg_tutorial_seen`) so it fires once per browser. Steps, in order: (0) HERO_SELECT lore hook, (1) shop row + coin counter, (2) recruit-a-card (waits for the real click), (3) Warband Formation drag target + attack-order explanation, (4) Freeze/Reroll/Tavern Tier one-liners, (5) Engage Combat button, (6) first tribe-attack callout during COMBAT pointing at the card zoom/inspect affordance. Every step has a visible, always-available "Skip tutorial" control. Reuse the same seven lines as a permanent "How to Play" entry in `GameMenuModal.tsx`.
+
+### Phase 5 - Media integration
+Wire in generated assets with graceful fallback: `<video>` background behind the login card (loop, muted, autoplay, poster=the existing astral_portal.jpg, falling back to that static image entirely if the video element errors), the 8 hero cinematics as looping backgrounds behind each `HeroSelectModal.tsx` card (falling back to the existing static `artUrl` portrait), and the 2 tutorial mood clips behind Steps 0 and 6 of the overlay (optional &mdash; the tutorial must fully function with zero video assets present, since these may not all be ready by the time this phase builds). Wire the 40 new Gemini unit illustrations into `src/engine/cards.ts` by setting each card's `artUrl` individually, replacing the `TRIBE_ART_MAP` fallback for every card that now has its own art; leave the fallback in place for any card whose art isn't generated yet, so nothing regresses to a blank image mid-rollout.
+
+### Acceptance criteria
+- `npm run build` and `npx vitest run` pass clean.
+- No card renders shared art unless its own `artUrl` genuinely hasn't been generated yet.
+- Every card's name, ability, and tribe tag are legible at their new minimum sizes on a 375px-wide viewport.
+- A brand-new browser profile sees the tutorial once, unprompted, on first HERO_SELECT; a returning profile never sees it again unless "How to Play" is opened manually.
+- Skipping the tutorial at any step works and never blocks play.
+- Removing all video files entirely does not break the login, hero-select, or tutorial screens &mdash; they fall back to existing static art with no console errors.
+- No new console errors or warnings introduced.</div>
+  </div>
+
+  <!-- ============ PART IX ============ -->
+  <div class="chapter" id="sprint">
+    <div class="kicker"><span>Part IX</span></div>
+    <h2>Weekend Sprint Schedule</h2>
+    <p class="dek">Generation is the long pole &mdash; start it first and let it run while Antigravity builds.</p>
+  </div>
+
+  <div class="day">
+    <h4>Day 1 &mdash; Morning</h4>
+    <ol>
+      <li><b>Kick off Gemini art generation first.</b> It's 40 images across 6 tribes &mdash; the longest single task this weekend. Run the tribe moodboard order for each of the 6 tribes to confirm the palette reads right, then work through the per-unit template tribe by tribe.</li>
+      <li>In parallel, run the 9 Flow orders (title + 8 heroes) using Video Ingredients mode with the existing asset uploaded per order &mdash; video generation and review time overlaps well with the art batch. Check each result against its source portrait for face/outfit drift before moving to the next; if one drifts, isolate that character onto a clean background first and regenerate from that.</li>
+    </ol>
+  </div>
+  <div class="day">
+    <h4>Day 1 &mdash; Afternoon</h4>
+    <ol>
+      <li>Hand Antigravity the Part VIII spec, Phases 1&ndash;3 (typography, motion, hover preview). These don't depend on any generated asset landing yet.</li>
+      <li>While that builds, compress the Flow exports to web-weight <code>.mp4</code>/<code>.webm</code> and export finished Gemini art at 1024&times;1024 into <code>public/assets/art/units/</code>.</li>
+    </ol>
+  </div>
+  <div class="day">
+    <h4>Day 2 &mdash; Morning</h4>
+    <ol>
+      <li>Hand Antigravity Phase 4 (tutorial overlay) once Phases 1&ndash;3 are confirmed working.</li>
+      <li>Hand Antigravity Phase 5 (media integration) with whatever assets are finished &mdash; the fallback requirement in the spec means it's safe to do this even if the art or video batch isn't 100% complete.</li>
+    </ol>
+  </div>
+  <div class="day">
+    <h4>Day 2 &mdash; Afternoon</h4>
+    <ol>
+      <li>Play a full match yourself, cold, as if you'd never seen it &mdash; the same test I ran for this dossier.</li>
+      <li>Hand the result back to me. I'll run the same verification pattern as the VFX pass: build and test suite, a live QA pass in the browser, and a check that every fallback actually falls back.</li>
+    </ol>
+  </div>
+
+  <!-- ============ PART X ============ -->
+  <div class="chapter" id="verify">
+    <div class="kicker"><span>Part X</span></div>
+    <h2>What I'll Check When You Hand It Back</h2>
+    <p class="dek">Same discipline as the PixiJS verification: confirm against spec, don't just trust that it shipped.</p>
+  </div>
+
+  <ul>
+    <li><code class="cite">npm run build && npx vitest run</code> clean, zero regressions.</li>
+    <li>A cold play-through in a fresh browser profile: does the tutorial actually fire once, teach the right things, and never trap someone who clicks skip?</li>
+    <li>Spot-check card text at 375px width &mdash; is 14px/13px/12px actually comfortable, or does it need one more pass?</li>
+    <li>Pull every generated <code>artUrl</code> and confirm no card silently reverted to the tribe fallback by mistake.</li>
+    <li>Delete or rename a video file on purpose and confirm the fallback holds with no console errors &mdash; the acceptance criterion the spec asks for, verified rather than assumed.</li>
+    <li>Confirm Lenis, if added, only initializes inside the Codex and Leaderboard, not globally.</li>
+    <li>Same visual/console/performance pass I ran on the VFX work: no new warnings, no dropped frames with the new video layers active.</li>
+  </ul>
+
+  <footer>Aetherium: Astral Battlegrounds &middot; Field Dossier &middot; compiled from a live cold playtest and a full code audit, September 2026</footer>
+</div>
+
+<script>
+function copyOrder(btn) {
+  const body = btn.closest('.order').querySelector('.order-body').innerText;
+  navigator.clipboard.writeText(body).then(() => {
+    const original = btn.textContent;
+    btn.textContent = 'Copied';
+    setTimeout(() => { btn.textContent = original; }, 1400);
+  }).catch(() => {
+    btn.textContent = 'Select & copy manually';
+  });
+}
+</script>

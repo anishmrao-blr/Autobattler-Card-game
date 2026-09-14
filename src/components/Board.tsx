@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { BoardMinion, MinionCard } from '../types';
 import { CardView } from './CardView';
 
@@ -11,6 +11,11 @@ interface BoardProps {
   isCombatPhase?: boolean;
 }
 
+// HTML5 drag-and-drop (draggable/dataTransfer) has no touch support in any
+// mobile browser, so reordering is driven by Pointer Events instead - the
+// same handlers cover mouse, touch, and pen.
+const DRAG_THRESHOLD_PX = 6;
+
 export const Board: React.FC<BoardProps> = ({
   minions,
   onMinionClick,
@@ -19,16 +24,55 @@ export const Board: React.FC<BoardProps> = ({
   onInspect,
   isCombatPhase = false,
 }) => {
-  const handleDragStart = (e: React.DragEvent, index: number) => {
-    e.dataTransfer.setData('text/plain', index.toString());
+  const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+  const dragOrigin = useRef<{ index: number; x: number; y: number } | null>(null);
+  const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
+  const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null);
+
+  const findIndexAtPoint = (x: number, y: number): number | null => {
+    for (const [index, el] of cardRefs.current) {
+      const rect = el.getBoundingClientRect();
+      if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+        return index;
+      }
+    }
+    return null;
   };
 
-  const handleDrop = (e: React.DragEvent, targetIndex: number) => {
-    e.preventDefault();
-    const fromIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
-    if (!isNaN(fromIndex) && fromIndex !== targetIndex && onReorder) {
-      onReorder(fromIndex, targetIndex);
+  const handlePointerDown = (e: React.PointerEvent, index: number) => {
+    if (isCombatPhase || e.button > 0) return;
+    dragOrigin.current = { index, x: e.clientX, y: e.clientY };
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!dragOrigin.current) return;
+    const { index, x, y } = dragOrigin.current;
+
+    if (draggingIndex === null) {
+      const movedPx = Math.hypot(e.clientX - x, e.clientY - y);
+      if (movedPx < DRAG_THRESHOLD_PX) return;
+      setDraggingIndex(index);
+      (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
     }
+
+    // Pointer capture keeps events targeted at the origin card, so hit-test
+    // sibling positions manually rather than relying on pointerenter.
+    const overIndex = findIndexAtPoint(e.clientX, e.clientY);
+    setDropTargetIndex(overIndex);
+  };
+
+  const endDrag = () => {
+    if (draggingIndex !== null && dropTargetIndex !== null && dropTargetIndex !== draggingIndex) {
+      onReorder?.(draggingIndex, dropTargetIndex);
+    }
+    dragOrigin.current = null;
+    setDraggingIndex(null);
+    setDropTargetIndex(null);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    (e.target as HTMLElement).releasePointerCapture?.(e.pointerId);
+    endDrag();
   };
 
   return (
@@ -43,35 +87,48 @@ export const Board: React.FC<BoardProps> = ({
           </span>
         </div>
 
-        {!isCombatPhase && (
-          <div className="hidden sm:block text-[11px] text-purple-300 font-sans italic">
-            Tip: Drag cards to position attack order (leftmost strikes first)
+        {!isCombatPhase && minions.length > 1 && (
+          <div className="text-[11px] text-purple-300 font-sans italic">
+            Tip: Press and drag cards to reorder (leftmost strikes first)
           </div>
         )}
       </div>
 
       <div
-        className="flex items-center justify-start sm:justify-center gap-2.5 sm:gap-3 min-h-[190px] p-2.5 sm:p-4 rounded-2xl border-2 border-[#524775]/60 shadow-[0_12px_32px_rgba(0,0,0,0.9)] relative overflow-x-auto scrollbar-thin"
+        className="flex items-center justify-start sm:justify-center gap-2.5 sm:gap-3 min-h-[190px] p-2.5 sm:p-4 rounded-2xl border-2 border-[#524775]/60 shadow-[0_12px_32px_rgba(0,0,0,0.9)] relative overflow-x-auto snap-x snap-mandatory scroll-smooth"
         style={{
           backgroundImage: 'radial-gradient(rgba(18, 12, 38, 0.75), rgba(7, 4, 16, 0.94)), url(/assets/art/runic_table.jpg)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
+          WebkitMaskImage: 'linear-gradient(to right, transparent 0, black 20px, black calc(100% - 20px), transparent 100%)',
+          maskImage: 'linear-gradient(to right, transparent 0, black 20px, black calc(100% - 20px), transparent 100%)',
         }}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
       >
         {minions.length > 0 ? (
           minions.map((minion, idx) => (
             <div
               key={minion.instanceId}
-              draggable={!isCombatPhase}
-              onDragStart={(e) => handleDragStart(e, idx)}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => handleDrop(e, idx)}
-              className="relative group transition-transform duration-150 active:scale-95"
+              ref={(el) => {
+                if (el) cardRefs.current.set(idx, el);
+                else cardRefs.current.delete(idx);
+              }}
+              onPointerDown={(e) => handlePointerDown(e, idx)}
+              style={{ touchAction: isCombatPhase ? 'auto' : 'none' }}
+              className={`relative group snap-center transition-transform duration-150 ${
+                draggingIndex === idx ? 'opacity-60 scale-95 z-30' : 'active:scale-95'
+              } ${
+                dropTargetIndex === idx && draggingIndex !== null && draggingIndex !== idx
+                  ? 'ring-4 ring-yellow-400 rounded-2xl'
+                  : ''
+              }`}
             >
               <CardView
                 boardMinion={minion}
                 size="md"
-                onClick={() => onMinionClick?.(idx)}
+                onClick={() => draggingIndex === null && onMinionClick?.(idx)}
                 onInspect={onInspect}
               />
 
@@ -81,7 +138,7 @@ export const Board: React.FC<BoardProps> = ({
                     e.stopPropagation();
                     onSellMinion(idx);
                   }}
-                  className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-red-950/95 hover:bg-red-800 text-red-300 border border-red-500/60 rounded-full px-2.5 py-0.5 text-[9px] font-bold opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-30"
+                  className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-red-950/95 hover:bg-red-800 text-red-300 border border-red-500/60 rounded-full px-2.5 py-0.5 text-[9px] font-bold opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 transition-opacity shadow-lg z-30"
                 >
                   Sell (1🪙)
                 </button>
